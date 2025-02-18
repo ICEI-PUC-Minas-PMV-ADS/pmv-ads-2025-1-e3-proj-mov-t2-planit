@@ -6,7 +6,16 @@
 
 `3° Semestre`
 
-Descrever resumidamente, em um ou dois parágrafos, o projeto que está sendo desenvolvido.
+O PlanIt é uma aplicação inovadora que proporciona uma gestão efetiva de agenda, 
+projetada para atender à necessidade de profissionais de diferentes áreas. 
+O processo de agendamento ainda hoje causa "dor de cabeça", de agendas 
+desorganizadas á clientes desavisados que desmarcam compromissos de última hora. Por 
+meio da tecnologia buscamos otimizar o processo de organização de compromissos, 
+envio de lembretes, sincronização de horários dentre outros. 
+Afim de impulsionar negócios o PlanIt dispõe de funcionalidades que incluem 
+personalização de datas e horários, serviços e valores, notificações em tempo real aos 
+envolvidos, integração com outras agendas digitais, promovendo a organização de 
+agendas e uma experiência única ao cliente. 
 
 ## Integrantes
 
