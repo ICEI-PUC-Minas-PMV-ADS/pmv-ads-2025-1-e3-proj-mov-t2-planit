@@ -1,23 +1,25 @@
-# TÍTULO DO PROJETO
+# PLAN IT
 
-`CURSO`
+`Análise e Desenvolvimento de Sistemas`
 
-`DISCIPLINA`
+`Desenvolvimento de uma Aplicação Móvel em um Ambiente de Negócio`
 
-`SEMESTRE`
+`3° Semestre`
 
 Descrever resumidamente, em um ou dois parágrafos, o projeto que está sendo desenvolvido.
 
 ## Integrantes
 
-* Nome completo do aluno 1
-* Nome completo do aluno 2
-* Nome completo do aluno 3
-* Nome completo do aluno 4
+* Ana Clara Santos de Paula
+* Emily Gabriela Avelino Rodrigues
+* Estefany Bianca de Paula
+* Maria Eduarda Rodrigues Antunes
+* Mauricio Thales Alves de Azevedo Neto
+* Vitor Hugo Braga da Silva
 
 ## Orientador
 
-* Nome completo do professor 1
+* Udo Fritzke Junior
 
 ## Instruções de utilização
 
