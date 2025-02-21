@@ -3,12 +3,30 @@
 
 <span style="color:red">Pré-requisitos: <a href="2-Especificação do Projeto.md"> Documentação de Especificação</a></span>
 
-teste Descreva aqui a metodologia de trabalho do grupo para atacar o problema. Definições sobre os ambiente de trabalho utilizados pela  equipe para desenvolver o projeto. Abrange a relação de ambientes utilizados, a estrutura para gestão do código fonte, além da definição do processo e ferramenta através dos quais a equipe se organiza (Gestão de Times).
+Neste projeto, optou-se pela aplicação da metodologia ágil Scrum, amplamente conhecida pelos membros da equipe e reconhecida por sua abordagem completa e eficiente para o gerenciamento e a distribuição de tarefas. Inspirado no rugby, o Scrum utiliza o conceito de "scrum" do esporte, em que os jogadores se reúnem rapidamente para alinhar estratégias. Seguindo essa analogia, a metodologia promove reuniões diárias curtas, conhecidas como daily scrums, que têm como objetivo:
+
+- Atualizar o progresso do projeto.
+
+- Identificar obstáculos e desafios.
+
+- Planejar os próximos passos de forma colaborativa e transparente.
+
+Essa abordagem garante maior organização, agilidade e adaptabilidade ao longo do desenvolvimento, permitindo que a equipe responda rapidamente a mudanças e entregue valor de forma incremental e consistente.
 
 ## Relação de Ambientes de Trabalho
 
-Os artefatos do projeto são desenvolvidos a partir de diversas plataformas e a relação dos ambientes com seu respectivo propósito deverá ser apresentada em uma tabela que especifica que detalha Ambiente, Plataforma e Link de Acesso. 
-Nota: Vide documento modelo do estudo de caso "Portal de Notícias" e defina também os ambientes e frameworks que serão utilizados no desenvolvimento de aplicações móveis.
+| AMBIENTE | PLATAFORMA | LINK DE ACESSO | DESCRIÇÃO
+|------------|---------------| ----------- |--------------- |
+| Repositório de Código | GitHub | [Repositorio do projeto](ICEI-PUC-Minas-PMV-ADS/pmv-ads-2025-1-e3-proj-mov-t2-planit) | Hospedagem do código fonte do projeto, com versionamento e controle de branches. |
+| Gestão de Tarefas | GitHub | [Quadro Kanban](https://github.com/orgs/ICEI-PUC-Minas-PMV-ADS/projects/1617/views/1) | Quadro Kanban para organização das tarefas do projeto, com colunas como "Backlog", "Ready", "In Progress", "In Review" e "Done". |
+| Comunicação | Discord | [Canal de Comunicação](https://discord.com/channels/1273971886317113374/1273971886849654886) | Comunicação da equipe em canais específicos para discussões técnicas e gerais. |
+| Design de Interfaces | Figma |[Projeto do Figma](https://www.figma.com/design/t7g0pN6tah9DZ0iyW6N3Wa/Mobile?node-id=0-1&p=f) | Prototipagem e design das interfaces do aplicativo móvel. |
+| Hospedagem | --- | [Hospedagem do Projeto]() |Hospedagem do backend e frontend projeto, além do Banco de Dados. |
+|Banco de Dados| --- | [Banco de Dados]() | Banco de dados em tempo real e autenticação para aplicativos móveis. |
+| Desenvolvimento Mobile | Expo | [Dev Mobile]() | IDE para desenvolvimento de aplicativos, com emuladores e ferramentas de debug. |
+
+
+## Frameworks e Tecnologias para Desenvolvimento Mobile
 
 ## Controle de Versão
 
