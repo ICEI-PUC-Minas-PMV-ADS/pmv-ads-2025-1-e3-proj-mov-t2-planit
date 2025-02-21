@@ -28,36 +28,40 @@ Essa abordagem garante maior organização, agilidade e adaptabilidade ao longo 
 
 ## Frameworks e Tecnologias para Desenvolvimento Mobile
 
+| TECNOLOGIA/FERRAMENTA | DESCRIÇÃO
+|------------|---------------|
+| React Native | Framework mantido pelo Facebook, baseado em React e JavaScript. |
+| Expo | Ferramenta que facilita o desenvolvimento e teste de aplicativos React Native. |
+
 ## Controle de Versão
 
 A ferramenta de controle de versão adotada no projeto foi o
-[Git](https://git-scm.com/), sendo que o [Github](https://github.com)
-foi utilizado para hospedagem do repositório.
+[Git](https://git-scm.com/).
 
 O projeto segue a seguinte convenção para o nome de branches:
 
 - `main`: versão estável já testada do software
-- `unstable`: versão já testada do software, porém instável
-- `testing`: versão em testes do software
-- `dev`: versão de desenvolvimento do software
+
+## Branches Individuais
+
+- `ana/docs`: Para modificaçõs e acrescimos a documentações especificas.
 
 Quanto à gerência de issues, o projeto adota a seguinte convenção para
 etiquetas:
 
-- `documentation`: melhorias ou acréscimos à documentação
-- `bug`: uma funcionalidade encontra-se com problemas
-- `enhancement`: uma funcionalidade precisa ser melhorada
-- `feature`: uma nova funcionalidade precisa ser introduzida
+- `documentation`: melhorias ou acréscimos à documentação;
+- `bug`: uma funcionalidade encontra-se com problemas;
+- `enhancement`: uma funcionalidade precisa ser melhorada;
+- `feature`: uma nova funcionalidade precisa ser introduzida;
+- `Design`: Criação do modelo feito no figma;
+- `Help Wanted`: Sinalização de um problema que exige maior atenção por parte dos 
+membros do grupo;
+- `Question`: Requisição de mais informações para que a tarefa possa ser concluída;
+- `Figma`: telas do site/esboços;
+- `Tests`: testes das páginas feitas;
+- `Wontfix`: não será trabalhado.
 
-Discuta como a configuração do projeto foi feita na ferramenta de versionamento escolhida. Exponha como a gerência de tags, merges, commits e branchs é realizada. Discuta como a gerência de issues foi realizada.
-
-> **Links Úteis**:
-> - [Microfundamento: Gerência de Configuração](https://pucminas.instructure.com/courses/87878/)
-> - [Tutorial GitHub](https://guides.github.com/activities/hello-world/)
-> - [Git e Github](https://www.youtube.com/playlist?list=PLHz_AreHm4dm7ZULPAmadvNhH6vk9oNZA)
->  - [Comparando fluxos de trabalho](https://www.atlassian.com/br/git/tutorials/comparing-workflows)
-> - [Understanding the GitHub flow](https://guides.github.com/introduction/flow/)
-> - [The gitflow workflow - in less than 5 mins](https://www.youtube.com/watch?v=1SXpE08hvGs)
+![Labels]()
 
 ## Gerenciamento de Projeto
 
