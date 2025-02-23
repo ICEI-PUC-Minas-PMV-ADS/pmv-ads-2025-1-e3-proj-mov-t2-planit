@@ -1,8 +1,6 @@
 
 # Metodologia
 
-<span style="color:red">Pré-requisitos: <a href="2-Especificação do Projeto.md"> Documentação de Especificação</a></span>
-
 Neste projeto, optou-se pela aplicação da metodologia ágil Scrum, amplamente conhecida pelos membros da equipe e reconhecida por sua abordagem completa e eficiente para o gerenciamento e a distribuição de tarefas. Inspirado no rugby, o Scrum utiliza o conceito de "scrum" do esporte, em que os jogadores se reúnem rapidamente para alinhar estratégias. Seguindo essa analogia, a metodologia promove reuniões diárias curtas, conhecidas como daily scrums, que têm como objetivo:
 
 - Atualizar o progresso do projeto.
@@ -17,7 +15,7 @@ Essa abordagem garante maior organização, agilidade e adaptabilidade ao longo 
 
 | AMBIENTE | PLATAFORMA | LINK DE ACESSO | DESCRIÇÃO
 |------------|---------------| ----------- |--------------- |
-| Repositório de Código | GitHub | [Repositorio do projeto](ICEI-PUC-Minas-PMV-ADS/pmv-ads-2025-1-e3-proj-mov-t2-planit) | Hospedagem do código fonte do projeto, com versionamento e controle de branches. |
+| Repositório de Código | GitHub | [Repositorio do projeto](https://github.com/ICEI-PUC-Minas-PMV-ADS/pmv-ads-2025-1-e3-proj-mov-t2-planit) | Hospedagem do código fonte do projeto, com versionamento e controle de branches. |
 | Gestão de Tarefas | GitHub | [Quadro Kanban](https://github.com/orgs/ICEI-PUC-Minas-PMV-ADS/projects/1617/views/1) | Quadro Kanban para organização das tarefas do projeto, com colunas como "Backlog", "Ready", "In Progress", "In Review" e "Done". |
 | Comunicação | Discord | [Canal de Comunicação](https://discord.com/channels/1273971886317113374/1273971886849654886) | Comunicação da equipe em canais específicos para discussões técnicas e gerais. |
 | Design de Interfaces | Figma |[Projeto do Figma](https://www.figma.com/design/t7g0pN6tah9DZ0iyW6N3Wa/Mobile?node-id=0-1&p=f) | Prototipagem e design das interfaces do aplicativo móvel. |
