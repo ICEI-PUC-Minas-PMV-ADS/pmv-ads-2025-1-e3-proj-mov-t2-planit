@@ -44,7 +44,8 @@ O projeto segue a seguinte convenção para o nome de branches:
 
 - `ana/docs`: Para modificaçõs e acréscimos a documentações especificas;
 - `Branch---Emily`: Para modificações e acréscimos tanto da documentação quanto código;
-- `maria`: Para modificaçõs e acréscimos a documentações especificas.
+- `maria`: Para modificaçõs e acréscimos a documentações especificas;
+- `Estefany/Documentacao`: Para modificaçõs e acréscimos a documentações especificas.
 
 Quanto à gerência de issues, o projeto adota a seguinte convenção para
 etiquetas:
