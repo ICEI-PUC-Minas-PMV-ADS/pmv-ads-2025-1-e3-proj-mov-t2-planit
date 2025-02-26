@@ -8,17 +8,42 @@ Apresente uma visão geral do que será abordado nesta parte do documento, enume
 
 ## Personas
 
-Pedro Paulo tem 26 anos, é arquiteto recém-formado e autônomo. Pensa em se desenvolver profissionalmente através de um mestrado fora do país, pois adora viajar, é solteiro e sempre quis fazer um intercâmbio. Está buscando uma agência que o ajude a encontrar universidades na Europa que aceitem alunos estrangeiros.
+##Persona 1: 
+
+Juliana Andrade – Esteticista Autônoma, tem 32 anos, possui experiência de 8 anos no setor de estética,
+enfrenta dificuldades para organizar sua agenda e evitar sobreposições de horários.
+Lida com clientes que frequentemente desmarcam de última hora. Precisa de um sistema que ajude a lembrar os clientes dos compromissos. 
+Necessita que o sistema tenha agendamento automatizado e lembretes para clientes, facilidade na personalização de horários e serviços e integração com redes sociais para captar novos clientes.
+
+##Persona 2:
+
+Ricardo Mendes – Fisioterapeuta em Clínica Particular, tem 40 anos, possui experiência de 15 anos como fisioterapeuta
+Precisa gerenciar uma agenda extensa de pacientes com diferentes tratamentos. Perde tempo reorganizando horários quando pacientes faltam sem aviso.
+Quer evitar conflitos de agendamento entre ele e outros profissionais da clínica. Necessita que o sistema permita visualizar e reorganizar compromissos rapidamente,
+integração com outras agendas digitais usadas pela clínica e opção de permitir que os próprios clientes remarquem horários dentro de regras pré-definidas.
+
+##Persona 3:
+
+Vanessa Souza – Professora Particular de Inglês, tem 27 anos, possui experiência de 5 anos dando aulas particulares online e presenciais
+Precisa equilibrar horários de diferentes alunos sem causar sobreposição. Quer oferecer mais flexibilidade para remarcações sem prejudicar sua organização.
+Busca um meio de facilitar pagamentos sem depender de transferências bancárias. Necessita de um sistema que ofereça controle de horários e cancelamentos automáticos,
+funcionalidade de pagamento integrado para evitar atrasos e uma interface intuitiva para fácil uso pelos alunos.
+
+
 
 
 ## Histórias de Usuários
 
 Com base na análise das personas forma identificadas as seguintes histórias de usuários:
 
-|EU COMO... `PERSONA`| QUERO/PRECISO ... `FUNCIONALIDADE` |PARA ... `MOTIVO/VALOR`                 |
+|EU COMO              | QUERO/PRECISO                     |PARA                                    |
 |--------------------|------------------------------------|----------------------------------------|
-|Usuário do sistema  | Registrar minhas tarefas           | Não esquecer de fazê-las               |
-|Administrador       | Alterar permissões                 | Permitir que possam administrar contas |
+|Juliana Andrade     | Permitir que clientes agendem horários online | Reduzir o tempo gasto com marcações manuais |
+|Juliana Andrade     | Integrar minha agenda com redes sociais  | acilitar o agendamento direto pelos clientes |
+|Ricardo Mendes      | Oferecer um lembrete automático para consultas | Diminuir faltas dos pacientes|
+|Ricardo Mendes      | Permitir reagendamentos dentro de regras pré-definidas | Evitar buracos na minha agenda|
+|Vanessa Souza       | Oferecer opção de pagamento recorrente para alunos| Reduzir atrasos e esquecimentos de pagamento|
+|Vanessa Souza       | Criar um sistema de lembretes automáticos para aulas| Melhorar a assiduidade dos alunos|
 
 Apresente aqui as histórias de usuário que são relevantes para o projeto de sua solução. As Histórias de Usuário consistem em uma ferramenta poderosa para a compreensão e elicitação dos requisitos funcionais e não funcionais da sua aplicação. Se possível, agrupe as histórias de usuário por contexto, para facilitar consultas recorrentes à essa parte do documento.
 
