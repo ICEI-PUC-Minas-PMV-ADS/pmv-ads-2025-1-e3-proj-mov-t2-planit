@@ -140,6 +140,7 @@ Com diagramas bem organizados que permitem gerenciar o tempo nos projetos, o ger
 
 ![Diagrama de rede simplificado notação francesa (método francês)](img/02-diagrama-rede-simplificado.png)
 
+## Grafico de Gantt
 
 ![Gráfico de Gantt](img/grafico-gantt.png)
 
