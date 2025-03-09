@@ -181,7 +181,10 @@ Com diagramas bem organizados que permitem gerenciar o tempo nos projetos, o ger
 
 O gerenciamento adequado de tarefas contribuirá para que o projeto alcance altos níveis de produtividade. Por isso, é fundamental que ocorra a gestão de tarefas e de pessoas, de modo que os times envolvidos no projeto possam ser facilmente gerenciados. 
 
-![Simple Project Timeline](img/02-project-timeline.png)
+![image](https://github.com/user-attachments/assets/e5722b4e-2cb1-44e8-b981-402f10973375)
+
+Documento Atualizado em: 09/03/2025.
+
 
 ## Gestão de Orçamento
 
