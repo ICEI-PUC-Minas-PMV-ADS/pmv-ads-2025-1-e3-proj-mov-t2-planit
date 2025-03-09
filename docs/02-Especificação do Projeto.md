@@ -67,12 +67,12 @@ Apresente aqui o nome e as oportunidades de melhorias para o processo 2. Em segu
 
 ## Indicadores de Desempenho
 
-Apresente aqui os principais indicadores de desempenho e algumas metas para o processo. Atenção: as informações necessárias para gerar os indicadores devem estar contempladas no diagrama de classe. Colocar no mínimo 5 indicadores. 
 
-Usar o seguinte modelo: 
+Os Indicadores de Desempenho são ferramentas essenciais para monitorar e avaliar a eficiência de um sistema de agendamento. Eles ajudam a identificar pontos fortes e áreas de melhoria, garantindo que o app atenda às expectativas dos usuários e aos objetivos do negócio. 
 
-![Indicadores de Desempenho](img/02-indic-desemp.png)
-Obs.: todas as informações para gerar os indicadores devem estar no diagrama de classe a ser apresentado a posteriori. 
+O Indicador de Desempenho pode ser acessado clicando [aqui](https://app.diagrams.net/?src=about#G1fcmARpinDo7sJj2ZcizD_F2_QO09RgPq#%7B%22pageId%22%3A%22pBU9hj_kKMLHwqpSIsB6%22%7D). Abaixo, é possível ver uma representação dele. 
+
+![Indicadores de Desempenho](/docs/img/indicadorDesempenho-Planit.png)
 
 ## Requisitos
 
