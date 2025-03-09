@@ -47,23 +47,50 @@ Com base na análise das personas forma identificadas as seguintes histórias de
 
 ### Análise da Situação Atual
 
-Apresente aqui os problemas existentes que viabilizam sua proposta. Apresente o modelo do sistema como ele funciona hoje. Caso sua proposta seja inovadora e não existam processos claramente definidos, apresente como as tarefas que o seu sistema pretende implementar são executadas atualmente, mesmo que não se utilize tecnologia computacional. 
+A gestão de agendas para profissionais e empresas muitas vezes é feita de maneira manual ou com ferramentas genéricas, o que leva a conflitos de horários, dificuldade no acompanhamento de compromissos e perda de produtividade. A falta de automação nos processos impacta diretamente a organização, resultando em esquecimentos, sobrecarga de tarefas e má experiência para os clientes.
+
+Atualmente, o agendamento de compromissos é realizado por meio de planilhas, anotações manuais ou aplicativos genéricos que não oferecem integração com outras ferramentas essenciais para a gestão do negócio. Esse modelo dificulta a visualização dos horários disponíveis, a comunicação com os clientes e a gestão eficiente do tempo.
 
 ### Descrição Geral da Proposta
 
-Apresente aqui uma descrição da sua proposta abordando seus limites e suas ligações com as estratégias e objetivos do negócio. Apresente aqui as oportunidades de melhorias.
+A proposta da agenda inteligente PlanIt é oferecer uma solução automatizada e eficiente para o gerenciamento de compromissos, integrando funcionalidades como notificações, otimização de horários e sincronização com outras plataformas. O sistema permitirá um controle mais preciso das atividades, reduzindo falhas no agendamento e melhorando a organização. Com isso, busca-se aumentar a produtividade, otimizar o atendimento e proporcionar uma melhor experiência tanto para os profissionais quanto para os clientes.
 
-### Processo 1 – NOME DO PROCESSO
+### Processo 1 – CADASTRO
 
-Apresente aqui o nome e as oportunidades de melhorias para o processo 1. Em seguida, apresente o modelo do processo 1, descrito no padrão BPMN. 
+Oportunidades de melhoria: Simplificação do fluxo de cadastro, redução de campos obrigatórios desnecessários e integração com redes sociais ou outras plataformas para facilitar o registro.
 
-![Processo 1](img/02-bpmn-proc1.png)
+![3d9834b8-b14a-46c9-94d5-ca97ddc81866](https://github.com/user-attachments/assets/bc525d77-65b6-4f92-937a-4d35de7d2469)
 
-### Processo 2 – NOME DO PROCESSO
 
-Apresente aqui o nome e as oportunidades de melhorias para o processo 2. Em seguida, apresente o modelo do processo 2, descrito no padrão BPMN.
+### Processo 2 – CADASTRO DE SERVIÇOS 
 
-![Processo 2](img/02-bpmn-proc2.png)
+Oportunidades de melhoria: Padronização dos serviços cadastrados, possibilidade de categorização e precificação dinâmica com base em demanda e disponibilidade.
+
+![8d2c8b75-fcde-421b-ba1e-67a4f017d4c5](https://github.com/user-attachments/assets/0014b74a-b2f9-4221-970f-72a521ff9931)
+
+### Processo 3 – DISPONIBILIZAÇÃO DE HORÁRIOS 
+
+Oportunidades de melhoria: Interface intuitiva para configuração de horários, bloqueio automático para evitar sobreposição e sincronização com calendário externo.
+
+![64251d10-f15a-4d23-854f-8a5c4a9fec8d](https://github.com/user-attachments/assets/dfaa5cfc-52bc-4356-90ab-c9091fffc138)
+
+### Processo 4 - AGENDAMENTO 
+
+Oportunidades de melhoria: Notificações automáticas, confirmação via SMS ou e-mail e possibilidade de pagamento antecipado.
+
+![fbd67a3d-02f7-46fd-991c-a2bd9fc00721](https://github.com/user-attachments/assets/a7c264da-bbb1-47a7-83de-dc00714c154c)
+
+### Processo 5 - REAGENDAMENTO 
+
+Oportunidades de melhoria: Facilidade para modificar horários sem necessidade de cancelamento, regras para evitar mudanças frequentes e readequação automática da agenda.
+
+![2e983381-3299-48fc-8342-4a510b54d546](https://github.com/user-attachments/assets/5894f9a3-244f-41bb-aea2-f6a246073758)
+
+### Processo 6 - CANCELAMENTO 
+
+Oportunidades de melhoria: Política clara de cancelamento, possibilidade de reembolso e reaproveitamento de horários cancelados para novos agendamentos.
+
+![847cf295-3d67-41c2-a2f2-41e2363e1f8d](https://github.com/user-attachments/assets/9f9ce27a-18dd-4c05-b80b-af4c92acaf6d)
 
 ## Indicadores de Desempenho
 
