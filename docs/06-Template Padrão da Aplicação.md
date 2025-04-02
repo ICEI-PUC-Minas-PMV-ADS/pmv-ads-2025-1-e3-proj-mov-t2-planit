@@ -4,9 +4,19 @@
 
 Layout padrão da aplicação que será utilizado em todas as páginas com a definição de identidade visual, aspectos de responsividade e iconografia.
 
-> **Links Úteis**:
->
-> - [CSS Website Layout (W3Schools)](https://www.w3schools.com/css/css_website_layout.asp)
-> - [Website Page Layouts](http://www.cellbiol.com/bioinformatics_web_development/chapter-3-your-first-web-page-learning-html-and-css/website-page-layouts/)
-> - [Perfect Liquid Layout](https://matthewjamestaylor.com/perfect-liquid-layouts)
-> - [How and Why Icons Improve Your Web Design](https://usabilla.com/blog/how-and-why-icons-improve-you-web-design/)
+## Planit - Profissionais 
+
+### Página Inicial 
+
+![PAG INICIAL](https://github.com/user-attachments/assets/f0fe0e69-3f28-4fd8-8214-f2c1638681a1)
+
+
+### Páginas de Login e Cadastro
+
+O método de login com a conta do Google é a principal opção para os processos de login e cadastro. No entanto, também é possível realizar o login e o cadastro por meio de um formulário padrão.
+
+![PAG LOGIN-CADASTRO](https://github.com/user-attachments/assets/5d7bfcbb-8218-4a9b-8a1a-4152923192e5)
+![FORM CADASTRO](https://github.com/user-attachments/assets/16557aec-3930-4fe6-ad54-dd9d174717e7)
+
+
+
