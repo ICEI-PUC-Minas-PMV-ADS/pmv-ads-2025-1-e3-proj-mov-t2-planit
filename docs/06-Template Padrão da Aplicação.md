@@ -77,8 +77,36 @@ Páginas destinadas a atualização de dados cadastrais, configuração do aplic
 
 
 
+## Planit - Clientes  
+
+### Página Inicial 
+
+![PAG INICIAL](https://github.com/user-attachments/assets/f0fe0e69-3f28-4fd8-8214-f2c1638681a1)
 
 
+### Páginas de Login e Cadastro
+
+O método de login com a conta do Google é a principal opção para os processos de login e cadastro. No entanto, também é possível realizar o login e o cadastro por meio de um formulário padrão.
+
+![PAG LOGIN-CADASTRO](https://github.com/user-attachments/assets/5d7bfcbb-8218-4a9b-8a1a-4152923192e5)
+![FORM CADASTRO](https://github.com/user-attachments/assets/16557aec-3930-4fe6-ad54-dd9d174717e7)
+![image](https://github.com/user-attachments/assets/bb978fb2-16ac-481f-8f7f-abe3a9aab9df)
+
+
+### Páginas do Agendamento 
+
+Páginas que permite que o cliente agende um serviço com o profissional de acordo com os horários disponibilizados pelo mesmo. 
+
+![PAG AGENDAMENTO - CLIENTE](https://github.com/user-attachments/assets/6d948ccc-633c-4b49-b60c-5a4d3d1e5a2f)
+![PAG AGENDAMENTO - CLIENTE 2](https://github.com/user-attachments/assets/ea186cdd-ddd5-4db7-bd1c-8edaa3d5efee)
+
+
+### Homepage 
+
+Página que permite a visualização, reagendamento e cancelamento do serviço agendado. 
+
+![HOMEPAGE CLIENTE](https://github.com/user-attachments/assets/25d2958b-2d1a-40d4-8619-f2f71ad9ec0c)
+![image](https://github.com/user-attachments/assets/a5de7557-a1b1-449d-9930-43f127217598)
 
 
 
