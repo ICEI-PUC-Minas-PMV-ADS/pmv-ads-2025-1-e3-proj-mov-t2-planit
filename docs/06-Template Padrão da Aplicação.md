@@ -4,111 +4,113 @@
 
 Layout padrão da aplicação que será utilizado em todas as páginas com a definição de identidade visual, aspectos de responsividade e iconografia.
 
-## Planit - Profissionais 
+![Arquitetura da Solução](img/template-1/Mockup.png)
 
-### Página Inicial 
+<h2 align="center">Aplicação Planit - iconografia</h2>
 
-![PAG INICIAL](https://github.com/user-attachments/assets/f0fe0e69-3f28-4fd8-8214-f2c1638681a1)
+<p align="center">
+  <img src="img/template-1/iconografia.png" alt="Ícones">
+</p>
 
+<h3 align="center">Boas-vindas</h3>
 
-### Páginas de Login e Cadastro
+<p align="center">
+  <img src="img/template-1/Bem-vindo.png" alt="PAG INICIAL">
+</p>
 
-O método de login com a conta do Google é a principal opção para os processos de login e cadastro. No entanto, também é possível realizar o login e o cadastro por meio de um formulário padrão.
+<h3 align="center">Páginas de Login e Cadastro</h3>
 
-![PAG LOGIN-CADASTRO](https://github.com/user-attachments/assets/5d7bfcbb-8218-4a9b-8a1a-4152923192e5)
-![FORM CADASTRO](https://github.com/user-attachments/assets/16557aec-3930-4fe6-ad54-dd9d174717e7)
-![image](https://github.com/user-attachments/assets/bb978fb2-16ac-481f-8f7f-abe3a9aab9df)
+<p align="center">
+  <img src="img/template-1/Login%20ou%20cadastro.png" alt="PAG LOGIN-CADASTRO">
+</p>
 
+<h3 align="center">Formulário padrão</h3>
 
-### Homepage 
+<p align="center">
+  <img src="img/template-1/Cadastro.png" alt="FORM CADASTRO">
+</p>
 
-A Homepage permite a navegação entre os dias da semana, possibilitando a visualização dos atendimentos correspondentes à data.
+<p align="center">
+  <img src="img/template-1/Login.png" alt="LOGIN COM E-MAIL">
+</p>
 
-![HOMEPAGE](https://github.com/user-attachments/assets/3c39e1a3-c21b-450a-948c-bc2396988e08)
+<h3 align="center">Home e notificações</h3>
 
+<p align="center"> A página inicial exibe uma visão geral das funcionalidades disponíveis. O sistema de notificações informa o usuário sobre compromissos, atualizações e lembretes importantes. </p>
 
-### Páginas de Notificação 
+<p align="center">
+  <img src="img/template-1/Home.png" alt="HOME">
+</p>
 
-As páginas destinadas a visualização das notificações.
+<p align="center">
+  <img src="img/template-1/Notificação.png" alt="Notificação">
+</p>
 
-![PAG NOTIFICACAO VAZIA](https://github.com/user-attachments/assets/a7d98f5d-1d7d-434c-b9e7-fdf017dbb980)
-![PAG NOTIFICACAO](https://github.com/user-attachments/assets/07b327fe-f1cc-4b02-b884-1931708f39a4)
-![image](https://github.com/user-attachments/assets/25b28dcf-9d6e-4627-a627-5bdd5f3ec16f)
+<h3 align="center">Calendário e controle de horários</h3>
 
+<p align="center"> O calendário permite visualizar e organizar compromissos de forma clara e objetiva. Já o controle de horários garante a gestão eficiente com foco no microgerenciamento dos dias. </p>
 
-### Páginas de Controle de Horários 
+<p align="center">
+  <img src="img/template-1/Calendario.png" alt="Calendário">
+</p>
 
-Páginas destinadas para a visualização e atualização dos horários, que possuem os status: disponíveis, agendados e bloqueados. 
+<p align="center">
+  <img src="img/template-1/Controle%20de%20Horários.png" alt="Controle de horários">
+</p>
 
-![PAG CONTROLE DE HORÁRIOS](https://github.com/user-attachments/assets/096d4cbf-a097-4676-bca0-1f0fb94a6ef5)
-![PAG ATUALIZAR HORARIOS](https://github.com/user-attachments/assets/18c7dec4-cb27-4584-91c5-f2f5123eba2e)
-![MODAIS CONTROLE DE HORARIOS](https://github.com/user-attachments/assets/7d51beae-a21d-40aa-b413-55d3ab419f09)
+<h3 align="center">Histórico de clientes</h3>
 
+<p align="center"> O histórico apresenta todos os atendimentos realizados, oferecendo uma visão detalhada do relacionamento com cada cliente e facilitando o acompanhamento de serviços anteriores. </p>
 
-### Páginas de Histórico dos Clientes 
+<p align="center">
+  <img src="img/template-1/Histórico%20Clientes.png" alt="Histórico de clientes">
+</p>
 
-Páginas destinadas a visualização dos clientes que já agendaram com o profissional e os serviços agendados. 
+<p align="center">
+  <img src="img/template-1/Histórico%20Clientes%20-%20cliente.png" alt="Histórico de clientes">
+</p>
 
-![PAG HISTORICO DE CLIENTES](https://github.com/user-attachments/assets/0197643f-acf5-4f07-b5b2-10bb36bc3703)
-![PAG DADOS DO CLIENTE](https://github.com/user-attachments/assets/22fc22bf-6e5f-451d-9e74-e227d30300db)
-![MODAL FILTROS](https://github.com/user-attachments/assets/b0561ce4-ae0e-422a-a09f-c27bfff1bb54)
+<h3 align="center">Serviços</h3>
 
+<p align="center"> Aqui o usuário pode cadastrar, editar ou remover os serviços oferecidos, além de definir valores, duração e outras informações importantes para o atendimento. </p>
 
-### Páginas dos Serviços 
+<p align="center">
+  <img src="img/template-1/Serviços.png" alt="Perfil - opções">
+</p>
 
-Páginas destinadas a visualização, atualização e cadastro dos serviços disponibilizados pelo profissional.
+<p align="center">
+  <img src="img/template-1/Cadastro de Serviço.png" alt="Perfil - editar perfil">
+</p>
 
-![PAG SERVIÇOS](https://github.com/user-attachments/assets/66eebca4-dadf-470a-b6d9-396edbfeddd7)
-![PAG CADASTRO DE SERVICOS](https://github.com/user-attachments/assets/bdd5c1c3-5f55-42a9-a095-76e50d52a59e)
-![PAG ATUALIZAR SERVICO](https://github.com/user-attachments/assets/3ea389b3-0da0-4eab-9a6e-ed38dc25d523)
+<p align="center">
+  <img src="img/template-1/Editar serviço.png" alt="Perfil - configurações">
+</p>
 
+<h3 align="center">Perfil e configurações</h3>
 
-### Páginas Perfil e suas COnfigurações 
-
-Páginas destinadas a atualização de dados cadastrais, configuração do aplicativo e cadastro e visualização de métodos de pagamento.
-
-![PAG PERFIL](https://github.com/user-attachments/assets/fcc06015-93cc-41b3-955b-9ad89b246d71)
-![PAG ATUALIZAR DADOS](https://github.com/user-attachments/assets/1f053448-9121-4c3c-828d-bee31c840a8e)
-![PAG CONFIGURACOES](https://github.com/user-attachments/assets/d69f1b64-e4b6-4811-ae44-1ad864265e99)
-![MODAIS CONFIGURACOES](https://github.com/user-attachments/assets/0b239061-7cb4-40a2-8919-1048e825bbdf)
-![PAG METODOS DE PAGAMENTO](https://github.com/user-attachments/assets/0723d9dd-ea83-4037-914e-f270c2d9612e)
-![PAG CADASTRAR METODO](https://github.com/user-attachments/assets/07a8b1d8-0537-44a8-9d2a-dba970d2b77a)
-![MODAIS METODOS DE PAGAMENTO](https://github.com/user-attachments/assets/3b2755c7-6139-493b-8c95-aadc4e645fda)
-
-
-
-## Planit - Clientes  
-
-### Página Inicial 
-
-![PAG INICIAL](https://github.com/user-attachments/assets/f0fe0e69-3f28-4fd8-8214-f2c1638681a1)
-
-
-### Páginas de Login e Cadastro
-
-O método de login com a conta do Google é a principal opção para os processos de login e cadastro. No entanto, também é possível realizar o login e o cadastro por meio de um formulário padrão.
-
-![PAG LOGIN-CADASTRO](https://github.com/user-attachments/assets/5d7bfcbb-8218-4a9b-8a1a-4152923192e5)
-![FORM CADASTRO](https://github.com/user-attachments/assets/16557aec-3930-4fe6-ad54-dd9d174717e7)
-![image](https://github.com/user-attachments/assets/bb978fb2-16ac-481f-8f7f-abe3a9aab9df)
+<p align="center"> No perfil, é possível editar informações pessoais, configurar preferências do sistema e visualizar o perfil profissional, que pode ser exibido para os clientes. </p>
 
 
-### Páginas do Agendamento 
+<p align="center">
+  <img src="img/template-1/Perfil%20-%20opções.png" alt="Perfil - opções">
+</p>
 
-Páginas que permite que o cliente agende um serviço com o profissional de acordo com os horários disponibilizados pelo mesmo. 
+<p align="center">
+  <img src="img/template-1/Perfil%20-%20editar%20perfil.png" alt="Perfil - editar perfil">
+</p>
 
-![PAG AGENDAMENTO - CLIENTE](https://github.com/user-attachments/assets/6d948ccc-633c-4b49-b60c-5a4d3d1e5a2f)
-![PAG AGENDAMENTO - CLIENTE 2](https://github.com/user-attachments/assets/ea186cdd-ddd5-4db7-bd1c-8edaa3d5efee)
+<p align="center">
+  <img src="img/template-1/Perfil%20-%20configurações.png" alt="Perfil - configurações">
+</p>
 
+<p align="center">
+  <img src="img/template-1/Perfil%20-%20profissional.png" alt="Perfil - profissional">
+</p>
 
-### Homepage 
+<br>
+<h1 align="center">Guia de Estilo</h2>
 
-Página que permite a visualização, reagendamento e cancelamento do serviço agendado. 
-
-![HOMEPAGE CLIENTE](https://github.com/user-attachments/assets/25d2958b-2d1a-40d4-8619-f2f71ad9ec0c)
-![image](https://github.com/user-attachments/assets/a5de7557-a1b1-449d-9930-43f127217598)
-
-
-
-
-
+<p align="center">
+  <img src="img/template-1/Style Guide.png" alt="Guia de Estilo">
+</p>
+<p>Desc.: contém os <strong>botões, ícones do react, cores e fontes</strong> usados para mantermos o padrão na aplicação.</p>
