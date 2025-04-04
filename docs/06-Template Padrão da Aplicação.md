@@ -21,10 +21,6 @@ Layout padrão da aplicação que será utilizado em todas as páginas com a def
 <h3 align="center">Páginas de Login e Cadastro</h3>
 
 <p align="center">
-  O método de login com a conta do Google é a principal opção para os processos de login e cadastro. No entanto, também é possível realizar o login e o cadastro por meio de um formulário padrão.
-</p>
-
-<p align="center">
   <img src="img/template-1/Login%20ou%20cadastro.png" alt="PAG LOGIN-CADASTRO">
 </p>
 
