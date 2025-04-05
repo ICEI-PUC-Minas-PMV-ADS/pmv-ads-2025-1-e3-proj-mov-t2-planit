@@ -101,6 +101,15 @@ O Indicador de Desempenho pode ser acessado clicando [aqui](https://app.diagrams
 
 ![Indicadores de Desempenho](/docs/img/indicadorDesempenho-Planit.png)
 
+
+## Gráficos dos indicadores de desempenho - KPI
+
+O Gráfico dos Indicadores de Desempenho (também conhecido como Dashboard de KPIs - Key Performance Indicators) serve para monitorar, analisar e visualizar o desempenho de processos, projetos ou áreas de uma empresa, com base em métricas pré-definidas.
+
+O Grafico dos Indicadores de Desempenho pode ser acessado clicando [aqui](https://docs.google.com/spreadsheets/d/1DBEjUpJnMg3StEpCuKx9wlCFKoltcQn24syhuE696XE/edit?usp=sharing). Abaixo, é possível ver uma representação dele. 
+
+![Gráfico](/docs/img/GraficoKPI-Planit.png)
+
 ## Requisitos
 
 As tabelas que se seguem apresentam os requisitos funcionais e não funcionais que detalham o escopo do projeto.
