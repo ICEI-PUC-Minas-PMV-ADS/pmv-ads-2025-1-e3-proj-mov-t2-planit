@@ -11,7 +11,7 @@ Para cada requisito funcional, pode ser entregue um artefato desse tipo
 |------|-------------------------|----------------------|------------------------|
 |RF-001| A aplicação deve permitir criar uma conta | - |    Maria / Mauricio |
 |RF-002| A aplicação deve permitir a exclusão da conta  | - |   Estefany   |
-|RF-003| A aplicação deve permitir editar o perfil do usuário | - |    Mauricio    |
+|RF-003| A aplicação deve permitir editar o perfil do usuário | - |    Estefany / Victor   |
 |RF-004| A aplicação deve permitir integração com outras agendas digitais | - |  Emyli
 |RF-005| A aplicação deve permitir consultar históricos de agendamentos  | - |   Victor   |
 |RF-006| A aplicação deve permitir que o usuário gerencie horários disponíveis  | - |   Emyli    |
