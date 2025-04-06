@@ -8,7 +8,7 @@ Definição de como o software é estruturado em termos dos componentes que faze
 
 ## Diagrama de Classes
 
-![Diagrama de Classes](img/Banco de dados (Plan It).svg)
+![Diagrama de Classes](img/diagrama-de-classe.svg)
 
 ## Modelo ER
 Diagrama ER classe
