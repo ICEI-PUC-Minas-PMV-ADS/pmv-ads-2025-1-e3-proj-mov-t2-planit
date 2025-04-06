@@ -29,9 +29,49 @@ Entregar um arquivo banco.sql contendo os scripts de criação das tabelas do ba
 
 ## Tecnologias Utilizadas
 
-Descreva aqui qual(is) tecnologias você vai usar para resolver o seu problema, ou seja, implementar a sua solução. Liste todas as tecnologias envolvidas, linguagens a serem utilizadas, serviços web, frameworks, bibliotecas, IDEs de desenvolvimento, e ferramentas.
+Linguagens e Ambiente de Execução
 
-Apresente também uma figura explicando como as tecnologias estão relacionadas ou como uma interação do usuário com o sistema vai ser conduzida, por onde ela passa até retornar uma resposta ao usuário.
+JavaScript (ES6+): A linguagem principal para desenvolvimento do front-end.
+
+React: Biblioteca para a construção da interface de usuário.
+
+Frameworks e Plataformas
+
+React Native: Framework para desenvolvimento de aplicativos móveis nativos usando JavaScript.
+
+Expo: Ferramenta e plataforma que agiliza o desenvolvimento, teste e publicação de aplicativos React Native.
+
+Bibliotecas e Pacotes
+
+@react-navigation/native, @react-navigation/native-stack e @react-navigation/stack: Bibliotecas para gerenciamento de rotas e navegação entre telas no aplicativo.
+
+expo-auth-session: Biblioteca para autenticação e gerenciamento de sessões.
+
+@react-native-google-signin/google-signin: Integração para permitir o login utilizando a conta Google.
+
+expo-crypto: Utilizada para operações de criptografia dentro do app.
+
+expo-status-bar: Componente para gerenciar a status bar dos dispositivos de forma padronizada.
+
+react-native-safe-area-context e react-native-screens: Auxiliam na criação de layouts que respeitam as áreas seguras dos dispositivos e otimizam a transição entre telas.
+
+react-native-vector-icons: Permite a utilização de ícones vetoriais customizáveis, muito comuns em interfaces modernas.
+
+@expo/metro-runtime: Parte do ecossistema Expo para gerenciamento do bundle via Metro bundler.
+
+Ferramentas e IDEs de Desenvolvimento
+
+Visual Studio Code: Uma das IDEs mais populares para desenvolvimento JavaScript/React Native, que pode ser utilizada para editar e depurar o código.
+
+Node.js: Ambiente de execução para JavaScript no back-end e gerenciamento de pacotes via npm ou yarn.
+
+Git e GitHub: Controle de versão e hospedagem do repositório, facilitando a colaboração e o versionamento do projeto.
+
+Serviços Web e de Build
+
+Expo CLI: Utilizada para iniciar, desenvolver e testar o aplicativo em diversos dispositivos e ambientes (Android, iOS e Web).
+
+Metro Bundler: Bundler padrão utilizado pelo React Native para empacotar os módulos JavaScript do aplicativo.
 
 ## Hospedagem
 
