@@ -29,19 +29,19 @@ Entregar um arquivo banco.sql contendo os scripts de criação das tabelas do ba
 
 ## Tecnologias Utilizadas
 
-Linguagens e Ambiente de Execução
+**Linguagens e Ambiente de Execução**
 
 JavaScript (ES6+): A linguagem principal para desenvolvimento do front-end.
 
 React: Biblioteca para a construção da interface de usuário.
 
-Frameworks e Plataformas
+**Frameworks e Plataformas**
 
 React Native: Framework para desenvolvimento de aplicativos móveis nativos usando JavaScript.
 
 Expo: Ferramenta e plataforma que agiliza o desenvolvimento, teste e publicação de aplicativos React Native.
 
-Bibliotecas e Pacotes
+**Bibliotecas e Pacotes**
 
 @react-navigation/native, @react-navigation/native-stack e @react-navigation/stack: Bibliotecas para gerenciamento de rotas e navegação entre telas no aplicativo.
 
@@ -59,7 +59,7 @@ react-native-vector-icons: Permite a utilização de ícones vetoriais customiz�
 
 @expo/metro-runtime: Parte do ecossistema Expo para gerenciamento do bundle via Metro bundler.
 
-Ferramentas e IDEs de Desenvolvimento
+**Ferramentas e IDEs de Desenvolvimento**
 
 Visual Studio Code: Uma das IDEs mais populares para desenvolvimento JavaScript/React Native, que pode ser utilizada para editar e depurar o código.
 
@@ -67,7 +67,7 @@ Node.js: Ambiente de execução para JavaScript no back-end e gerenciamento de p
 
 Git e GitHub: Controle de versão e hospedagem do repositório, facilitando a colaboração e o versionamento do projeto.
 
-Serviços Web e de Build
+**Serviços Web e de Build**
 
 Expo CLI: Utilizada para iniciar, desenvolver e testar o aplicativo em diversos dispositivos e ambientes (Android, iOS e Web).
 
