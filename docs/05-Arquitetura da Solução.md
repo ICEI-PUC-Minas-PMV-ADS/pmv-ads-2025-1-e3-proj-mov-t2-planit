@@ -17,11 +17,7 @@ Diagrama ER classe
 
 ## Esquema Relacional
 
-O Esquema Relacional corresponde à representação dos dados em tabelas juntamente com as restrições de integridade e chave primária.
- 
-As referências abaixo irão auxiliá-lo na geração do artefato “Esquema Relacional”.
-
-> - [Criando um modelo relacional - Documentação da IBM](https://www.ibm.com/docs/pt-br/cognos-analytics/10.2.2?topic=designer-creating-relational-model)
+Link para visualização do Esquema Relacional : https://dbdocs.io/mauricio.neto.azevedo/PlanIt-Database?view=relationships
 
 ## Modelo Físico
 
@@ -66,6 +62,8 @@ Visual Studio Code: Uma das IDEs mais populares para desenvolvimento JavaScript/
 Node.js: Ambiente de execução para JavaScript no back-end e gerenciamento de pacotes via npm ou yarn.
 
 Git e GitHub: Controle de versão e hospedagem do repositório, facilitando a colaboração e o versionamento do projeto.
+
+Figma: Criação do design da interface das paginas, permitindo melhor experiência durante o planejamento visual
 
 **Serviços Web e de Build**
 
