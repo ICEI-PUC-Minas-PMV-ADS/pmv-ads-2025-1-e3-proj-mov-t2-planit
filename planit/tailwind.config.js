@@ -1,7 +1,13 @@
 module.exports = {
     content: [
-      "./App.{js,jsx,ts,tsx}",
-      "./src/**/*.{js,jsx,ts,tsx}"
+      module.exports = {
+        content: ["./**/*.{html,js}"], // ou ajuste conforme a estrutura do seu projeto
+        theme: {
+          extend: {},
+        },
+        plugins: [],
+      }
+      
     ],
     theme: {
       extend: {
