@@ -40,7 +40,7 @@ export default StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    backgroundColor: '#FFEC00',
+    backgroundColor: '#E1FF00',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',

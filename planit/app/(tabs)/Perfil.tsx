@@ -21,23 +21,23 @@ const Perfil = () => {
       {/*opções*/}
       <View className="mx-3">
         <Item
-          icon={<Ionicons name="person" size={22} color={Colors.preto} />}
+          icon={<Ionicons name="person" size={15} color={Colors.preto} />}
           label="Conta"
         />
         <Item
-          icon={<Feather name="settings" size={22} color={Colors.preto} />}
+          icon={<Feather name="settings" size={15} color={Colors.preto} />}
           label="Configurações"
         />
         <Item 
-          icon={<Feather name="share-2" size={22} color={Colors.preto} />}
+          icon={<Feather name="share-2" size={15} color={Colors.preto} />}
           label="Compartilhar Agenda"
         />
         <Item
-          icon={<MaterialIcons name="payment" size={22} color={Colors.preto} />}
+          icon={<MaterialIcons name="payment" size={15} color={Colors.preto} />}
           label="Métodos de Pagamento"
         />
         <Item
-          icon={<MaterialIcons name="logout" size={22} color={Colors.preto} />}
+          icon={<MaterialIcons name="logout" size={15} color={Colors.preto} />}
           label="Logout"
           textColor="text-error"
         />

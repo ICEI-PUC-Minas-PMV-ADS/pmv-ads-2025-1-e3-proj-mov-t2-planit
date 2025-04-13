@@ -1,10 +1,9 @@
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { router } from 'expo-router'
 
 
 export default function WelcomeScreen() {
-    const navigation = useNavigation()
   return (
     <View style={styles.container}>
       <View style={styles.content}>
@@ -20,13 +19,9 @@ export default function WelcomeScreen() {
         </View>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={() => { navigation.navigate('SignupLogin') }}>
+      <TouchableOpacity style={styles.button} onPress={() => { router.push('/loginGoogle') }}>
         <Text style={styles.buttonText}>Comece Agora</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate('UserProfile')}>
-        <Text>Ver Perfil (Botão para teste, depois remover) </Text>
-      </TouchableOpacity>
-
     </View>
   )
 }

@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react'; 
-import { useNavigation } from '@react-navigation/native';
 import { View, Text, TouchableOpacity, Modal, Image } from 'react-native';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
-import Ionicons from 'react-native-vector-icons/Ionicons'; 
-import styles from './styles';
+import styles from '../styles/styles';
+import { router } from 'expo-router';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function AuthScreen() {
   const [modalVisible, setModalVisible] = useState(true);
-  const navigation = useNavigation();
 
   const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId: 'YOUR_EXPO_CLIENT_ID.apps.googleusercontent.com',
+    //expoClientId: 'YOUR_EXPO_CLIENT_ID.apps.googleusercontent.com',
     androidClientId: '776698076336-iaad3o4adm40u2assbmkpl8e0kjvqghq.apps.googleusercontent.com',
     iosClientId: 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com',
     webClientId: '776698076336-7mtm2klaq1ptps79ve9gj0kpftf3hh8i.apps.googleusercontent.com',
@@ -25,7 +23,7 @@ export default function AuthScreen() {
       const { authentication } = response;
       console.log('Token de acesso do Google:', authentication?.accessToken);
       setModalVisible(false);
-      navigation.navigate('Home');
+      router.push('./');
     }
   }, [response]);
 
@@ -41,7 +39,7 @@ export default function AuthScreen() {
           <View style={styles.modalContent}>
             <TouchableOpacity
               style={styles.closeButton}
-              onPress={() => navigation.goBack()}
+              onPress={() => router.back()}
             >
               <Text style={styles.closeText}>×</Text>
             </TouchableOpacity>
@@ -52,7 +50,7 @@ export default function AuthScreen() {
 
             <TouchableOpacity 
               style={styles.button} 
-              onPress={() => navigation.navigate('RegisterScreen')}
+              onPress={() => router.push('/(tabs)')}
             >
               <Text style={styles.buttonText}>Continuar com e-mail</Text>
             </TouchableOpacity>
@@ -66,7 +64,7 @@ export default function AuthScreen() {
                 disabled={!request}
               >
                 <Image
-                  source={require('../../assets/google.png')}
+                  source={require('../assets/images/google.png')}
                   style={styles.socialIcon}
                 />
               </TouchableOpacity>
