@@ -2,11 +2,11 @@ import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
 import React from "react";
 import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
+import { router } from "expo-router";
 
 const Perfil = () => {
   return (
     <ScrollView className=" bg-white px-4 pt-10">
-
       {/*foto do perfil*/}
       <View className="flex flex-row justify-start items-center my-6 ml-3">
         <Image
@@ -23,12 +23,18 @@ const Perfil = () => {
         <Item
           icon={<Ionicons name="person" size={15} color={Colors.preto} />}
           label="Conta"
+          onPress={() => {
+            router.push("/Perfil/Conta");
+          }}
         />
         <Item
           icon={<Feather name="settings" size={15} color={Colors.preto} />}
           label="Configurações"
+          onPress={() => {
+            router.push("/Perfil/Configuracao");
+          }}
         />
-        <Item 
+        <Item
           icon={<Feather name="share-2" size={15} color={Colors.preto} />}
           label="Compartilhar Agenda"
         />
@@ -51,13 +57,18 @@ const Item = ({
   icon,
   label,
   textColor = "text-black",
+  onPress,
 }: {
   icon: React.ReactNode;
   label: string;
   textColor?: string;
+  onPress?: () => void;
 }) => {
   return (
-    <TouchableOpacity className="flex-row items-center justify-between py-7 border-b border-gray-100">
+    <TouchableOpacity
+      onPress={onPress}
+      className="flex-row items-center justify-between py-7 border-b border-gray-100"
+    >
       <View className="flex flex-row justify-center items-center">
         <View className="bg-violet-100 flex justify-center items-center w-10 h-10 rounded-2xl mr-3">
           {icon}

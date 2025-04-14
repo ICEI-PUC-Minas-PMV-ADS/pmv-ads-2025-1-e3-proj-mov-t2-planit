@@ -5,7 +5,7 @@ const Botao = () => {
 
   return (
     <TouchableOpacity
-      className="bg-principal w-[107px] container h-[44px] flex items-center justify-center rounded-lg"
+      className="bg-principal w-[107px] h-[44px] flex items-center justify-center rounded-lg"
       onPress={onPress}
     >
       <Text className="text-white font-inter font-semibold">Salvar</Text>
