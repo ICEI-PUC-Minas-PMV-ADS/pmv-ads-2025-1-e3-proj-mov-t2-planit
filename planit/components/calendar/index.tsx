@@ -1,5 +1,4 @@
 import { View, Text } from "react-native"
-import '../../styles/global.css'
 
 export function Calendar() {
     return (
