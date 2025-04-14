@@ -1,11 +1,15 @@
 import { View, Text } from 'react-native'
 import React from 'react'
-import { Calendar } from '../../components/calendar'
+import Calendario from "../../components/calendar/index"
 
 const Calendário = () => {
   return (
     <View>
-      <Calendar /> 
+      <Calendario /> 
+
+      <View>
+        
+      </View>
     </View>
   )
 }

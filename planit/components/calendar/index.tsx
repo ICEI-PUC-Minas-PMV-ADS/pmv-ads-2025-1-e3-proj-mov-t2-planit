@@ -1,10 +1,28 @@
-import { View, Text } from "react-native"
+import React from 'react';
+import { View, StyleSheet, Alert } from 'react-native';
+import { Calendar, DateData } from 'react-native-calendars';
+import { Colors } from '../../constants/Colors'
 
-export function Calendar() {
+
+const Calendario: React.FC = () => {
+    const selecionarData = (day: DateData) => {
+        Alert.alert('Data Selecionada', day.dateString);
+    };
+
     return (
-        <View className="container bg-principal shadow-zinc-800">
-            
+        <View>
+            <Calendar 
+                onDayPress= {selecionarData}
+                theme= {{
+                    selectedDayBackgroundColor: Colors.principal,
+                    todayTextColor: Colors.principal,
+                    arrowColor: Colors.principal,
+                    selectedDayTextColor: Colors.secundaria,
+                }}
+            />
         </View>
-    )
-}
+    );
+};
 
+
+export default Calendario; 
