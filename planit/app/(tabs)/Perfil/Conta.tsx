@@ -20,79 +20,84 @@ const Conta = () => {
       {/*input*/}
       <View className="flex items-center">
         {/*input nome e sobrenome*/}
-        <View className="mb-4">
+        <View className="mb-4 ">
           <View className="flex items-start ">
-            <Text>Nome Completo</Text>
+            <Text className="mb-3 ml-1">Nome completo</Text>
           </View>
           <View className="flex-row items-center">
             <TextInput
-              className="w-[171px] h-[41px] bg-white border-2
-          rounded-lg border-gray-300 mr-3"
+              className="w-[171px] h-[41px] bg-transparent border-b-2 border-gray-100 mr-3"
               placeholder="Nome"
             ></TextInput>
             <TextInput
-              className="w-[171px] h-[41px] bg-white border-2
-          rounded-lg border-gray-300"
+              className="w-[171px] h-[41px] bg-transparent border-b-2 border-gray-100"
               placeholder="Sobrenome"
             ></TextInput>
           </View>
         </View>
         {/*fim input nome e sobrenome*/}
-        <View className="flex-col flex mb-4 justify-start items-start">
-          <Text>
-            <Feather name="info" size={15} color={Colors.preto} />
-            Descreva seu trabalho
-            <TextInput
-              className="w-[352px] h-[104px] bg-white border-2
-          rounded-lg border-gray-300"
-              placeholder="Diga nos sobre o seu trabalho."
-            ></TextInput>
-          </Text>
-        </View>
-
         <View className="mb-4">
-          <View className="">
-            <Text>Celular</Text>
+          <View className="flex-row items-center mb-3">
+            <Feather
+              name="info"
+              size={15}
+              color={Colors.preto}
+              className="mr-1"
+            />
+            <Text className="">Descreva seu trabalho</Text>
           </View>
           <View className="flex-row items-center">
             <TextInput
-              className="w-[352px] h-[41px] bg-white border-2
-          rounded-lg border-gray-300"
+              className="w-[352px] h-[80px] bg-transparent border-b-2 border-gray-100"
+              placeholder="Fale sobre seu trabalho em poucas palavras"
+              textAlignVertical="top"
+            ></TextInput>
+          </View>
+        </View>
+
+        <View className="mb-4">
+          <View className="ml-1">
+            <Text className="mb-3">Celular</Text>
+          </View>
+          <View className="flex-row items-center">
+            <TextInput
+              className="w-[352px] h-[41px] bg-transparent border-b-2 border-gray-100"
               placeholder="Telefone celular"
             ></TextInput>
           </View>
         </View>
         <View className="mb-4">
-          <View className="">
-            <Text>
-              <Feather name="info" size={15} color={Colors.preto} />
-              E-mail
-            </Text>
+          <View className="flex-row items-center mb-3">
+            <Feather
+              name="info"
+              size={15}
+              color={Colors.preto}
+              className="mr-1"
+            />
+            <Text className="">E-mail</Text>
           </View>
           <View className="flex-row items-center">
             <TextInput
-              className="w-[352px] h-[41px] bg-white border-2
-          rounded-lg border-gray-300"
+              className="w-[352px] h-[41px] bg-transparent border-b-2 border-gray-100"
               placeholder="E-mail"
             ></TextInput>
           </View>
         </View>
         <View className="mb-4">
-          <View className="">
-            <Text>
-              <Feather name="info" size={15} color={Colors.preto} />
-              Profissão
-            </Text>
+          <View className="flex-row items-center mb-3">
+            <Feather
+              name="info"
+              size={15}
+              color={Colors.preto}
+              className="mr-1"
+            />
+            <Text className="">Profissão</Text>
           </View>
           <View className="flex-row items-center">
             <TextInput
-              className="w-[352px] h-[41px] bg-white border-2
-          rounded-lg border-gray-300"
+              className="w-[352px] h-[41px] bg-transparent border-b-2 border-gray-100"
               placeholder="Profissão"
             ></TextInput>
-          </View>
-          <View className="flex mt-5 items-end">
-            <Botao />
           </View>
         </View>
       </View>
