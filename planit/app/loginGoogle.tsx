@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Modal, Image } from "react-native";
 import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
 import styles from "../styles/styles";
-import { router } from "expo-router";
+import { router,useRouter } from "expo-router";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -53,7 +53,7 @@ export default function AuthScreen() {
 
             <TouchableOpacity
               style={styles.button}
-              onPress={() => router.push("/(tabs)")}
+              onPress={() => router.push("/Register")}
             >
               <Text style={styles.buttonText}>Continuar com e-mail</Text>
             </TouchableOpacity>
