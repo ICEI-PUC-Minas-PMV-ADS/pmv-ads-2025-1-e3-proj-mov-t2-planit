@@ -6,31 +6,31 @@ const clientes = [
     id: '1',
     nome: 'João Silva',
     ultimaVisita: '10 Mar 2024',
-    imagem: require('../assets/joao.png'),
+    imagem: require('../../assets/images/icon.png'),
   },
   {
     id: '2',
     nome: 'Ana Paula',
     ultimaVisita: '06 Mar 2024',
-    imagem: require('../assets/ana.png'),
+    imagem: require('../../assets/images/icon.png'),
   },
   {
     id: '3',
     nome: 'Maria Lopes',
     ultimaVisita: '28 Fev 2024',
-    imagem: require('../assets/maria.png'),
+    imagem: require('../../assets/images/icon.png'),
   },
   {
     id: '4',
     nome: 'Junior Oliveira',
     ultimaVisita: '23 Fev 2024',
-    imagem: require('../assets/junior.png'),
+    imagem: require('../../assets/images/icon.png'),
   },
   {
     id: '5',
     nome: 'Marco Antônio',
     ultimaVisita: '15 Fev 2024',
-    imagem: require('../assets/marco.png'),
+    imagem: require('../../assets/images/icon.png'),
   },
 ];
 

@@ -27,6 +27,14 @@ export default function WelcomeScreen() {
         }}
       >
         <Text style={styles.buttonText}>Comece Agora</Text>
+      </TouchableOpacity> 
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => {
+          router.push("/(tabs)/Clientes");
+        }}
+      >
+        <Text style={styles.buttonText}>Comece Agora</Text>
       </TouchableOpacity>
     </View>
   );
