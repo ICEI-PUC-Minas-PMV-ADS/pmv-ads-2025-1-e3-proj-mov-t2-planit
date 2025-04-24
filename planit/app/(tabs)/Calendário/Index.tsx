@@ -1,16 +1,17 @@
-import { View, Text, ScrollView, } from 'react-native'
-import React from 'react'
-import Calendario from "../../components/calendar/index"
+import { View, Text, ScrollView, } from 'react-native';
+import React from 'react';
+import Calendario from "../../../components/calendar/index";
+import EditBtn from "../../../components/button/editButton";
 import { Ionicons } from "@expo/vector-icons";
 
 const Calendário = () => {
   return (
-    <View className='flex flex-1'>
-      <View>
-        <Calendario /> 
-      </View>
-
+    <View className='flex flex-1 bg-white'>
       <ScrollView className='h-auto'>
+          <View className='mt-6 mb-5'>
+            <Calendario /> 
+          </View>
+
           <View className='bg-white'>
             <View className='m-3 p-3 border border-neutral-200 rounded-2xl'>
               <Text className='text-center text-xl mb-8'>Horários Disponíveis</Text>
@@ -34,7 +35,6 @@ const Calendário = () => {
               </View>
           </View>
           </View>
-
           
           <View className='bg-white'>
             <View className='m-3 p-3 border border-neutral-200 rounded-2xl'>
@@ -59,7 +59,6 @@ const Calendário = () => {
               </View>
           </View>
           </View>
-
           
           <View className='bg-white'>
             <View className='m-3 p-3 border border-neutral-200 rounded-2xl'>
@@ -84,11 +83,13 @@ const Calendário = () => {
               </View>
             </View>
           </View>
+
+          <View className='mt-6 mb-8 flex flex-row flex-wrap justify-evenly'>
+            <EditBtn />
+          </View>
         </ScrollView>
     </View>
   )
 }
-
-
 
 export default Calendário
