@@ -53,7 +53,7 @@ export default function AuthScreen() {
 
             <TouchableOpacity
               style={styles.button}
-              onPress={() => router.push("/Register")}
+              onPress={() => router.replace("/Register")}
             >
               <Text style={styles.buttonText}>Continuar com e-mail</Text>
             </TouchableOpacity>
