@@ -17,9 +17,9 @@ const _layout = () => {
         }}
       />
       <Tabs.Screen
-        name="Calendário"
+        name="Calendario"
         options={{
-          title: "Calendário",
+          title: "Calendario",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Entypo name="calendar" size={16} color={Colors.iconNavDefault} />

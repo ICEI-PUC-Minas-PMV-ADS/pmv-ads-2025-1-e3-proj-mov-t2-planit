@@ -5,6 +5,7 @@ export default function CalendarioLayout() {
     return (
         <Stack> 
             <Stack.Screen name="Index" options={{ headerShown: false }} />
+            <Stack.Screen name="Agenda" />
         </Stack>
     )
 };
