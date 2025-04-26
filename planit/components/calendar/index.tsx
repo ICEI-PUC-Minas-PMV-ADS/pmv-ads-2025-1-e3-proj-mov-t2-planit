@@ -4,7 +4,7 @@ import { Calendar, DateData } from 'react-native-calendars';
 import { Colors } from '../../constants/Colors'
 
 
-const Calendario: React.FC = () => {
+const CompCalendar: React.FC = () => {
     const selecionarData = (day: DateData) => {
         Alert.alert('Data Selecionada', day.dateString);
     };
@@ -25,4 +25,4 @@ const Calendario: React.FC = () => {
 };
 
 
-export default Calendario; 
+export default CompCalendar; 

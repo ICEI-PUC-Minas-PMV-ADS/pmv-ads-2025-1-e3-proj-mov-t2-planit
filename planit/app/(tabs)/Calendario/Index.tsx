@@ -1,15 +1,16 @@
 import { View, Text, ScrollView, } from 'react-native';
 import React from 'react';
-import Calendario from "../../../components/calendar/index";
-import EditBtn from "../../../components/button/editButton";
+import CompCalendar from "../../../components/calendar/index";
+import PinkBtn from "../../../components/button/pinkBtn";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from 'expo-router'; 
 
-const Calendário = () => {
+const Calendario = () => {
   return (
     <View className='flex flex-1 bg-white'>
       <ScrollView className='h-auto'>
           <View className='mt-6 mb-5'>
-            <Calendario /> 
+            <CompCalendar /> 
           </View>
 
           <View className='bg-white'>
@@ -85,11 +86,11 @@ const Calendário = () => {
           </View>
 
           <View className='mt-6 mb-8 flex flex-row flex-wrap justify-evenly'>
-            <EditBtn />
+            <PinkBtn title="Editar Agenda" onPress={() => { router.push('/(tabs)/Calendario/Agenda') }} />
           </View>
         </ScrollView>
     </View>
   )
 }
 
-export default Calendário
+export default Calendario
