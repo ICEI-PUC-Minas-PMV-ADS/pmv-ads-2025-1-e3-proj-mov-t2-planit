@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Feather } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
+import { useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 
 interface HeaderProps {
@@ -17,6 +18,7 @@ const Header = ({
 }: HeaderProps) => {
   const [saudacao, setGreeting] = useState('Bom dia');
   const router = useRouter();
+  const navigation = useNavigation<any>();
 
   useEffect(() => {
     const updateGreeting = () => {
