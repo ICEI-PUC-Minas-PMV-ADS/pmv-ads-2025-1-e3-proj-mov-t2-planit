@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Feather } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
-import { useNavigation } from "@react-navigation/native";
-import { TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 
-const Header = ({ userName = "Iriana Darua" }) => {
+interface HeaderProps {
+  userName?: string;
+  consultasHoje?: number;
+  consultasSemana?: number;
+}
+
+const Header = ({
+  userName = "Iriana Darua",
+  consultasHoje = 12,
+  consultasSemana = 48
+}: HeaderProps) => {
   const [saudacao, setGreeting] = useState('Bom dia');
   const router = useRouter();
-  const navigation = useNavigation<any>();
 
   useEffect(() => {
     const updateGreeting = () => {
@@ -31,7 +38,7 @@ const Header = ({ userName = "Iriana Darua" }) => {
   }, []);
 
   // Componente de Calendário
-  const CalendarioSemana = () => {
+  const renderCalendarioSemana = () => {
     const hoje = new Date();
     const atualDiaDaSemana = hoje.getDay();
     const AtualDia = hoje.getDate();
@@ -82,6 +89,29 @@ const Header = ({ userName = "Iriana Darua" }) => {
     );
   };
 
+  const renderResumoConsultas = () => {
+    return (
+      <View className="flex-row mx-4 my-3 rounded-lg shadow-s py-4">
+        <View className="flex-1 bg-secundaria p-5 rounded-xl mr-2 ">
+          <Text className="text-1xl text-pink-500 mb-1">Hoje</Text>
+          <Text className="text-4xl font-bold  text-pink-500 mb-1 p-1 ">
+            {consultasHoje}
+          </Text>
+          <Text className="text-1xl text-pink-500">Consultas</Text>
+        </View>
+
+        <View className="flex-1 bg-pink-100 p-5 rounded-xl ml-2">
+          <Text className="text-1x1 text-pink-500 mb-1">Esta semana</Text>
+          <Text className="text-4xl font-bold text-pink-500 mb-1 p-1">
+            {consultasSemana}
+          </Text>
+          <Text className="text-1x1 text-pink-500">Consultas</Text>
+        </View>
+      </View>
+
+    )
+  }
+
   return (
     <View className="bg-gray-50 border-b border-gray-200">
       <View className="flex justify-between flex-row items-center px-6 py-4">
@@ -111,10 +141,15 @@ const Header = ({ userName = "Iriana Darua" }) => {
           </View>
         </View>
       </View>
+      {renderCalendarioSemana()}
+      {renderResumoConsultas()}
 
-      <CalendarioSemana />
     </View>
+
+
   );
+
+
 };
 
 export default Header;
