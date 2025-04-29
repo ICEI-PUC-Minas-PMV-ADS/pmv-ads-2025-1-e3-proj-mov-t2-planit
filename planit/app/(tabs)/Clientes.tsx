@@ -120,7 +120,6 @@ const clientes: Cliente[] = [
         { titulo: 'Sessão Não Compareceu', data: '01 Fev 2024' },
       ],
     },
-    // ... você já tinha os 10, 11 e 12 para "Em andamento" ...
   ];
   
 
@@ -290,22 +289,35 @@ export default function Cliente() {
 const styles = StyleSheet.create({
   container: { flex:1, backgroundColor:'#fafafa', padding:20 },
   titulo:    { fontSize:22,fontWeight:'700',textAlign:'center',marginBottom:20 },
-  filtroRapido: { flexDirection:'row',justifyContent:'center',marginBottom:20 },
-  botaoFiltro: { backgroundColor:'#e0e0e0',paddingHorizontal:16,paddingVertical:8,borderRadius:999,marginHorizontal:6 },
+  filtroRapido:   { flexDirection:'row', justifyContent:'center', marginBottom:24 /* ↑ mais espaço abaixo */ },
+  botaoFiltro:    { backgroundColor:'#e0e0e0', paddingHorizontal:16, paddingVertical:8, borderRadius:999, marginHorizontal:6 },
   botaoFiltroAtivo: { backgroundColor:'#ff4081' },
   txtFiltro: { color:'#333' }, txtFiltroAtivo: { color:'#fff' },
 
   buscaRow: { flexDirection:'row',alignItems:'center',marginBottom:20 },
   iconBtn:  { marginRight:12,padding:8 },
-  menuContent: { backgroundColor:'#fff',borderRadius:12,padding:12,elevation:5 },
+  menuContent:    { backgroundColor:'#fff', borderRadius:12, padding:12, elevation:2 /* ↓ sombra mais suave */ },
   menuTitle:   { fontWeight:'700',fontSize:16,marginBottom:12 },
   menuItem:    { flexDirection:'row',alignItems:'center',marginBottom:12 },
   menuTxt:     { fontSize:14,color:'#374151' },
   inputBusca:  { flex:1,backgroundColor:'#fff',borderColor:'#ddd',borderWidth:1,borderRadius:999,paddingHorizontal:16,paddingVertical:10 },
   separador:   { height:1,backgroundColor:'#e0e0e0',marginBottom:16 },
 
-  card:      { flexDirection:'row',alignItems:'center',backgroundColor:'#fff',padding:16,borderRadius:16,marginBottom:12,justifyContent:'space-between',
-                shadowColor:'#000',shadowOffset:{width:0,height:2},shadowOpacity:0.1,shadowRadius:4,elevation:3 },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1
+  },
+  
   cardInfo:  { flexDirection:'row',alignItems:'center' },
   avatar:    { width:56,height:56,borderRadius:28,marginRight:16,borderWidth:1,borderColor:'#eee' },
   nome:      { fontWeight:'600',fontSize:16 },
