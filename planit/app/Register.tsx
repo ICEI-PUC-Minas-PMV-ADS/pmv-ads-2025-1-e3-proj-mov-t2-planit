@@ -1,12 +1,46 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, BackHandler } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, BackHandler, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useFocusEffect } from '@react-navigation/native'; // IMPORTANTE
+import { useFocusEffect } from '@react-navigation/native'; 
+import { collection, addDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '../firebaseConfig';
+
 
 export default function CadastroScreen() {
-  const router = useRouter();
 
+  const handleCadastro = async () => {
+    if (!nomeCompleto || !email || !senha || !confirmarSenha) {
+      Alert.alert('Erro', 'Preencha todos os campos.');
+      return;
+    }
+  
+    if (senha !== confirmarSenha) {
+      Alert.alert('Erro', 'As senhas não coincidem.');
+      return;
+    }
+  
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+      const user = userCredential.user;
+  
+      await addDoc(collection(db, 'Usuario'), {
+        uid: user.uid,
+        nomeCompleto,
+        email,
+        criadoEm: new Date(),
+      });
+  
+      Alert.alert('Sucesso', 'Usuário cadastrado com sucesso!');
+      router.replace('/(tabs)/Perfil/Conta');
+    } catch (error: any) {
+      console.error('Erro ao cadastrar:', error);
+      Alert.alert('Erro', error.message || 'Erro desconhecido.');
+    }
+  };
+  
+  const router = useRouter();
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -14,6 +48,7 @@ export default function CadastroScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
@@ -78,7 +113,7 @@ export default function CadastroScreen() {
 
         <TouchableOpacity
           className="bg-pink-500 py-3 rounded-full items-center"
-          onPress={() => router.replace("/(tabs)/Perfil")}
+          onPress={handleCadastro}
         >
           <Text className="text-white text-base font-bold">Cadastrar</Text>
         </TouchableOpacity>
@@ -91,5 +126,6 @@ export default function CadastroScreen() {
         </View>
       </View>
     </View>
+
   );
 }
