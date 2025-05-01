@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, ModalProps } from 'react-native'
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { IconProps } from '@expo/vector-icons/build/createIconSet';
+
 
 type ModalBaseProps = ModalProps & {
-    icone?: string,
+    icone?: keyof typeof Ionicons.glyphMap,
     title?: string,
     text?: string,
     onClose?: () => void,
@@ -21,7 +23,7 @@ const ModalBase: React.FC<ModalBaseProps> = ({ icone, title, text, visible, chil
                             <View className='flex flex-wrap flex-row justify-between'>
                                 <View className='bg-pink-50 w-14 h-14 flex flex-row justify-center items-center rounded-full'>
                                     <View  className='bg-pink-100 w-10 h-10 flex flex-row justify-center items-center rounded-full'>
-                                        <Ionicons name='lock-closed-outline' size={20} color="#FF006F"/>
+                                        <Ionicons name={icone as any} size={20} color="#FF006F"/>
                                     </View>
                                 </View>
 
@@ -38,9 +40,7 @@ const ModalBase: React.FC<ModalBaseProps> = ({ icone, title, text, visible, chil
                                 <Text>{text}</Text>
                             </View>
 
-                            <View className='flex flex-wrap flex-row justify-between mt-6'>
-                                {children}
-                            </View>
+                            {children}
                         </View>
                     </View>
                 </Modal>
