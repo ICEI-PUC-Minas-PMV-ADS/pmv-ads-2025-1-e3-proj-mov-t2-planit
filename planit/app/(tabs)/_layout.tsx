@@ -5,47 +5,52 @@ import { Colors } from "../../constants/Colors";
 
 const _layout = () => {
   return (
-    <Tabs>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: Colors.principal,
+        tabBarInactiveTintColor: Colors.iconNavDefault,
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={16} color={Colors.principal} />
+            <Ionicons name="home" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="Calendario"
         options={{
-          title: "Calendario",
+          title: "",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Entypo name="calendar" size={16} color={Colors.iconNavDefault} />
+            <Entypo name="calendar" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="Clientes"
         options={{
-          title: "Clientes",
+          title: "",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Octicons name="people" size={16} color={Colors.iconNavDefault} />
+            <Octicons name="people" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="Serviços"
         options={{
-          title: "Serviços",
+          title: "",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons
               name="home-repair-service"
-              size={16}
-              color={Colors.iconNavDefault}
+              size={size}
+              color={color}
             />
           ),
         }}
@@ -53,14 +58,10 @@ const _layout = () => {
       <Tabs.Screen
         name="Perfil"
         options={{
-          title: "Perfil",
+          title: "",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons
-              name="person-outline"
-              size={16}
-              color={Colors.iconNavDefault}
-            />
+            <MaterialIcons name="person-outline" size={size} color={color} />
           ),
         }}
       />
