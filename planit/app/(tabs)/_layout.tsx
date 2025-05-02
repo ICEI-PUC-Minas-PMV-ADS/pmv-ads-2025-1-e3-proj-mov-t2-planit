@@ -2,7 +2,6 @@ import React from "react";
 import { Tabs } from "expo-router";
 import { Entypo, Ionicons, MaterialIcons, Octicons } from "@expo/vector-icons";
 import { Colors } from "../../constants/Colors";
-import { useNavigationState } from "@react-navigation/native";
 
 const _layout = () => {
   return (
