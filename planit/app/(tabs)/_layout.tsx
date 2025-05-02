@@ -27,7 +27,7 @@ const _layout = () => {
           title: "",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Entypo name="calendar" size={size} color={color} />
+            <Ionicons name="calendar" size={size} color={color} />
           ),
         }}
       />
@@ -37,7 +37,7 @@ const _layout = () => {
           title: "",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <Octicons name="people" size={size} color={color} />
+            <Ionicons name="people" size={size} color={color} />
           ),
         }}
       />
@@ -47,11 +47,7 @@ const _layout = () => {
           title: "",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons
-              name="home-repair-service"
-              size={size}
-              color={color}
-            />
+            <Ionicons name="list" size={size} color={color} />
           ),
         }}
       />
@@ -61,7 +57,7 @@ const _layout = () => {
           title: "",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="person-outline" size={size} color={color} />
+            <Ionicons name="person" size={size} color={color} />
           ),
         }}
       />
