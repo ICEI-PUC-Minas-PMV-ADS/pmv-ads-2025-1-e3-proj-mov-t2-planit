@@ -1,7 +1,16 @@
 import React, { useState } from "react";
-import { View,Text,TouchableOpacity,Switch,ScrollView,Modal,Pressable,} from "react-native";
-import { ChevronDown,Trash2, X } from "lucide-react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Switch,
+  ScrollView,
+  Modal,
+  Pressable,
+} from "react-native";
+import { ChevronDown, Trash2, X } from "lucide-react-native";
 import { Colors } from "@/constants/Colors";
+import SairContaModal from "@/components/modais/sairConta";
 
 export default function ConfigScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -37,7 +46,9 @@ export default function ConfigScreen() {
 
         {/* Políticas */}
         <TouchableOpacity className="flex-row border-gray-300 justify-between items-center border w-[336px] h-[70px] p-2 mb-4">
-          <Text className="text-base">Políticas de Privacidade e Segurança</Text>
+          <Text className="text-base">
+            Políticas de Privacidade e Segurança
+          </Text>
         </TouchableOpacity>
 
         {/* Excluir Conta */}
@@ -49,7 +60,6 @@ export default function ConfigScreen() {
         </TouchableOpacity>
       </ScrollView>
 
-
       {/* Modal */}
       <Modal
         animationType="fade"
@@ -59,10 +69,8 @@ export default function ConfigScreen() {
       >
         <View className="flex-1 justify-center items-center bg-black bg-opacity-50 p-4">
           <View className="w-full max-w-md bg-white rounded-2xl overflow-hidden">
-
             {/* Conteúdo do Modal */}
             <View className="pt-8 pb-6">
-
               {/* Barra de atenção */}
               <View className="bg-pink-50 px-4 py-2 items-center">
                 <Text className="text-pink-600 font-bold uppercase">
