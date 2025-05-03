@@ -1,17 +1,30 @@
 import React, { useState } from "react";
-import {View,Text,Image,TouchableOpacity,ScrollView,Modal,Pressable,Alert,TextInput,} from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+  Pressable,
+  Alert,
+  TextInput,
+} from "react-native";
 import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { X } from "lucide-react-native";
 import * as Clipboard from "expo-clipboard";
 import { Colors } from "@/constants/Colors";
 import { router } from "expo-router";
+import SairContaModal from "@/components/modais/sairConta";
 
 const shareLink = "www.planit.com/id.name=iriana";
-const profileImage = "https://i.pinimg.com/280x280_RS/53/3e/03/533e031c488dd2ec98c186e90a89d1c0.jpg";
+const profileImage =
+  "https://i.pinimg.com/280x280_RS/53/3e/03/533e031c488dd2ec98c186e90a89d1c0.jpg";
 
 export default function Perfil() {
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const [payModalVisible, setPayModalVisible] = useState(false);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
   const [cardName, setCardName] = useState("");
   const [expiry, setExpiry] = useState("");
@@ -23,7 +36,10 @@ export default function Perfil() {
       <ScrollView className="bg-white px-4 pt-10">
         {/* Foto do Perfil */}
         <View className="flex-row items-center my-6 ml-3">
-          <Image source={{ uri: profileImage }} className="w-24 h-24 rounded-full" />
+          <Image
+            source={{ uri: profileImage }}
+            className="w-24 h-24 rounded-full"
+          />
           <Text className="text-2xl font-semibold ml-6">Iriana Darua</Text>
         </View>
 
@@ -45,17 +61,31 @@ export default function Perfil() {
             onPress={() => setShareModalVisible(true)}
           />
           <Item
-            icon={<MaterialIcons name="payment" size={15} color={Colors.preto} />}
+            icon={
+              <MaterialIcons name="payment" size={15} color={Colors.preto} />
+            }
             label="Métodos de Pagamento"
             onPress={() => setPayModalVisible(true)}
           />
           <Item
-            icon={<MaterialIcons name="logout" size={15} color={Colors.preto} />}
+            icon={
+              <MaterialIcons name="logout" size={15} color={Colors.preto} />
+            }
             label="Logout"
             textColor="text-error"
+            onPress={() => setLogoutModalVisible(true)}
           />
         </View>
       </ScrollView>
+
+      <SairContaModal
+        visible={logoutModalVisible}
+        title="Deseja sair da conta?"
+        text="Você deseja encerrar as suas atividades?"
+        icone="log-out-outline"
+        onClose={() => setLogoutModalVisible(false)}
+        onConfirm={() => setLogoutModalVisible(true)}
+      ></SairContaModal>
 
       {/* Modal Compartilhar Agenda */}
       <Modal
@@ -126,7 +156,6 @@ export default function Perfil() {
       >
         <View className="flex-1 bg-black bg-opacity-50 justify-center items-center p-4">
           <View className="w-full max-w-md bg-white rounded-2xl overflow-hidden">
-            
             {/* Preview do Cartão */}
             <View className="pt-6 px-6 items-center">
               <View className="w-full h-44 rounded-xl overflow-hidden mb-4 bg-gradient-to-r from-purple-300 via-yellow-200 to-pink-300">
@@ -152,7 +181,8 @@ export default function Perfil() {
                 Método de pagamento
               </Text>
               <Text className="text-sm text-gray-500 text-center mt-1">
-                Insira os detalhes do seu cartão para continuar suas compras com segurança.
+                Insira os detalhes do seu cartão para continuar suas compras com
+                segurança.
               </Text>
             </View>
 
@@ -172,7 +202,9 @@ export default function Perfil() {
 
               <View className="flex-row space-x-4">
                 <View className="flex-1">
-                  <Text className="text-sm font-medium mb-1">Data de validade</Text>
+                  <Text className="text-sm font-medium mb-1">
+                    Data de validade
+                  </Text>
                   <TextInput
                     value={expiry}
                     onChangeText={setExpiry}
@@ -193,9 +225,16 @@ export default function Perfil() {
               </View>
 
               <View>
-                <Text className="text-sm font-medium mb-1">Número do cartão</Text>
+                <Text className="text-sm font-medium mb-1">
+                  Número do cartão
+                </Text>
                 <View className="flex-row items-center border border-gray-200 rounded-lg h-12 px-3">
-                  <Feather name="credit-card" size={20} color={Colors.preto} className="mr-2" />
+                  <Feather
+                    name="credit-card"
+                    size={20}
+                    color={Colors.preto}
+                    className="mr-2"
+                  />
                   <TextInput
                     value={cardNumber}
                     onChangeText={setCardNumber}
@@ -219,10 +258,11 @@ export default function Perfil() {
                 onPress={() => setPayModalVisible(false)}
                 className="flex-1 bg-pink-500 rounded-full h-12 justify-center items-center"
               >
-                <Text className="text-base text-white font-bold">Confirmar</Text>
+                <Text className="text-base text-white font-bold">
+                  Confirmar
+                </Text>
               </TouchableOpacity>
             </View>
-
           </View>
         </View>
       </Modal>
