@@ -125,7 +125,7 @@ export default function CadastroScreen() {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </View>
 
-  );
+  );
 }

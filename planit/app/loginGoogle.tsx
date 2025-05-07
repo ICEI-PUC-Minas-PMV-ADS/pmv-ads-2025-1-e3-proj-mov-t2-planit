@@ -2,51 +2,55 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, Modal, Image } from "react-native";
 import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
+import { useAuthRequest } from "expo-auth-session";
 import styles from "../styles/styles";
-import { router,useRouter } from "expo-router";
+import { router, useRouter } from "expo-router";
 import { signInWithCredential, GoogleAuthProvider, getAuth } from "firebase/auth";
 import { auth } from "../firebaseConfig";
-
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function AuthScreen() {
   const [modalVisible, setModalVisible] = useState(true);
+  const router = useRouter();
 
   const [request, response, promptAsync] = Google.useAuthRequest({
-    androidClientId:
-      "776698076336-iaad3o4adm40u2assbmkpl8e0kjvqghq.apps.googleusercontent.com",
-    iosClientId: "YOUR_IOS_CLIENT_ID.apps.googleusercontent.com",
-    webClientId: "776698076336-7mtm2klaq1ptps79ve9gj0kpftf3hh8i.apps.googleusercontent.com",
+    clientId: "1018099220762-qnt2iljavf4ivoju7kbvjkkoa97u8q7e.apps.googleusercontent.com",
+    androidClientId: "1018099220762-1dkssql8r3c8lk21sk9r38oj39lpe297.apps.googleusercontent.com",
     scopes: ["profile", "email"],
   });
 
+  if (request) {
+    console.log("REDIRECT URI →", request.redirectUri);
+  } else {
+    console.log("Request is null.");
+  }
+
   useEffect(() => {
+    console.log("Response completa:", response);
     if (response?.type === "success") {
       const { authentication } = response;
-  
-      // Usa o id_token para autenticar com o Firebase
+      console.log("Authentication:", authentication);
+      const idToken = authentication?.idToken;
+      if (!idToken) {
+        console.error("ID Token não encontrado. Authentication object:", authentication);
+        return;
+      }
+      console.log("ID Token encontrado:", idToken);
+
       const getFirebaseUser = async () => {
         try {
-          const idToken = response.authentication?.idToken;
-          if (!idToken) {
-            console.error("ID Token não encontrado.");
-            return;
-          }
-  
           const credential = GoogleAuthProvider.credential(idToken);
-  
           const userCredential = await signInWithCredential(auth, credential);
           const user = userCredential.user;
           console.log("Usuário autenticado no Firebase:", user);
-  
           setModalVisible(false);
-          router.push("./"); 
+          router.push("./");
         } catch (error) {
           console.error("Erro ao autenticar com Firebase:", error);
         }
       };
-  
+
       getFirebaseUser();
     }
   }, [response]);
