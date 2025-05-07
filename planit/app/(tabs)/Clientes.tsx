@@ -160,7 +160,7 @@ const CardCliente = React.memo(
         <Image
           source={cliente.imagem}
           style={styles.avatar}
-          defaultSource={require('../../assets/images/placeholder.png')}
+          defaultSource={require('../../assets/images/icon.png')}
         />
         <View>
           <Text style={styles.nome}>{cliente.nome}</Text>
