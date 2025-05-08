@@ -141,7 +141,7 @@ const Home = ({
 
     return (
       <View className="bg-white rounded-xl mx-4 my-3 p-4 shadow-sm">
-        <Text className="text-2xl font-bold text-gray-800 mb-7">Agenda de Hoje</Text>
+        <Text className="text-2xl font-bold text-gray-800 mb-10">Agenda de Hoje</Text>
 
         {consultas.map((consulta, index) => (
           <View key={index} className="mb-10">
@@ -182,7 +182,7 @@ const Home = ({
   }
 
   return (
-    <View className="bg-gray-50 border-b border-gray-200">
+    <View className="bg-white">
       <View className="flex justify-between flex-row items-center px-6 py-4">
         <View>
           <TouchableOpacity onPress={() => router.push("/Notificacao")}>
