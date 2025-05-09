@@ -12,10 +12,12 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.mauricio.planit",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logoRosa.png",
         "backgroundColor": "#ffffff"
       }
+      
     },
     "web": {
       "bundler": "metro",
@@ -52,6 +54,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "b5f37b72-2d00-4c51-b539-83a58fd05afd"
+      }
     }
   }
 }
