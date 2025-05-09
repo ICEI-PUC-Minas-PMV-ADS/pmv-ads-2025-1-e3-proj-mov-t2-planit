@@ -42,7 +42,7 @@ const _layout = () => {
         }}
       />
       <Tabs.Screen
-        name="Serviços"
+        name="Servicos"
         options={{
           title: "",
           headerShown: false,
