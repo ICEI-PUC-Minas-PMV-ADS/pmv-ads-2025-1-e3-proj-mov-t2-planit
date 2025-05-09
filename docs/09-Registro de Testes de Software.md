@@ -11,12 +11,11 @@ Total de casos de teste executados: 2
 Taxa de sucesso: 100%
 
 
-## Evidências dos Testes
+## Evidências dos Testes - Resultados por Requisito
 
-|Resultados por Requisito|
 | Requisito | Cenário Testado | Status | Evidência|
 |-----------|-----------------| ------ |----------|
-| RF-001	|  Cadastro       | Aprovado |	Vídeo |
+| RF-001 | Cadastro | ✅Aprovado | Vídeo |
 
 
 ## Análise Crítica
