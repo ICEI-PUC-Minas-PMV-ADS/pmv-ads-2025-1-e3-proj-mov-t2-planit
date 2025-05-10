@@ -16,6 +16,8 @@ import * as Clipboard from "expo-clipboard";
 import { Colors } from "@/constants/Colors";
 import { router } from "expo-router";
 import SairContaModal from "@/components/modais/sairConta";
+import { signOut } from "firebase/auth";
+import { auth } from "@/firebaseConfig";
 
 const shareLink = "www.planit.com/id.name=iriana";
 const profileImage =
@@ -30,7 +32,13 @@ export default function Perfil() {
   const [expiry, setExpiry] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [cvv, setCvv] = useState("");
-
+  const onConfirm = () => {
+    setLogoutModalVisible(false);
+    signOut(auth).then(() => {
+      Alert.alert("Sucesso", "Logout realizado com sucesso!");
+      router.replace("/Login");
+    });
+  };
   return (
     <>
       <ScrollView className="bg-white px-4 pt-10">
@@ -84,7 +92,7 @@ export default function Perfil() {
         text="Você deseja encerrar as suas atividades?"
         icone="log-out-outline"
         onClose={() => setLogoutModalVisible(false)}
-        onConfirm={() => setLogoutModalVisible(true)}
+        onConfirm={onConfirm}
       ></SairContaModal>
 
       {/* Modal Compartilhar Agenda */}

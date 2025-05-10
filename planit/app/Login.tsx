@@ -1,43 +1,43 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebaseConfig'; 
+import React, { useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
+import { useRouter } from "expo-router";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebaseConfig";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setErrorMessage('Preencha todos os campos.');
+      setErrorMessage("Preencha todos os campos.");
       return;
     }
-  
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      Alert.alert('Sucesso', 'Login realizado com sucesso!');
-      router.replace('/(tabs)/Perfil/Conta');
+      Alert.alert("Sucesso", "Login realizado com sucesso!");
+      router.replace("/(tabs)/Perfil/Conta");
     } catch (error: any) {
-      console.error('Erro ao fazer login:', error);
-  
-      let userMessage = 'Erro ao fazer login. Tente novamente.';
+      console.error("Erro ao fazer login:", error);
+
+      let userMessage = "Erro ao fazer login. Tente novamente.";
       switch (error.code) {
-        case 'auth/invalid-email':
-          userMessage = 'Formato de e‑mail inválido.';
+        case "auth/invalid-email":
+          userMessage = "Formato de e‑mail inválido.";
           break;
-        case 'auth/user-not-found':
-          userMessage = 'E‑mail não cadastrado.';
+        case "auth/user-not-found":
+          userMessage = "E‑mail não cadastrado.";
           break;
-        case 'auth/wrong-password':
-          userMessage = 'Senha incorreta.';
+        case "auth/wrong-password":
+          userMessage = "Senha incorreta.";
           break;
       }
-  
+
       setErrorMessage(userMessage);
-      Alert.alert('Erro', userMessage);
+      Alert.alert("Erro", userMessage);
     }
   };
 
@@ -64,7 +64,10 @@ export default function LoginScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
-            onChangeText={text => { setEmail(text); setErrorMessage(null); }}
+            onChangeText={(text) => {
+              setEmail(text);
+              setErrorMessage(null);
+            }}
           />
 
           <View className="flex-row items-center border-b border-gray-300 mb-4">
@@ -73,10 +76,19 @@ export default function LoginScreen() {
               placeholder="Senha"
               secureTextEntry
               value={password}
-              onChangeText={text => { setPassword(text); setErrorMessage(null); }}
+              onChangeText={(text) => {
+                setPassword(text);
+                setErrorMessage(null);
+              }}
             />
-            <TouchableOpacity onPress={() => { /* Recuperar senha */ }}>
-              <Text className="text-pink-500 text-sm ml-2">Esqueceu a senha?</Text>
+            <TouchableOpacity
+              onPress={() => {
+                /* Recuperar senha */
+              }}
+            >
+              <Text className="text-pink-500 text-sm ml-2">
+                Esqueceu a senha?
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -89,11 +101,13 @@ export default function LoginScreen() {
 
           <TouchableOpacity
             className="mb-8"
-            onPress={() => router.push('/Register')}
+            onPress={() => router.push("/Register")}
           >
             <Text className="text-center text-gray-600 text-base">
-              Não tem uma conta?{' '}
-              <Text className="text-pink-500 font-bold underline">Cadastro</Text>
+              Não tem uma conta?{" "}
+              <Text className="text-pink-500 font-bold underline">
+                Cadastro
+              </Text>
             </Text>
           </TouchableOpacity>
 
@@ -105,6 +119,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
-  );
+        
+    </View>
+  );
 }
