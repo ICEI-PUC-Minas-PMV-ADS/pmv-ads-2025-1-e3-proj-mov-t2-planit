@@ -9,7 +9,7 @@ Para cada requisito funcional, pode ser entregue um artefato desse tipo
 
 |ID    | Descrição do Requisito  | ARTEFATOS PRODUZIDOS | ALUNO(A) RESPONSÁVEL  |
 |------|-------------------------|----------------------|------------------------|
-|RF-001| A aplicação deve permitir criar uma conta | - |    Maria / Mauricio |
+|RF-001| A aplicação deve permitir criar uma conta | Login.tsx, loginGoogle.tsx, Register.tsx  |    Maria / Mauricio |
 |RF-002| A aplicação deve permitir a exclusão da conta  | - |   Estefany   |
 |RF-003| A aplicação deve permitir editar o perfil do usuário | - |    Estefany / Victor   |
 |RF-004| A aplicação deve permitir integração com outras agendas digitais | - |  Emyli
