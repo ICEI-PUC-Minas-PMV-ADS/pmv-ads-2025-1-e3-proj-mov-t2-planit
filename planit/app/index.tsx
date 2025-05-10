@@ -1,9 +1,15 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import "../styles/global.css";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/firebaseConfig";
 
 export default function WelcomeScreen() {
+  useEffect(() => {
+    getDocs(collection(db, "Usuario")).then(console.log).catch(console.error);
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.content}>
@@ -27,8 +33,15 @@ export default function WelcomeScreen() {
         }}
       >
         <Text style={styles.buttonText}>Comece Agora</Text>
-      </TouchableOpacity> 
-      
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => {
+          router.push("/(tabs)/Clientes");
+        }}
+      >
+        <Text style={styles.buttonText}>Comece Agora</Text>
+      </TouchableOpacity>
     </View>
   );
 }

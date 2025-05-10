@@ -14,7 +14,9 @@ const firebaseConfig = {
   storageBucket: "planit-bfa38.firebasestorage.app",
   messagingSenderId: "1018099220762",
   appId: "1:1018099220762:web:5de7a07a0765ba08652ca3",
+  measurementId: "G-DMZBM9BCM0",
 };
+console.log(firebaseConfig);
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
