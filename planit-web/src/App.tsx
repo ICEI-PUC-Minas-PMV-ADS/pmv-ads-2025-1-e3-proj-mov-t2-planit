@@ -1,10 +1,19 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "/vite.svg";
+import "./App.css";
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { db } from "../firebaseConfig.js";
 
 function App() {
-  const [count, setCount] = useState(0)
+  useEffect(() => {
+    getDocs(collection(db, "Usuario"))
+      .then((snap) => snap.docs.map((d) => d.data()))
+      .then(console.log)
+      .catch(console.error);
+  }, []);
+
+  const [count, setCount] = useState(0);
 
   return (
     <>
@@ -29,7 +38,7 @@ function App() {
         Click on the Vite and React logos to learn more
       </p>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
