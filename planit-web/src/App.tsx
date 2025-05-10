@@ -4,6 +4,8 @@ import viteLogo from "/vite.svg";
 import "./App.css";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { db } from "../firebaseConfig.js";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import SeletcServico from "./pages/SeletcServico";
 
 function App() {
   useEffect(() => {
@@ -37,6 +39,12 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
+
+      <Router>
+        <Routes>
+          <Route path="/" element={<SeletcServico />} />
+        </Routes>
+      </Router>
     </>
   );
 }
