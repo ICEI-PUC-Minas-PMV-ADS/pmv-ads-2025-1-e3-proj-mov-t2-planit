@@ -1,6 +1,12 @@
 import { View, Text } from "react-native";
-import { Feather } from "@expo/vector-icons";
 import { Stack } from "expo-router";
+import {
+  Menu,
+  MenuOption,
+  MenuOptions,
+  MenuTrigger,
+} from "react-native-popup-menu";
+import Feather from "react-native-vector-icons/Feather";
 import { Colors } from "@/constants/Colors";
 
 const Notificacao = () => {
@@ -12,16 +18,30 @@ const Notificacao = () => {
           headerTitleAlign: "left",
           headerBackVisible: true, // Alinha o título à esquerda
           headerRight: () => (
-            <Feather
-              name="more-horizontal" // Ícone de três pontos verticais
-              size={24}
-              color={Colors.preto}
-              className="mr-4"
-            />
+            <Menu>
+              <MenuTrigger>
+                <Feather
+                  name="more-horizontal"
+                  size={24}
+                  color={Colors.preto}
+                  style={{ marginRight: 16 }}
+                />
+              </MenuTrigger>
+              <MenuOptions>
+                <MenuOption
+                  onSelect={() => alert("Notificações marcadas como lidas.")}
+                  text="Marcar como lido"
+                />
+                <MenuOption
+                  onSelect={() => alert("Notificações excluídas com sucesso.")}
+                >
+                  <Text>Excluir tudo</Text>
+                </MenuOption>
+              </MenuOptions>
+            </Menu>
           ),
         }}
       />
-
       {/* Conteúdo principal */}
       <Text className="text-center mt-5 text-base">
         Suas notificações aparecerão aqui
