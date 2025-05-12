@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -9,6 +9,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const passwordTextInputRef = useRef<TextInput>(null);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -19,7 +20,7 @@ export default function LoginScreen() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       Alert.alert("Sucesso", "Login realizado com sucesso!");
-      router.replace("/(tabs)/Perfil/Conta");
+      router.replace("/(tabs)");
     } catch (error: any) {
       console.error("Erro ao fazer login:", error);
 
@@ -63,6 +64,8 @@ export default function LoginScreen() {
             placeholder="Email"
             keyboardType="email-address"
             autoCapitalize="none"
+            returnKeyType="next"
+            onSubmitEditing={() => passwordTextInputRef.current?.focus()}
             value={email}
             onChangeText={(text) => {
               setEmail(text);
@@ -72,10 +75,13 @@ export default function LoginScreen() {
 
           <View className="flex-row items-center border-b border-gray-300 mb-4">
             <TextInput
+              ref={passwordTextInputRef}
               className="flex-1 py-2 text-base"
               placeholder="Senha"
               secureTextEntry
               value={password}
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
               onChangeText={(text) => {
                 setPassword(text);
                 setErrorMessage(null);
