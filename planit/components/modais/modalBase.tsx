@@ -1,8 +1,7 @@
-import { useState } from "react";
-import { View, Text, TouchableOpacity, Modal, ModalProps } from "react-native";
+import { View, Text, Modal, ModalProps, Pressable } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { IconProps } from "@expo/vector-icons/build/createIconSet";
+import { X } from "lucide-react-native";
 
 type ModalBaseProps = ModalProps & {
   icone?: keyof typeof Ionicons.glyphMap;
@@ -39,12 +38,12 @@ const ModalBase: React.FC<ModalBaseProps> = ({
                   </View>
                 </View>
 
-                <TouchableOpacity
+                <Pressable
+                  className="absolute top-3 right-3 p-1"
                   onPress={onClose}
-                  className="w-14 h-14 flex flex-row justify-center items-center rounded-full"
                 >
-                  <Ionicons name="close-circle-outline" size={25} />
-                </TouchableOpacity>
+                  <X size={20} color="#999" />
+                </Pressable>
               </View>
 
               <View>

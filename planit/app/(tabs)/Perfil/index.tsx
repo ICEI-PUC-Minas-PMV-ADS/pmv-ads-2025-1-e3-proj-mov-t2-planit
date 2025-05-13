@@ -16,6 +16,7 @@ import * as Clipboard from "expo-clipboard";
 import { Colors } from "@/constants/Colors";
 import { router } from "expo-router";
 import SairContaModal from "@/components/modais/sairConta";
+import MudarFotoPerfil from "@/components/modais/mudarFotoPerfil";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebaseConfig";
 
@@ -27,27 +28,34 @@ export default function Perfil() {
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const [payModalVisible, setPayModalVisible] = useState(false);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [profileImageModalVisible, setProfileImageModalVisible] =
+    useState(false);
 
   const [cardName, setCardName] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [cvv, setCvv] = useState("");
-  const onConfirm = () => {
+  const onConfirmLogout = () => {
     setLogoutModalVisible(false);
     signOut(auth).then(() => {
       Alert.alert("Sucesso", "Logout realizado com sucesso!");
       router.replace("/Login");
     });
   };
+  const onConfirmProfileImage = () => {
+    setProfileImageModalVisible(false);
+  };
   return (
     <>
       <ScrollView className="bg-white px-4 pt-10">
         {/* Foto do Perfil */}
         <View className="flex-row items-center my-6 ml-3">
-          <Image
-            source={{ uri: profileImage }}
-            className="w-24 h-24 rounded-full"
-          />
+          <Pressable onPress={() => setProfileImageModalVisible(true)}>
+            <Image
+              source={{ uri: profileImage }}
+              className="w-24 h-24 rounded-full"
+            />
+          </Pressable>
           <Text className="text-2xl font-semibold ml-6">Iriana Darua</Text>
         </View>
 
@@ -92,8 +100,17 @@ export default function Perfil() {
         text="Você deseja encerrar as suas atividades?"
         icone="log-out-outline"
         onClose={() => setLogoutModalVisible(false)}
-        onConfirm={onConfirm}
+        onConfirm={onConfirmLogout}
       ></SairContaModal>
+
+      <MudarFotoPerfil
+        visible={profileImageModalVisible}
+        title="Envie uma nova foto para atualizar seu perfil."
+        text="Envie e anexe arquivos a esta aba."
+        icone="folder-open-outline"
+        onClose={() => setProfileImageModalVisible(false)}
+        onConfirm={onConfirmProfileImage}
+      ></MudarFotoPerfil>
 
       {/* Modal Compartilhar Agenda */}
       <Modal
@@ -110,6 +127,7 @@ export default function Perfil() {
             >
               <X size={20} color="#999" />
             </Pressable>
+
             <View className="pt-6 px-6">
               <Text className="text-center text-lg font-semibold">
                 Compartilhe seu perfil!
