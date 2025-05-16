@@ -8,9 +8,8 @@ import {
   Modal,
   Pressable,
 } from "react-native";
-import { ChevronDown, Trash2, X } from "lucide-react-native";
+import { ChevronDown, X } from "lucide-react-native";
 import { Colors } from "@/constants/Colors";
-import SairContaModal from "@/components/modais/sairConta";
 
 export default function ConfigScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
