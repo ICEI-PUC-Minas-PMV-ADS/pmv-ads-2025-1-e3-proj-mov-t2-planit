@@ -1,14 +1,34 @@
-// server.mjs
-import { createServer } from 'node:http';
+import { initializeApp, applicationDefault, cert } from "firebase-admin/app";
+import { getFirestore, Timestamp, FieldValue, Filter } from "firebase-admin/firestore";
+import express from "express"
 
-const server = createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Hello World!\n');
+const app = express()
+const port = 3000
+
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
+
+// aprender como ler arquivos em node.
+const json = lerArquivoJsonDaSilva("../auth.json")
+
+initializeApp({
+  credential: cert(json),
 });
 
-// starts a simple http server locally on port 3000
-server.listen(3000, '127.0.0.1', () => {
-  console.log('Listening on 127.0.0.1:3000');
-});
+const db = getFirestore();
 
-// run with `node server.mjs`
+// 👏
+
+db
+  .collection('users')
+  .get()
+  .then((snapshot) => 
+    snapshot.forEach((doc) => {
+      console.log(doc.id, '=>', doc.data())
+    })
+  )
