@@ -1,6 +1,7 @@
 import { initializeApp, applicationDefault, cert } from "firebase-admin/app";
 import { getFirestore, Timestamp, FieldValue, Filter } from "firebase-admin/firestore";
 import express from "express"
+import { readFileSync } from "fs";
 
 const app = express()
 const port = 3000
@@ -13,8 +14,7 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
 
-// aprender como ler arquivos em node.
-const json = lerArquivoJsonDaSilva("../auth.json")
+const json = JSON.parse(readFileSync('../backend/auth.json', 'utf8'));
 
 initializeApp({
   credential: cert(json),
