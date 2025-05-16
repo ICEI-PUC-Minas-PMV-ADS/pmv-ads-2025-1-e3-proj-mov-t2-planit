@@ -36,7 +36,7 @@
   /* Título (mês/ano) */
   .react-calendar__navigation__label {
     position: relative;
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 600;
     pointer-events: none;
   }
@@ -72,7 +72,7 @@
   .react-calendar__month-view__weekdays {
     text-align: center;
     margin-bottom: 0.5rem;
-    font-size: 1.20rem;
+    font-size: 0.95rem;
     color: #4b5563; 
   }
   
