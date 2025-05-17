@@ -49,7 +49,7 @@ function Homepage() {
                         <p className='font-light text-center'>Primeiro contato do cliente conosco</p>
                     </div>
 
-                    <div className='flex gap-2 p-3'>
+                    <div className='flex gap-5 p-3'>
                         <div className='flex gap-1 items-center font-extralight'>
                             <div>
                                 <IonIcon icon={calendarClearOutline} style={{ fontSize: "12px" }} />
