@@ -29,7 +29,7 @@ function Login() {
                             </div>
 
                             <div>
-                                <input type="text" className='border border-gray-700 p-2 w-55 rounded-xl  outline-none' />
+                                <input type="text" className='border border-gray-700 p-2 w-52 rounded-xl  outline-none' />
                             </div>
                         </div>
 
@@ -38,9 +38,9 @@ function Login() {
                                 <label>Senha:</label>
                             </div>
 
-                            <div className='flex gap-2 items-center border border-gray-700 p-2 rounded-xl'>
+                            <div className='flex gap-2 items-center'>
                                 <div>
-                                    <input type="password" className='outline-none' />
+                                    <input type="password" className='outline-none border border-gray-700 p-2 w-52 rounded-xl' />
                                 </div>
 
                                 <div>
@@ -60,7 +60,7 @@ function Login() {
                         <p> Não tem uma conta? <span className='text-pink-700 cursor-pointer' onClick={() => navigate('/cadastrar')}>Cadastra-se</span></p>
                     </div>
 
-                    <div>
+                    <div className='flex justify-center'>
                         <PinkBtn title='Entrar' onClick={() => navigate('/agendar')} />
                     </div>
                 </form>
