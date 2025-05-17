@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { IonIcon } from '@ionic/react';
 import { chevronBackCircleOutline, chevronForwardCircleOutline, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 
-function SelectDataHora() {
+function DataHora() {
   const navigate = useNavigate();
 
   const formatMonthYear = (_locale: unknown, date: Date) => {
@@ -81,4 +81,4 @@ function SelectDataHora() {
   )
 }
 
-export default SelectDataHora
+export default DataHora

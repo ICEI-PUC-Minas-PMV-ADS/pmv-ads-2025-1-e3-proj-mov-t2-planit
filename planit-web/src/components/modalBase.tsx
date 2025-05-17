@@ -18,7 +18,7 @@ const ModalBase: React.FC<ModalBaseProps> = ({
   text,
   visible,
   children,
-  onClose
+  onClose,
 }) => {
   if (!visible) return null;
 

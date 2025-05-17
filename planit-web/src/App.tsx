@@ -1,15 +1,17 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import SeletcServico from './pages/SeletcServico'
-import SelectDataHora from './pages/SelectDataHora'
+import Servico from './pages/Servico'
+import DataHora from './pages/DataHora'
 import Homepage from './pages/Homepage'
+import Editar from './pages/Editar'
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<SeletcServico />} />
-        <Route path="/Data" element={<SelectDataHora />} />
+        <Route path="/" element={<Servico />} />
+        <Route path="/Data" element={<DataHora />} />
         <Route path="/Home" element={<Homepage />} />
+        <Route path="/Editar" element={<Editar />} />
       </Routes>
     </Router>
   )
