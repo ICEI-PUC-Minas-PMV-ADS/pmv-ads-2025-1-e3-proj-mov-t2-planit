@@ -4,7 +4,7 @@ import { IonIcon } from '@ionic/react';
 import { heartCircleOutline, timeOutline } from 'ionicons/icons'
 import { useNavigate } from 'react-router-dom';
 
-function SeletcServico() {
+function Servico() {
   const navigate = useNavigate();
 
   return (
@@ -136,4 +136,4 @@ function SeletcServico() {
   )
 }
 
-export default SeletcServico
+export default Servico
