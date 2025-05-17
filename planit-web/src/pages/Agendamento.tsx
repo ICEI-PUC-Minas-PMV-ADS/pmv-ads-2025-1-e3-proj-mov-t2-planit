@@ -7,7 +7,7 @@ import Calendar from 'react-calendar';
 import perfilPlanit from '../assets/perfilPlanit.jpg';
 
 
-function Editar() {
+function Agendar() {
   const navigate = useNavigate();
 
   const formatMonthYear = (_locale: unknown, date: Date) => {
@@ -191,4 +191,4 @@ function Editar() {
   )
 }
 
-export default Editar
+export default Agendar
