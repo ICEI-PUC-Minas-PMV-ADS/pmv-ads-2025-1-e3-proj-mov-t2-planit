@@ -4,7 +4,7 @@ import { IonIcon } from '@ionic/react';
 import { eyeOutline } from 'ionicons/icons';
 import PinkBtn from '../components/pinkBtn';
 
-function Cadastro() {
+function Cadastrar() {
     const navigate = useNavigate();
 
     return (
@@ -62,4 +62,4 @@ function Cadastro() {
     )
 }
 
-export default Cadastro
+export default Cadastrar
