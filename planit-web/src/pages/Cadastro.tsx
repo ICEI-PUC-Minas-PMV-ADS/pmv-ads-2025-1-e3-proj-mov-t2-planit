@@ -17,8 +17,8 @@ function Cadastrar() {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [confirmarSenha, setConfirmarSenha] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    // const [showPassword, setShowPassword] = useState(false);
+    // const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -135,14 +135,14 @@ function Cadastrar() {
                             </div>
                         </div>
 
-                        <div className='flex gap-2 items-center'>
+                        <div className='flex flex-col gap-2'>
                             <div>
                                 <label>Confirmar senha:</label>
                             </div>
 
                             <div className='flex gap-2 items-center'>
                                 <div>
-                                    <input onChange={(cs) => setConfirmarSenha(cs.target.value)} type="password" className='outline-none border border-gray-700 p-2 w-46 rounded-xl' />
+                                    <input onChange={(cs) => setConfirmarSenha(cs.target.value)} type="password" className='outline-none border border-gray-700 p-2 w-72 rounded-xl' />
                                 </div>
 
                                 <div>
