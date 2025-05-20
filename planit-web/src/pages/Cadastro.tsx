@@ -97,7 +97,7 @@ function Cadastrar() {
                 </div>
             </div>
 
-            <div className='ml-2 mr-2 mt-15'>
+            <div className='ml-2 mr-2 mt-15 flex justify-center'>
                 <form action="" className='p-5 rounded-2xl'>
                     <div className='flex flex-col gap-5 justify-center'>
                         <div className='flex gap-2 items-center'>
