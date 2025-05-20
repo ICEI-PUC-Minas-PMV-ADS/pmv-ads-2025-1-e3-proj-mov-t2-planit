@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useState } from 'react';
 import { IonIcon } from '@ionic/react';
-import { eyeOutline } from 'ionicons/icons';
+import { eyeOffOutline, eyeOutline } from 'ionicons/icons';
 import PinkBtn from '../components/pinkBtn';
 
 import { collection, addDoc } from 'firebase/firestore';
@@ -17,8 +17,8 @@ function Cadastrar() {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [confirmarSenha, setConfirmarSenha] = useState('');
-    // const [showPassword, setShowPassword] = useState(false);
-    // const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -126,11 +126,11 @@ function Cadastrar() {
 
                             <div className='flex gap-2 items-center'>
                                 <div>
-                                    <input onChange={(s) => setSenha(s.target.value)} value={senha} type="password" className='outline-none border border-gray-700 p-2 w-56 rounded-xl' />
+                                    <input type={showPassword ? 'text' : 'password'} onChange={(s) => setSenha(s.target.value)} value={senha} className='outline-none border border-gray-700 p-2 w-56 rounded-xl' />
                                 </div>
 
                                 <div>
-                                    <IonIcon icon={eyeOutline} className='cursor-pointer' />
+                                    <IonIcon icon={showPassword ? eyeOutline : eyeOffOutline} onClick={() => setShowPassword(!showPassword)} className='cursor-pointer' />
                                 </div>
                             </div>
                         </div>
@@ -142,11 +142,11 @@ function Cadastrar() {
 
                             <div className='flex gap-2 items-center'>
                                 <div>
-                                    <input onChange={(cs) => setConfirmarSenha(cs.target.value)} type="password" className='outline-none border border-gray-700 p-2 w-72 rounded-xl' />
+                                    <input type={showConfirmPassword ? 'text' : 'password'} onChange={(cs) => setConfirmarSenha(cs.target.value)} className='outline-none border border-gray-700 p-2 w-72 rounded-xl' />
                                 </div>
 
                                 <div>
-                                    <IonIcon icon={eyeOutline} className='cursor-pointer' />
+                                    <IonIcon icon={showConfirmPassword ? eyeOutline : eyeOffOutline} onClick={() => setShowConfirmPassword(!showConfirmPassword)} className='cursor-pointer' />
                                 </div>
                             </div>
                         </div>
@@ -164,7 +164,6 @@ function Cadastrar() {
                                 <PinkBtn title='Cadastrar'/>
                             )}
                         </PinkBtn>
-                        
                     </div>
                 </form>
             </div>
