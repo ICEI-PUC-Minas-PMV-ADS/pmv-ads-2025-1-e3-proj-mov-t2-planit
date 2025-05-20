@@ -1,112 +1,170 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {View,Text,TouchableOpacity,StyleSheet,ScrollView,ActivityIndicator,Alert} from 'react-native';
 import { useRouter } from 'expo-router';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {collection,onSnapshot,query,where,orderBy,updateDoc,doc,Timestamp,QuerySnapshot,QueryDocumentSnapshot,FirestoreError} from 'firebase/firestore';
+import { db } from '../../../firebaseConfig';
 
-const Servicos = () => {
+interface Servico {
+  id: string;
+  nome: string;
+  duracao: string;
+  valor: string;
+  ativo: boolean;
+  criadoEm: Timestamp;
+}
+
+const Servicos: React.FC = () => {
   const router = useRouter();
 
-  const [switches, setSwitches] = React.useState({
-    1: true,
-    2: true,
-    3: false
-  });
+  const [servicos, setServicos] = useState<Servico[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filtro, setFiltro] = useState<'Todos' | 'Ativos' | 'Inativos' | 'Recentes'>('Todos');
+  const [switches, setSwitches] = useState<Record<string, boolean>>({});
 
-  const [filtroSelecionado, setFiltroSelecionado] = React.useState('Todos');
+  useEffect(() => {
+    setLoading(true);
 
-  const toggleSwitch = (id: number) => {
-    setSwitches({ ...switches, [id]: !switches[id] });
+    let q: any = collection(db, 'Servicos');
+
+    if (filtro === 'Recentes') {
+      q = query(q, orderBy('criadoEm', 'desc'));
+    } else if (filtro === 'Ativos') {
+      q = query(q, where('ativo', '==', true));
+    } else if (filtro === 'Inativos') {
+      q = query(q, where('ativo', '==', false));
+    }
+
+    const unsub = onSnapshot(
+      q,
+      (snapshot: QuerySnapshot) => {
+        const lista: Servico[] = [];
+        const mapSwitches: Record<string, boolean> = {};
+
+        snapshot.forEach((docSnap: QueryDocumentSnapshot) => {
+          const data = docSnap.data() as any;
+          lista.push({
+            id: docSnap.id,
+            nome: data.nome,
+            duracao: data.duracao,
+            valor: data.valor,
+            ativo: data.ativo,
+            criadoEm: data.criadoEm
+          });
+          mapSwitches[docSnap.id] = data.ativo;
+        });
+
+        setServicos(lista);
+        setSwitches(mapSwitches);
+        setLoading(false);
+      },
+      (error: FirestoreError) => {
+        console.error('Erro ao ler serviços:', error);
+        Alert.alert('Erro', 'Não foi possível carregar serviços.');
+        setLoading(false);
+      }
+    );
+
+    return unsub;
+  }, [filtro]);
+
+  const toggleAtivo = async (id: string) => {
+    try {
+      await updateDoc(doc(db, 'Servicos', id), { ativo: !switches[id] });
+    } catch (error) {
+      console.error('Erro ao atualizar:', error);
+      Alert.alert('Erro', 'Não foi possível alterar o status.');
+    }
   };
 
-  const listaServicos = [
-    { id: 1, nome: 'Brand Guide', duracao: '45 min', preco: 'R$ 50,00' },
-    { id: 2, nome: 'Mockup', duracao: '2h', preco: 'R$ 250,00' },
-    { id: 3, nome: 'Edição de Foto', duracao: '1 sem', preco: 'R$ 50,00' }
-  ];
+  const countAtivos = servicos.filter(s => s.ativo).length;
+  const countAndamento = servicos.length - countAtivos; 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FF006F" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {/* Cabeçalho com título centralizado */}
-      <View style={styles.cabecalho}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.cabecalhoBotao}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
           <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
-
-        <View style={styles.cabecalhoCentro}>
-          <Text style={styles.titulo}>Meus Serviços</Text>
-        </View>
-
-       
+        <Text style={styles.title}>Meus Serviços</Text>
       </View>
 
-      {/* Estatísticas */}
-      <View style={{ flexDirection: 'row', paddingHorizontal: 8 }}>
+      <View style={styles.statsContainer}>
         <View style={styles.cardEstatisticaAmarelo}>
-          <Text style={styles.cardEstatisticaTitulo}>Serviços Ativos</Text>
-          <Text style={styles.cardEstatisticaValor}>7</Text>
+          <Text style={styles.statsTitle}>Serviços Ativos</Text>
+          <Text style={styles.statsValue}>{countAtivos}</Text>
         </View>
         <View style={styles.cardEstatisticaRosa}>
-          <Text style={styles.cardEstatisticaTitulo}>Em Andamento</Text>
-          <Text style={styles.cardEstatisticaValor}>9</Text>
+          <Text style={styles.statsTitle}>Em Andamento</Text>
+          <Text style={styles.statsValue}>{countAndamento}</Text>
         </View>
       </View>
 
-      {/* Filtros */}
-      <View style={styles.filtros}>
-        {['Todos', 'Ativos', 'Inativos', 'Recentes'].map((filtro) => (
+      <View style={styles.filters}>
+        {['Todos', 'Ativos', 'Inativos', 'Recentes'].map(f => (
           <TouchableOpacity
-            key={filtro}
-            onPress={() => setFiltroSelecionado(filtro)}
-            style={filtroSelecionado === filtro ? styles.botaoSelecionado : styles.botaoNaoSelecionado}
+            key={f}
+            onPress={() => setFiltro(f as any)}
+            style={filtro === f ? styles.filterActive : styles.filterInactive}
           >
-            <Text style={{ color: filtroSelecionado === filtro ? '#FFF' : '#333', fontWeight: '600' }}>
-              {filtro}
+            <Text style={filtro === f ? styles.filterTextActive : styles.filterTextInactive}>
+              {f}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Lista de serviços + botão adicionar */}
-      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
-        {listaServicos.map((item) => (
-          <View key={item.id} style={styles.cardServico}>
+      <ScrollView contentContainerStyle={styles.list}>
+        {servicos.map(item => (
+          <View key={item.id} style={styles.card}>
             <View>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={styles.nomeServico}>{item.nome}</Text>
-                <TouchableOpacity onPress={() => router.push('/(tabs)/Servicos/EditarServicos')}>
-                  <Ionicons name="create-outline" size={16} color="#000" style={{ marginLeft: 6 }} />
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardTitle}>{item.nome}</Text>
+                <TouchableOpacity
+                  onPress={() =>
+                    router.push({
+                      pathname: '/(tabs)/Servicos/EditarServicos',
+                      params: { id: item.id }
+                    })
+                  }
+                >
+                  <Ionicons name="create-outline" size={16} color="#000" />
                 </TouchableOpacity>
               </View>
-              <Text style={styles.detalhesServico}>{item.duracao} • {item.preco}</Text>
+              <Text style={styles.cardDetails}>
+                {item.duracao} • R$ {item.valor}
+              </Text>
             </View>
+
             <TouchableOpacity
-              onPress={() => toggleSwitch(item.id)}
-              style={{
-                width: 50,
-                height: 30,
-                borderRadius: 20,
-                backgroundColor: switches[item.id] ? '#FF007F' : '#D1D5DB',
-                justifyContent: 'center',
-                padding: 3
-              }}
+              onPress={() => toggleAtivo(item.id)}
+              style={[
+                styles.switchOuter,
+                { backgroundColor: switches[item.id] ? '#FF007F' : '#D1D5DB' }
+              ]}
             >
-              <View style={{
-                width: 24,
-                height: 24,
-                backgroundColor: '#FFF',
-                borderRadius: 12,
-                alignSelf: switches[item.id] ? 'flex-end' : 'flex-start'
-              }} />
+              <View
+                style={[
+                  styles.switchInner,
+                  { alignSelf: switches[item.id] ? 'flex-end' : 'flex-start' }
+                ]}
+              />
             </TouchableOpacity>
           </View>
         ))}
 
-        {/* Botão de adicionar - posicionado após a lista */}
         <TouchableOpacity
-          style={styles.botaoAdicionar}
+          style={styles.addButton}
           onPress={() => router.push('/(tabs)/Servicos/CadastroServicos')}
         >
-          <Text style={styles.textoBotaoAdicionar}>Adicionar</Text>
+          <Text style={styles.addButtonText}>Adicionar</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -114,120 +172,153 @@ const Servicos = () => {
 };
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
   container: {
     flex: 1,
-    backgroundColor: "#FFF",
+    backgroundColor: '#FFF',
     padding: 16,
-    paddingTop: 10,
+    paddingTop: 10
   },
-  cabecalho: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     marginBottom: 16,
-    height: 48,
+    height: 48
   },
-  cabecalhoBotao: {
+  headerButton: {
     width: 40,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center'
   },
-  cabecalhoCentro: {
+  title: {
     flex: 1,
-    alignItems: 'center',
-  },
-  titulo: {
+    textAlign: 'center',
     fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
+    fontWeight: 'bold'
+  },
+
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16
   },
   cardEstatisticaAmarelo: {
+    flex: 1,
     backgroundColor: '#E1FF00',
     borderRadius: 12,
-    flex: 1,
     marginRight: 8,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 20,
+    paddingVertical: 16,
     borderWidth: 1,
     borderColor: '#FFD600'
   },
   cardEstatisticaRosa: {
+    flex: 1,
     backgroundColor: '#FFE5EF',
     borderRadius: 12,
-    flex: 1,
     marginLeft: 8,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 20,
+    paddingVertical: 16,
     borderWidth: 1,
     borderColor: '#F48FB1'
   },
-  cardEstatisticaTitulo: {
+  statsTitle: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#FF006F'
   },
-  cardEstatisticaValor: {
+  statsValue: {
     fontSize: 32,
     fontWeight: 'bold',
     color: '#FF006F'
   },
-  filtros: {
+
+  filters: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 24
+    marginVertical: 16
   },
-  botaoSelecionado: {
+  filterActive: {
     backgroundColor: '#FF006F',
     paddingVertical: 10,
     paddingHorizontal: 18,
-    borderRadius: 20,
-    elevation: 2,
+    borderRadius: 20
   },
-  botaoNaoSelecionado: {
+  filterInactive: {
     backgroundColor: '#E5E7EB',
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#DDD',
-    elevation: 1,
+    borderColor: '#DDD'
   },
-  cardServico: {
+  filterTextActive: {
+    color: '#FFF',
+    fontWeight: '600'
+  },
+  filterTextInactive: {
+    color: '#333',
+    fontWeight: '600'
+  },
+
+  list: {
+    paddingBottom: 32
+  },
+  card: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#FFF',
     borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    marginTop: 16,
+    padding: 16,
+    marginTop: 8,
     borderWidth: 1,
     borderColor: '#F3F4F6'
   },
-  nomeServico: {
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  cardTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#000'
+    marginRight: 6
   },
-  detalhesServico: {
+  cardDetails: {
     fontSize: 14,
     color: '#6B7280',
     marginTop: 4
   },
-  botaoAdicionar: {
+
+  switchOuter: {
+    width: 50,
+    height: 30,
+    borderRadius: 20,
+    justifyContent: 'center',
+    padding: 3
+  },
+  switchInner: {
+    width: 24,
+    height: 24,
+    backgroundColor: '#FFF',
+    borderRadius: 12
+  },
+
+  addButton: {
     marginTop: 24,
     alignSelf: 'center',
     backgroundColor: '#FF007F',
     paddingVertical: 14,
     paddingHorizontal: 32,
-    borderRadius: 12,
+    borderRadius: 12
   },
-  textoBotaoAdicionar: {
+  addButtonText: {
     color: '#FFF',
-    fontWeight: 'bold',
-    fontSize: 16
+    fontSize: 16,
+    fontWeight: 'bold'
   }
 });
 
