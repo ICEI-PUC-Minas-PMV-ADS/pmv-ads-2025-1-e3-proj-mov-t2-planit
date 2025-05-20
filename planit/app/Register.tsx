@@ -1,45 +1,13 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, BackHandler, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, BackHandler, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useFocusEffect } from '@react-navigation/native'; 
+import { useFocusEffect } from '@react-navigation/native';
 import { collection, addDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../firebaseConfig';
 
-
 export default function CadastroScreen() {
-
-  const handleCadastro = async () => {
-    if (!nomeCompleto || !email || !senha || !confirmarSenha) {
-      Alert.alert('Erro', 'Preencha todos os campos.');
-      return;
-    }
-  
-    if (senha !== confirmarSenha) {
-      Alert.alert('Erro', 'As senhas não coincidem.');
-      return;
-    }
-  
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
-      const user = userCredential.user;
-  
-      await addDoc(collection(db, 'Usuario'), {
-        uid: user.uid,
-        nomeCompleto,
-        email,
-        criadoEm: new Date(),
-      });
-  
-      Alert.alert('Sucesso', 'Usuário cadastrado com sucesso!');
-      router.replace('/(tabs)/Perfil/Conta');
-    } catch (error: any) {
-      console.error('Erro ao cadastrar:', error);
-      Alert.alert('Erro', error.message || 'Erro desconhecido.');
-    }
-  };
-  
   const router = useRouter();
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [email, setEmail] = useState('');
@@ -47,8 +15,65 @@ export default function CadastroScreen() {
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const handleCadastro = async () => {
+    if (!nomeCompleto || !email || !senha || !confirmarSenha) {
+      Alert.alert('Erro', 'Preencha todos os campos.');
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      Alert.alert('Erro', 'Por favor, insira um email válido.');
+      return;
+    }
+
+    if (senha.length < 8) {
+      Alert.alert('Erro', 'A senha deve ter pelo menos 8 caracteres.');
+      return;
+    }
+
+    if (senha !== confirmarSenha) {
+      Alert.alert('Erro', 'As senhas não coincidem.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+      const user = userCredential.user;
+
+      await addDoc(collection(db, 'Usuario'), {
+        uid: user.uid,
+        nomeCompleto,
+        email,
+        criadoEm: new Date(),
+      });
+
+      Alert.alert('Sucesso', 'Usuário cadastrado com sucesso!');
+      router.replace('/(tabs)/Perfil/Conta');
+    } catch (error) {
+      if (error instanceof Error && 'code' in error) {
+        const firebaseError = error as { code: string };
+        if (firebaseError.code === 'auth/email-already-in-use') {
+          Alert.alert('Erro', 'Este email já está em uso.');
+        } else if (firebaseError.code === 'auth/invalid-email') {
+          Alert.alert('Erro', 'Email inválido.');
+        } else {
+          Alert.alert('Erro', 'Ocorreu um erro ao cadastrar. Tente novamente.');
+        }
+      } else {
+        Alert.alert('Erro', 'Erro desconhecido.');
+      }
+      console.error('Erro ao cadastrar:', error);
+    } finally {
+      setIsLoading(false); 
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
@@ -58,7 +83,7 @@ export default function CadastroScreen() {
 
       const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
 
-      return () => backHandler.remove(); 
+      return () => backHandler.remove();
     }, [])
   );
 
@@ -114,8 +139,13 @@ export default function CadastroScreen() {
         <TouchableOpacity
           className="bg-pink-500 py-3 rounded-full items-center"
           onPress={handleCadastro}
+          disabled={isLoading} 
         >
-          <Text className="text-white text-base font-bold">Cadastrar</Text>
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text className="text-white text-base font-bold">Cadastrar</Text>
+          )}
         </TouchableOpacity>
 
         <View className="flex-row justify-center mt-5">
@@ -125,7 +155,6 @@ export default function CadastroScreen() {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
-
-  );
+    </View>
+  );
 }

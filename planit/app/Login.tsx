@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebaseConfig";
@@ -10,6 +10,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const passwordTextInputRef = useRef<TextInput>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -17,6 +18,7 @@ export default function LoginScreen() {
       return;
     }
 
+    setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       Alert.alert("Sucesso", "Login realizado com sucesso!");
@@ -39,6 +41,8 @@ export default function LoginScreen() {
 
       setErrorMessage(userMessage);
       Alert.alert("Erro", userMessage);
+    } finally {
+      setIsLoading(false); 
     }
   };
 
@@ -120,12 +124,16 @@ export default function LoginScreen() {
           <TouchableOpacity
             className="bg-pink-500 py-3 rounded-full items-center"
             onPress={handleLogin}
-          >
-            <Text className="text-white text-base font-bold">Entrar</Text>
+            disabled={isLoading}
+            >
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text className="text-white text-base font-bold">Entrar</Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>
-        
     </View>
   );
 }
