@@ -58,7 +58,7 @@ function Cadastrar() {
             });
 
             window.alert('Usuário cadastrado com sucesso!');
-            navigate('/home');
+            navigate('/agendar');
 
         } catch (error) {
             if (error instanceof Error && 'code' in error) {
