@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import {View,Text,TouchableOpacity,StyleSheet,ScrollView,ActivityIndicator,Alert} from 'react-native';
 import { useRouter } from 'expo-router';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {collection,onSnapshot,query,where,orderBy,updateDoc,doc,Timestamp,QuerySnapshot,QueryDocumentSnapshot,FirestoreError} from 'firebase/firestore';
-import { db } from '../../../firebaseConfig';
+import {collection,onSnapshot,query,where,orderBy,updateDoc,doc,Timestamp,Query,QuerySnapshot,QueryDocumentSnapshot,FirestoreError} from 'firebase/firestore';
+import { auth, db } from '../../../firebaseConfig';
 
 interface Servico {
   id: string;
@@ -25,14 +25,23 @@ const Servicos: React.FC = () => {
   useEffect(() => {
     setLoading(true);
 
-    let q: any = collection(db, 'Servicos');
+    const user = auth.currentUser;
+    if (!user) {
+      router.replace('/Login');
+      return;
+    }
+
+    let q: Query = query(
+      collection(db, 'Servicos'),
+      where('uid', '==', user.uid)
+    );
 
     if (filtro === 'Recentes') {
-      q = query(q, orderBy('criadoEm', 'desc'));
+      q = query(q, where('uid', '==', user.uid), orderBy('criadoEm', 'desc'));
     } else if (filtro === 'Ativos') {
-      q = query(q, where('ativo', '==', true));
+      q = query(q, where('uid', '==', user.uid), where('ativo', '==', true));
     } else if (filtro === 'Inativos') {
-      q = query(q, where('ativo', '==', false));
+      q = query(q, where('uid', '==', user.uid), where('ativo', '==', false));
     }
 
     const unsub = onSnapshot(
@@ -65,8 +74,8 @@ const Servicos: React.FC = () => {
       }
     );
 
-    return unsub;
-  }, [filtro]);
+    return () => unsub();
+  }, [filtro, router]);
 
   const toggleAtivo = async (id: string) => {
     try {
@@ -78,7 +87,8 @@ const Servicos: React.FC = () => {
   };
 
   const countAtivos = servicos.filter(s => s.ativo).length;
-  const countAndamento = servicos.length - countAtivos; 
+  const countAndamento = servicos.length - countAtivos;
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -200,7 +210,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold'
   },
-
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -236,7 +245,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FF006F'
   },
-
   filters: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -264,7 +272,6 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: '600'
   },
-
   list: {
     paddingBottom: 32
   },
@@ -292,7 +299,6 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginTop: 4
   },
-
   switchOuter: {
     width: 50,
     height: 30,
@@ -306,7 +312,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderRadius: 12
   },
-
   addButton: {
     marginTop: 24,
     alignSelf: 'center',
