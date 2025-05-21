@@ -46,7 +46,7 @@ export default function CadastroScreen() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
       const user = userCredential.user;
 
-      await addDoc(collection(db, 'Usuario'), {
+      await addDoc(collection(db, 'Profissional'), {
         uid: user.uid,
         nomeCompleto,
         email,

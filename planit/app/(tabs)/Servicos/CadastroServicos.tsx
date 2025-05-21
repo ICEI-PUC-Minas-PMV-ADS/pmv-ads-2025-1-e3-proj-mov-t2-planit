@@ -3,7 +3,7 @@ import {View,Text,TextInput,TouchableOpacity,StyleSheet,ScrollView,Modal,Activit
 import { useRouter } from 'expo-router';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
-import { db } from '../../../firebaseConfig';
+import { db, auth } from '../../../firebaseConfig';
 
 const CadastroServicos: React.FC = () => {
   const router = useRouter();
@@ -47,6 +47,7 @@ const CadastroServicos: React.FC = () => {
       valor: valor.trim(),
       ativo: true,
       criadoEm: Timestamp.now(),
+      uid: auth.currentUser?.uid,
     };
 
     try {
@@ -60,7 +61,7 @@ const CadastroServicos: React.FC = () => {
       setDuracaoUnit('min');
       setCategoriaSelecionada('');
       setModalVisivel(false);
-      router.push('/MeusServicos');
+      router.push('/Servicos/Index');
     } catch (error) {
       console.error('Erro ao salvar serviço:', error);
       Alert.alert('Erro', 'Falha ao salvar serviço. Tente novamente.');
