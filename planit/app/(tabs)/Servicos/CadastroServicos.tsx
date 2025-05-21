@@ -48,11 +48,9 @@ const CadastroServicos = () => {
       ativo: true,
     };
 
-    // TODO: envie `novoServico` ao Firestore ou sua API aqui
 
     alert('Serviço cadastrado!');
-    // Se a sua página de serviços for uma rota _sem_ barra inicial, use:
-    router.push('MeusServicos');
+    
   }
 
   return (
