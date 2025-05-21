@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
   inputBusca: { flex: 1, backgroundColor: '#fff', borderColor: '#ddd', borderWidth: 1, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10 },
 
   separador: { height: 1, backgroundColor: '#e0e0e0', marginBottom: 16 },
-
+ 
   lista: { flex: 1 },
   vazioContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   vazioTexto: { fontSize: 16, color: '#999' },
