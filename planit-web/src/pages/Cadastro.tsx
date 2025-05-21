@@ -50,7 +50,7 @@ function Cadastrar() {
             const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
             const user = userCredential.user;
 
-            await addDoc(collection(db, 'Usuario'), {
+            await addDoc(collection(db, 'Cliente'), {
                 uid: user.uid,
                 nome,
                 email,
