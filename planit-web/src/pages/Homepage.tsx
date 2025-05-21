@@ -1,17 +1,28 @@
 import '../App.css';
 import perfilPlanit from '../../src/assets/perfilPlanit.jpg';
 import { IonIcon } from '@ionic/react';
-import { heartCircleOutline, calendarClearOutline, timeOutline, pricetagOutline, trashOutline, pencilOutline } from 'ionicons/icons'
+import { heartCircleOutline, calendarClearOutline, timeOutline, pricetagOutline, trashOutline, pencilOutline, logOutOutline } from 'ionicons/icons'
 import ModalBase from '../components/modalBase';
 import PinkBtn from '../components/pinkBtn';
 import { useState } from 'react'
 import WhiteBtn from '../components/whiteBtn';
 import { useNavigate } from 'react-router-dom';
+import { auth } from '../../firebaseConfig';
+import { signOut } from 'firebase/auth';
 
 
 function Homepage() {
     const [modalVisivel, setModalVisivel] = useState(false);
     const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            navigate('/'); 
+        } catch (error) {
+            console.error('Erro ao fazer logout:', error);
+        }
+    };
 
     return (
         <div className='m-2'>
@@ -89,6 +100,17 @@ function Homepage() {
                         <div className='bg-white border border-gray-200 w-8 h-8 rounded-full' onClick={() => navigate('/editar')}>
                             <IonIcon className='m-2 text-pink-700' icon={pencilOutline} />
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className='flex mt-20 mb-20 ml-10'>
+                <div className='flex gap-3 items-center cursor-pointer' onClick={handleLogout}>
+                    <div className='flex bg-pink-100 w-10 h-10 p-1 rounded-full justify-center items-center'>
+                        <IonIcon className='text-pink-600' icon={logOutOutline} style={{fontSize: 20}}/>
+                    </div>
+                    <div>
+                        <p className='font-light text-pink-600'>Logout</p>
                     </div>
                 </div>
             </div>

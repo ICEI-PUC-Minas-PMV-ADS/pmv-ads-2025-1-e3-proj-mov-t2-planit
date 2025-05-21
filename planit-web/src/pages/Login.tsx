@@ -27,7 +27,7 @@ function Login() {
         try {
             await signInWithEmailAndPassword(auth, email, senha);
             window.alert("Login realizado com sucesso!");
-            navigate('/home');
+            navigate('/agendar');
 
         } catch (error: any) {
             console.error("Erro ao fazer login:", error);
