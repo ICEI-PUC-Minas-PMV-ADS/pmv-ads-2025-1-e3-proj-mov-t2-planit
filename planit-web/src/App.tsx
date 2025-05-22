@@ -1,11 +1,22 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
 import Login from './pages/Login'
 import Cadastro from './pages/Cadastro'
 import Agendamento from './pages/Agendamento'
 import Homepage from './pages/Homepage'
 import Editar from './pages/Editar'
 
-function App() {
+interface AppProps {
+  profId?: string;
+}
+
+function App({ profId }: AppProps) {
+  useEffect(() => {
+    if(profId) {
+      localStorage.setItem('profissionalId', profId)
+    }
+  }, [profId])
+
   return (
     <Router>
       <Routes>

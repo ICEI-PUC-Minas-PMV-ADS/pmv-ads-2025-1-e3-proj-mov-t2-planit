@@ -3,6 +3,9 @@ import { IonIcon } from '@ionic/react';
 import { heartCircleOutline, timeOutline } from 'ionicons/icons'
 import { chevronBackCircleOutline, chevronForwardCircleOutline, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import { useNavigate } from 'react-router-dom';
+// import { useEffect, useState } from 'react'
+// // import { getProfessionalById, getProfessionalServices } from '../firebaseConfig'
+// // import { Servicos, Profissional } from '../../types'
 import Calendar from 'react-calendar';
 import perfilPlanit from '../assets/perfilPlanit.jpg';
 import WhiteBtn from '../components/whiteBtn';
