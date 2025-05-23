@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import {View,Text,TouchableOpacity,StyleSheet,ScrollView,ActivityIndicator,Alert} from 'react-native';
+import {View,Text,TouchableOpacity,StyleSheet,ScrollView,ActivityIndicator,Alert,} from 'react-native';
 import { useRouter } from 'expo-router';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {collection,onSnapshot,query,where,orderBy,updateDoc,doc,Timestamp,Query,QuerySnapshot,QueryDocumentSnapshot,FirestoreError} from 'firebase/firestore';
+import {collection,onSnapshot,query,where,orderBy,updateDoc,doc,Timestamp,Query,QuerySnapshot,QueryDocumentSnapshot,FirestoreError,limit,startAfter,} from 'firebase/firestore';
 import { auth, db } from '../../../firebaseConfig';
 
 interface Servico {
@@ -16,14 +16,18 @@ interface Servico {
 
 const Servicos: React.FC = () => {
   const router = useRouter();
-
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState<'Todos' | 'Ativos' | 'Inativos' | 'Recentes'>('Todos');
   const [switches, setSwitches] = useState<Record<string, boolean>>({});
+  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
     setLoading(true);
+    setServicos([]); 
+    setLastDoc(null); 
+    setHasMore(true);
 
     const user = auth.currentUser;
     if (!user) {
@@ -33,15 +37,16 @@ const Servicos: React.FC = () => {
 
     let q: Query = query(
       collection(db, 'Servicos'),
-      where('uid', '==', user.uid)
+      where('uid', '==', user.uid),
+      limit(10) 
     );
 
     if (filtro === 'Recentes') {
-      q = query(q, where('uid', '==', user.uid), orderBy('criadoEm', 'desc'));
+      q = query(q, where('uid', '==', user.uid), orderBy('criadoEm', 'desc'), limit(10));
     } else if (filtro === 'Ativos') {
-      q = query(q, where('uid', '==', user.uid), where('ativo', '==', true));
+      q = query(q, where('uid', '==', user.uid), where('ativo', '==', true), limit(10));
     } else if (filtro === 'Inativos') {
-      q = query(q, where('uid', '==', user.uid), where('ativo', '==', false));
+      q = query(q, where('uid', '==', user.uid), where('ativo', '==', false), limit(10));
     }
 
     const unsub = onSnapshot(
@@ -58,13 +63,15 @@ const Servicos: React.FC = () => {
             duracao: data.duracao,
             valor: data.valor,
             ativo: data.ativo,
-            criadoEm: data.criadoEm
+            criadoEm: data.criadoEm,
           });
           mapSwitches[docSnap.id] = data.ativo;
         });
 
         setServicos(lista);
         setSwitches(mapSwitches);
+        setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
+        setHasMore(snapshot.docs.length === 10); 
         setLoading(false);
       },
       (error: FirestoreError) => {
@@ -77,6 +84,83 @@ const Servicos: React.FC = () => {
     return () => unsub();
   }, [filtro, router]);
 
+  const carregarMais = () => {
+    if (!lastDoc || !hasMore) return;
+
+    setLoading(true);
+
+    const user = auth.currentUser;
+    if (!user) {
+      router.replace('/Login');
+      return;
+    }
+
+    let q: Query = query(
+      collection(db, 'Servicos'),
+      where('uid', '==', user.uid),
+      startAfter(lastDoc),
+      limit(10)
+    );
+
+    if (filtro === 'Recentes') {
+      q = query(
+        q,
+        where('uid', '==', user.uid),
+        orderBy('criadoEm', 'desc'),
+        startAfter(lastDoc),
+        limit(10)
+      );
+    } else if (filtro === 'Ativos') {
+      q = query(
+        q,
+        where('uid', '==', user.uid),
+        where('ativo', '==', true),
+        startAfter(lastDoc),
+        limit(10)
+      );
+    } else if (filtro === 'Inativos') {
+      q = query(
+        q,
+        where('uid', '==', user.uid),
+        where('ativo', '==', false),
+        startAfter(lastDoc),
+        limit(10)
+      );
+    }
+
+    onSnapshot(
+      q,
+      (snapshot: QuerySnapshot) => {
+        const lista: Servico[] = [...servicos];
+        const mapSwitches: Record<string, boolean> = { ...switches };
+
+        snapshot.forEach((docSnap: QueryDocumentSnapshot) => {
+          const data = docSnap.data() as any;
+          lista.push({
+            id: docSnap.id,
+            nome: data.nome,
+            duracao: data.duracao,
+            valor: data.valor,
+            ativo: data.ativo,
+            criadoEm: data.criadoEm,
+          });
+          mapSwitches[docSnap.id] = data.ativo;
+        });
+
+        setServicos(lista);
+        setSwitches(mapSwitches);
+        setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
+        setHasMore(snapshot.docs.length === 10);
+        setLoading(false);
+      },
+      (error: FirestoreError) => {
+        console.error('Erro ao carregar mais serviços:', error);
+        Alert.alert('Erro', 'Não foi possível carregar mais serviços.');
+        setLoading(false);
+      }
+    );
+  };
+
   const toggleAtivo = async (id: string) => {
     try {
       await updateDoc(doc(db, 'Servicos', id), { ativo: !switches[id] });
@@ -86,10 +170,10 @@ const Servicos: React.FC = () => {
     }
   };
 
-  const countAtivos = servicos.filter(s => s.ativo).length;
+  const countAtivos = servicos.filter((s) => s.ativo).length;
   const countAndamento = servicos.length - countAtivos;
 
-  if (loading) {
+  if (loading && servicos.length === 0) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FF006F" />
@@ -118,7 +202,7 @@ const Servicos: React.FC = () => {
       </View>
 
       <View style={styles.filters}>
-        {['Todos', 'Ativos', 'Inativos', 'Recentes'].map(f => (
+        {['Todos', 'Ativos', 'Inativos', 'Recentes'].map((f) => (
           <TouchableOpacity
             key={f}
             onPress={() => setFiltro(f as any)}
@@ -132,7 +216,7 @@ const Servicos: React.FC = () => {
       </View>
 
       <ScrollView contentContainerStyle={styles.list}>
-        {servicos.map(item => (
+        {servicos.map((item) => (
           <View key={item.id} style={styles.card}>
             <View>
               <View style={styles.cardHeader}>
@@ -141,7 +225,7 @@ const Servicos: React.FC = () => {
                   onPress={() =>
                     router.push({
                       pathname: '/(tabs)/Servicos/EditarServicos',
-                      params: { id: item.id }
+                      params: { id: item.id },
                     })
                   }
                 >
@@ -157,18 +241,32 @@ const Servicos: React.FC = () => {
               onPress={() => toggleAtivo(item.id)}
               style={[
                 styles.switchOuter,
-                { backgroundColor: switches[item.id] ? '#FF007F' : '#D1D5DB' }
+                { backgroundColor: switches[item.id] ? '#FF007F' : '#D1D5DB' },
               ]}
             >
               <View
                 style={[
                   styles.switchInner,
-                  { alignSelf: switches[item.id] ? 'flex-end' : 'flex-start' }
+                  { alignSelf: switches[item.id] ? 'flex-end' : 'flex-start' },
                 ]}
               />
             </TouchableOpacity>
           </View>
         ))}
+
+        {hasMore && (
+          <TouchableOpacity
+            style={styles.loadMoreButton}
+            onPress={carregarMais}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Text style={styles.loadMoreButtonText}>Carregar Mais</Text>
+            )}
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
           style={styles.addButton}
@@ -185,35 +283,35 @@ const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   container: {
     flex: 1,
     backgroundColor: '#FFF',
     padding: 16,
-    paddingTop: 10
+    paddingTop: 10,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
-    height: 48
+    height: 48,
   },
   headerButton: {
     width: 40,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   title: {
     flex: 1,
     textAlign: 'center',
     fontSize: 24,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16
+    marginBottom: 16,
   },
   cardEstatisticaAmarelo: {
     flex: 1,
@@ -223,7 +321,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     borderWidth: 1,
-    borderColor: '#FFD600'
+    borderColor: '#FFD600',
   },
   cardEstatisticaRosa: {
     flex: 1,
@@ -233,28 +331,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     borderWidth: 1,
-    borderColor: '#F48FB1'
+    borderColor: '#F48FB1',
   },
   statsTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#FF006F'
+    color: '#FF006F',
   },
   statsValue: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#FF006F'
+    color: '#FF006F',
   },
   filters: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: 16
+    marginVertical: 16,
   },
   filterActive: {
     backgroundColor: '#FF006F',
     paddingVertical: 10,
     paddingHorizontal: 18,
-    borderRadius: 20
+    borderRadius: 20,
   },
   filterInactive: {
     backgroundColor: '#E5E7EB',
@@ -262,18 +360,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#DDD'
+    borderColor: '#DDD',
   },
   filterTextActive: {
     color: '#FFF',
-    fontWeight: '600'
+    fontWeight: '600',
   },
   filterTextInactive: {
     color: '#333',
-    fontWeight: '600'
+    fontWeight: '600',
   },
   list: {
-    paddingBottom: 32
+    paddingBottom: 32,
   },
   card: {
     flexDirection: 'row',
@@ -283,34 +381,34 @@ const styles = StyleSheet.create({
     padding: 16,
     marginTop: 8,
     borderWidth: 1,
-    borderColor: '#F3F4F6'
+    borderColor: '#F3F4F6',
   },
   cardHeader: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginRight: 6
+    marginRight: 6,
   },
   cardDetails: {
     fontSize: 14,
     color: '#6B7280',
-    marginTop: 4
+    marginTop: 4,
   },
   switchOuter: {
     width: 50,
     height: 30,
     borderRadius: 20,
     justifyContent: 'center',
-    padding: 3
+    padding: 3,
   },
   switchInner: {
     width: 24,
     height: 24,
     backgroundColor: '#FFF',
-    borderRadius: 12
+    borderRadius: 12,
   },
   addButton: {
     marginTop: 24,
@@ -318,13 +416,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF007F',
     paddingVertical: 14,
     paddingHorizontal: 32,
-    borderRadius: 12
+    borderRadius: 12,
   },
   addButtonText: {
     color: '#FFF',
     fontSize: 16,
-    fontWeight: 'bold'
-  }
+    fontWeight: 'bold',
+  },
+  loadMoreButton: {
+    marginTop: 16,
+    alignSelf: 'center',
+    backgroundColor: '#FF007F',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+  },
+  loadMoreButtonText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });
 
 export default Servicos;
