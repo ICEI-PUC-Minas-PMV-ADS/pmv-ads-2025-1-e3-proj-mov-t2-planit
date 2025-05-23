@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
   View,
@@ -9,8 +10,6 @@ import {
   Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-
 const CadastroServicos = () => {
   const router = useRouter();
 
@@ -48,9 +47,9 @@ const CadastroServicos = () => {
       ativo: true,
     };
 
+    // TODO: envie `novoServico` ao Firestore ou sua API aqui
 
     alert('Serviço cadastrado!');
-    
   }
 
   return (
