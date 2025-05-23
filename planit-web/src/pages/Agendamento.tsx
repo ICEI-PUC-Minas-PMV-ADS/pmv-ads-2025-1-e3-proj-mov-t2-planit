@@ -3,8 +3,13 @@ import { IonIcon } from '@ionic/react';
 import { heartCircleOutline, timeOutline } from 'ionicons/icons'
 import { chevronBackCircleOutline, chevronForwardCircleOutline, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import { useNavigate } from 'react-router-dom';
+// import { useEffect, useState } from 'react'
+// // import { getProfessionalById, getProfessionalServices } from '../firebaseConfig'
+// // import { Servicos, Profissional } from '../../types'
 import Calendar from 'react-calendar';
 import perfilPlanit from '../assets/perfilPlanit.jpg';
+import WhiteBtn from '../components/whiteBtn';
+import GreenBtn from '../components/greenBtn';
 
 
 function Agendar() {
@@ -184,8 +189,9 @@ function Agendar() {
 
       </div>
 
-      <div className='flex justify-end m-5'>
-        <button onClick={() => navigate('/home')} type='submit' className='p-1 w-26 h-12 rounded-xl border border-emerald-600  bg-emerald-500 cursor-pointer text-white hover:bg-white hover:text-emerald-600'>Concluir</button>
+      <div className='flex justify-around m-5'>
+        <WhiteBtn title='Pular' onClick={() => navigate('/home')}/>
+        <GreenBtn title='Agendar' onClick={() => navigate('/home')} type='submit' />
       </div>
     </div>
   )
