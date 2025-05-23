@@ -18,6 +18,7 @@ export default function CadastroScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isStrongPassword = (password: string) =>/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
 
   const handleCadastro = async () => {
     if (!nomeCompleto || !email || !senha || !confirmarSenha) {
@@ -40,6 +41,14 @@ export default function CadastroScreen() {
       return;
     }
 
+    if (!isStrongPassword(senha)) {
+      Alert.alert(
+        "Erro",
+        "A senha deve ter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas e números."
+      );
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
