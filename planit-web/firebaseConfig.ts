@@ -1,12 +1,8 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore, setLogLevel } from "firebase/firestore";
+import { getFirestore, setLogLevel, doc, getDoc, query, collection, getDocs, where, addDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { Profissional, Servico, Agendamento } from './types'
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -16,7 +12,7 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
-// Initialize Firebase
+
 const app = initializeApp(firebaseConfig);
 setLogLevel('info')
 const db = getFirestore(app);
@@ -24,3 +20,17 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 export { app, db, auth };
+
+export async function getProfissional(profId: string): Promise<Profissional> {
+  const docRef = doc(db, "Profissional", profId);
+  const docSnap = await getDoc(docRef);
+
+  if (!docSnap.exists()) {
+    throw new Error("Profissional não encontrado"); 
+  }
+
+  return {
+    id: docSnap.id,
+    ...docSnap.data()
+  } as Profissional;
+}

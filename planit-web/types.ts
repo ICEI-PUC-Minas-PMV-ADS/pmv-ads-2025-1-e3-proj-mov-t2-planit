@@ -5,10 +5,20 @@ export interface Profissional {
     fotoPerfil?: string 
 }
 
-export interface Servicos {
+export interface Servico {
     nome: string 
     descricao: string
     duracao: string 
     valor: string 
     uid: string
+}
+
+export interface Agendamento {
+    horaInicio: string
+    horaFim: string 
+    observacao: string 
+    profId: string
+    servId: string
+    clieId: string 
+    status: string
 }
