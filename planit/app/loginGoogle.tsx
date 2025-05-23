@@ -5,7 +5,7 @@ import * as WebBrowser from "expo-web-browser";
 import { useAuthRequest } from "expo-auth-session";
 import styles from "../styles/styles";
 import { router, useRouter } from "expo-router";
-import { signInWithCredential, GoogleAuthProvider, getAuth } from "firebase/auth";
+import { signInWithCredential, GoogleAuthProvider, getAuth, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -27,6 +27,17 @@ export default function AuthScreen() {
   }
 
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setModalVisible(false);
+        router.push("/(tabs)");
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
     console.log("Response completa:", response);
     if (response?.type === "success") {
       const { authentication } = response;
@@ -45,7 +56,7 @@ export default function AuthScreen() {
           const user = userCredential.user;
           console.log("Usuário autenticado no Firebase:", user);
           setModalVisible(false);
-          router.push("./");
+          router.push("/(tabs)");
         } catch (error) {
           console.error("Erro ao autenticar com Firebase:", error);
         }
@@ -54,6 +65,15 @@ export default function AuthScreen() {
       getFirebaseUser();
     }
   }, [response]);
+
+  const handleEmailLogin = () => {
+    const user = auth.currentUser;
+    if (user) {
+      router.push("/(tabs)");
+    } else {
+      router.replace("/Register");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -79,7 +99,7 @@ export default function AuthScreen() {
 
             <TouchableOpacity
               style={styles.button}
-              onPress={() => router.replace("/Register")}
+              onPress={handleEmailLogin} 
             >
               <Text style={styles.buttonText}>Continuar com e-mail</Text>
             </TouchableOpacity>
