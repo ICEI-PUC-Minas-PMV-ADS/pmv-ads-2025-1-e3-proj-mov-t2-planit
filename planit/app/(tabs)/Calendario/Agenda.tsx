@@ -26,52 +26,63 @@ function StatusModal({
   onClose: () => void;
   onSelectStatus: (status: number) => void;
 }) {
+  const options = [
+    { status: 1, label: "Disponível", color: "green-600", icon: "checkmark-circle-outline" },
+    { status: 3, label: "Bloqueado", color: "pink-700", icon: "remove-circle-outline" },
+    { status: 2, label: "Agendado", color: "slate-500", icon: "calendar" },
+  ];
+
   return (
-    <Modal visible={visible} transparent animationType="slide">
-      <View className="flex-1 bg-black/50 justify-center items-center">
-        <View className="bg-white rounded-lg p-6 w-4/5">
-          <Text className="text-xl font-bold mb-4">Alterar status</Text>
+    <Modal visible={visible} transparent animationType="fade">
+      <View className="flex-1 bg-black/40 justify-center items-center px-4">
+        <View className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg">
+          {/* Header */}
+          <Text className="text-2xl font-semibold text-center mb-4">
+            Alterar status
+          </Text>
+          <View className="h-px bg-gray-200 mb-4" />
 
-          {/* Disponível */}
+          {/* Opções */}
+          {options.map(({ status, label, color, icon }) => {
+            const selected = currentStatus === status;
+            const disabled = status === 2; // desabilita "Agendado"
+            return (
+              <TouchableOpacity
+                key={status}
+                className={`flex-row items-center p-3 mb-2 rounded-lg ${
+                  disabled ? "opacity-50" : "hover:bg-gray-100"
+                }`}
+                disabled={disabled}
+                onPress={() => {
+                  onSelectStatus(status);
+                  onClose();
+                }}
+              >
+                <Ionicons
+                  name={icon as any}
+                  size={24}
+                  className={`mr-3 ${selected ? `text-${color}` : "text-gray-400"}`}
+                />
+                <Text
+                  className={`text-lg ${
+                    selected ? `text-${color}` : "text-gray-700"
+                  }`}
+                >
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+
+          {/* Footer */}
+          <View className="h-px bg-gray-200 mt-4 mb-4" />
           <TouchableOpacity
-            className="flex-row items-center p-2 mb-2 rounded-lg"
-            onPress={() => {
-              onSelectStatus(1);
-              onClose();
-            }}
+            className="py-3 bg-gray-100 rounded-lg"
+            onPress={onClose}
           >
-            <View
-              className={`w-5 h-5 rounded-full mr-3 border-2 border-green-600 ${
-                currentStatus === 1 ? "bg-green-600" : ""
-              }`}
-            />
-            <Text className="text-gray-800">Disponível</Text>
-          </TouchableOpacity>
-
-          {/* Bloqueado */}
-          <TouchableOpacity
-            className="flex-row items-center p-2 mb-2 rounded-lg"
-            onPress={() => {
-              onSelectStatus(3);
-              onClose();
-            }}
-          >
-            <View
-              className={`w-5 h-5 rounded-full mr-3 border-2 border-pink-700 ${
-                currentStatus === 3 ? "bg-pink-700" : ""
-              }`}
-            />
-            <Text className="text-gray-800">Bloqueado</Text>
-          </TouchableOpacity>
-
-          {/* Agendado (desabilitado) */}
-          <TouchableOpacity className="flex-row items-center p-2 mb-2 rounded-lg opacity-50" disabled>
-            <View className="w-5 h-5 rounded-full mr-3 border-2 border-slate-500" />
-            <Text className="text-gray-400">Agendado</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity className="mt-4 py-2 bg-gray-200 rounded-lg" onPress={onClose}>
-            <Text className="text-center text-gray-800">Cancelar</Text>
+            <Text className="text-center text-gray-700 text-base">
+              Cancelar
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -154,9 +165,9 @@ const Agenda = () => {
 
   // StatusModal
   const [statusModalVisivel, setStatusModalVisivel] = useState(false);
-  const [horarioSelecionado, setHorarioSelecionado] = useState<Horario | null>(
-    null
-  );
+  const [horarioSelecionadoState, setHorarioSelecionadoState] = useState<
+    Horario | null
+  >(null);
 
   useEffect(() => {
     const dias = Array.from(
@@ -176,16 +187,18 @@ const Agenda = () => {
 
   // Abrir modal de status de horário
   const abrirStatusModal = (h: Horario) => {
-    setHorarioSelecionado(h);
+    setHorarioSelecionadoState(h);
     setStatusModalVisivel(true);
   };
   const fecharStatusModal = () => setStatusModalVisivel(false);
 
   const handleSelectStatus = (novoStatus: number) => {
-    if (!horarioSelecionado) return;
+    if (!horarioSelecionadoState) return;
     setHorarios((prev) =>
       prev.map((h) =>
-        h.value === horarioSelecionado.value ? { ...h, status: novoStatus } : h
+        h.value === horarioSelecionadoState.value
+          ? { ...h, status: novoStatus }
+          : h
       )
     );
   };
@@ -193,7 +206,7 @@ const Agenda = () => {
   return (
     <ScrollView>
       <View className="flex-1 bg-white p-4">
-        {/* Bloquear dia */}
+        {/* Botão bloquear dia */}
         <TouchableOpacity
           className="flex-row justify-center mb-4"
           onPress={bloquearDia}
@@ -215,11 +228,7 @@ const Agenda = () => {
               onValueChange={(v) => setMesSelecionado(v)}
             >
               {meses.map((m) => (
-                <RNPicker.Item
-                  key={m.value}
-                  label={m.name}
-                  value={m.value}
-                />
+                <RNPicker.Item key={m.value} label={m.name} value={m.value} />
               ))}
             </RNPicker>
           </View>
@@ -236,7 +245,9 @@ const Agenda = () => {
               {diasNoMes.map((d) => (
                 <RNPicker.Item
                   key={d}
-                  label={`${d.toString().padStart(2, "0")}/${mesSelecionado.toString().padStart(2, "0")}`}
+                  label={`${d.toString().padStart(2, "0")}/${mesSelecionado
+                    .toString()
+                    .padStart(2, "0")}`}
                   value={d}
                 />
               ))}
@@ -286,7 +297,7 @@ const Agenda = () => {
         {/* Modal de seleção de status de horário */}
         <StatusModal
           visible={statusModalVisivel}
-          currentStatus={horarioSelecionado?.status ?? 1}
+          currentStatus={horarioSelecionadoState?.status ?? 1}
           onClose={fecharStatusModal}
           onSelectStatus={handleSelectStatus}
         />
