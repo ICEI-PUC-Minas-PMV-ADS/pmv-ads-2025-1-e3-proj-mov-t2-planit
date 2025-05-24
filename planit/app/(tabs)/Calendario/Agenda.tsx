@@ -1,342 +1,298 @@
-import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Alert, Modal } from "react-native";
-import { Picker as RNPicker } from '@react-native-picker/picker';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+} from "react-native";
+import { Picker as RNPicker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
-import { router, useRouter } from 'expo-router';
-
+import { router, useRouter } from "expo-router";
 import ModalBase from "../../../components/modais/modalBase";
 import PinkBtn from "@/components/button/pinkBtn";
 import WhiteBtn from "../../../components/button/whiteBtn";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
+// Modal para escolher status de um horário
+function StatusModal({
+  visible,
+  currentStatus,
+  onClose,
+  onSelectStatus,
+}: {
+  visible: boolean;
+  currentStatus: number;
+  onClose: () => void;
+  onSelectStatus: (status: number) => void;
+}) {
+  return (
+    <Modal visible={visible} transparent animationType="slide">
+      <View className="flex-1 bg-black/50 justify-center items-center">
+        <View className="bg-white rounded-lg p-6 w-4/5">
+          <Text className="text-xl font-bold mb-4">Alterar status</Text>
+
+          {/* Disponível */}
+          <TouchableOpacity
+            className="flex-row items-center p-2 mb-2 rounded-lg"
+            onPress={() => {
+              onSelectStatus(1);
+              onClose();
+            }}
+          >
+            <View
+              className={`w-5 h-5 rounded-full mr-3 border-2 border-green-600 ${
+                currentStatus === 1 ? "bg-green-600" : ""
+              }`}
+            />
+            <Text className="text-gray-800">Disponível</Text>
+          </TouchableOpacity>
+
+          {/* Bloqueado */}
+          <TouchableOpacity
+            className="flex-row items-center p-2 mb-2 rounded-lg"
+            onPress={() => {
+              onSelectStatus(3);
+              onClose();
+            }}
+          >
+            <View
+              className={`w-5 h-5 rounded-full mr-3 border-2 border-pink-700 ${
+                currentStatus === 3 ? "bg-pink-700" : ""
+              }`}
+            />
+            <Text className="text-gray-800">Bloqueado</Text>
+          </TouchableOpacity>
+
+          {/* Agendado (desabilitado) */}
+          <TouchableOpacity className="flex-row items-center p-2 mb-2 rounded-lg opacity-50" disabled>
+            <View className="w-5 h-5 rounded-full mr-3 border-2 border-slate-500" />
+            <Text className="text-gray-400">Agendado</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity className="mt-4 py-2 bg-gray-200 rounded-lg" onPress={onClose}>
+            <Text className="text-center text-gray-800">Cancelar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+// Função auxiliar para cores de status
+const getStatusCor = (status: number) => {
+  switch (status) {
+    case 1:
+      return { text: "text-green-600", border: "border-green-600" };
+    case 2:
+      return { text: "text-pink-700", border: "border-pink-700" };
+    case 3:
+      return { text: "text-slate-500", border: "border-slate-500" };
+    default:
+      return { text: "text-black", border: "border-black" };
+  }
+};
+
 const meses = [
-    { name: "Jan", value: 1 },
-    { name: "Fev", value: 2 },
-    { name: "Mar", value: 3 },
-    { name: "Abr", value: 4 },
-    { name: "Mai", value: 5 },
-    { name: "Jun", value: 6 },
-    { name: "Jul", value: 7 },
-    { name: "Ago", value: 8 },
-    { name: "Set", value: 9 },
-    { name: "Out", value: 10 },
-    { name: "Nov", value: 11 },
-    { name: "Dez", value: 12 }
+  { name: "Jan", value: 1 },
+  { name: "Fev", value: 2 },
+  { name: "Mar", value: 3 },
+  { name: "Abr", value: 4 },
+  { name: "Mai", value: 5 },
+  { name: "Jun", value: 6 },
+  { name: "Jul", value: 7 },
+  { name: "Ago", value: 8 },
+  { name: "Set", value: 9 },
+  { name: "Out", value: 10 },
+  { name: "Nov", value: 11 },
+  { name: "Dez", value: 12 },
 ];
-
-const getDiasMes = (mes: number, ano: number) => {
-    return new Date(ano, mes, 0).getDate();
-};
-
-const getStatusCor = ( status: number ) => {
-    switch (status) {
-        case 1: return {
-            text: 'text-green-600',
-            border: 'border-green-600' 
-        };
-        case 2: return {
-            text: 'text-pink-700',
-            border: 'border-pink-700' 
-        };
-        case 3: return {
-            text: 'text-slate-500',
-            border: 'border-slate-500' 
-        };
-        default: return {
-            text: 'text-black',
-            border: 'border-black' 
-        };
-    }
-};
+const getDiasMes = (mes: number, ano: number) => new Date(ano, mes, 0).getDate();
 
 const Agenda = () => {
-    const router = useRouter();
+  const router = useRouter();
 
-    type Horario = {
-        name: string;
-        value: number;
-        status: number;
-    };
+  type Horario = {
+    name: string;
+    value: number;
+    status: number;
+  };
 
-    const [horarios, setHorarios] = useState<Horario[]>([
-        { name: "08:00", value: 1, status: 1 },
-        { name: "08:30", value: 2, status: 1 },
-        { name: "09:00", value: 3, status: 1 },
-        { name: "09:30", value: 4, status: 1 },
-        { name: "10:00", value: 5, status: 1 },
-        { name: "10:30", value: 6, status: 2 },
-        { name: "11:00", value: 7, status: 1 },
-        { name: "11:30", value: 8, status: 1 },
-        { name: "12:00", value: 9, status: 2 },
-        { name: "12:30", value: 10, status: 1 },
-        { name: "13:00", value: 11, status: 3 },
-        { name: "13:30", value: 12, status: 1 },
-        { name: "14:00", value: 13, status: 1 },
-        { name: "14:30", value: 14, status: 1 },
-        { name: "15:00", value: 15, status: 1 },
-        { name: "15:30", value: 16, status: 1 },
-        { name: "16:00", value: 17, status: 1 },
-        { name: "16:30", value: 18, status: 3 },
-        { name: "17:00", value: 19, status: 1 },
-        { name: "17:30", value: 20, status: 1 },
-        { name: "18:00", value: 21, status: 1}
-    ]);
+  const [horarios, setHorarios] = useState<Horario[]>([
+    { name: "08:00", value: 1, status: 1 },
+    { name: "08:30", value: 2, status: 1 },
+    { name: "09:00", value: 3, status: 1 },
+    { name: "09:30", value: 4, status: 1 },
+    { name: "10:00", value: 5, status: 1 },
+    { name: "10:30", value: 6, status: 2 },
+    { name: "11:00", value: 7, status: 1 },
+    { name: "11:30", value: 8, status: 1 },
+    { name: "12:00", value: 9, status: 2 },
+    { name: "12:30", value: 10, status: 1 },
+    { name: "13:00", value: 11, status: 3 },
+    { name: "13:30", value: 12, status: 1 },
+    { name: "14:00", value: 13, status: 1 },
+    { name: "14:30", value: 14, status: 1 },
+    { name: "15:00", value: 15, status: 1 },
+    { name: "15:30", value: 16, status: 1 },
+    { name: "16:00", value: 17, status: 1 },
+    { name: "16:30", value: 18, status: 3 },
+    { name: "17:00", value: 19, status: 1 },
+    { name: "17:30", value: 20, status: 1 },
+    { name: "18:00", value: 21, status: 1 },
+  ]);
 
-    type Status = number;
+  const anoAtual = new Date().getFullYear();
+  const [mesSelecionado, setMesSelecionado] = useState<number>(
+    new Date().getMonth() + 1
+  );
+  const [diaSelecionado, setDiaSelecionado] = useState<number>(1);
+  const [diasNoMes, setDiasNoMes] = useState<number[]>([]);
 
-    const statusTexto: { [key in Status]: string } = {
-        1: 'Disponível',
-        2: 'Agendado',
-        3: 'Bloqueado',
-    };
+  // Bloquear dia modal
+  const [modalVisivel, setModalVisivel] = useState(false);
 
-    const [modalVisivel, setModalVisivel] = useState(false);
-    const [modalAcaoVisivel, setModalAcaoVisivel] = useState(false);
+  // StatusModal
+  const [statusModalVisivel, setStatusModalVisivel] = useState(false);
+  const [horarioSelecionado, setHorarioSelecionado] = useState<Horario | null>(
+    null
+  );
 
-    const anoAtual = new Date().getFullYear();
-    const [mesSelecionado, setMesSelecionado] = useState<number>(new Date().getMonth() + 1);
-    const [diaSelecionado, setDiaSelecionado] = useState<number>(1);
-    const [diasNoMes, setDiasNoMes] = useState<number[]>([]);
+  useEffect(() => {
+    const dias = Array.from(
+      { length: getDiasMes(mesSelecionado, anoAtual) },
+      (_, i) => i + 1
+    );
+    setDiasNoMes(dias);
+    setDiaSelecionado(1);
+  }, [mesSelecionado]);
 
-    const [acaoSelecionada, setAcaoSelecionada] = useState('');
-    const [horarioSelecionado, setHorarioSelecionado] = useState<Horario | null>(null);
+  // Ações de bloqueio de dia
+  const bloquearDia = () => setModalVisivel(true);
+  const confirmBloquearDia = () => {
+    setHorarios((prev) => prev.map((h) => ({ ...h, status: 3 })));
+    setModalVisivel(false);
+  };
 
-    type IconeType = keyof typeof Ionicons.glyphMap;
+  // Abrir modal de status de horário
+  const abrirStatusModal = (h: Horario) => {
+    setHorarioSelecionado(h);
+    setStatusModalVisivel(true);
+  };
+  const fecharStatusModal = () => setStatusModalVisivel(false);
 
-    const [iconeModal, setIconeModal] = useState<IconeType>('alert-circle-outline');
-    const [titleModal, setTitleModal] = useState('');
-    const [textModal, setTextModal] = useState('');   
+  const handleSelectStatus = (novoStatus: number) => {
+    if (!horarioSelecionado) return;
+    setHorarios((prev) =>
+      prev.map((h) =>
+        h.value === horarioSelecionado.value ? { ...h, status: novoStatus } : h
+      )
+    );
+  };
 
-    const [menuVisivel, setMenuVisivel] = useState(false);
+  return (
+    <ScrollView>
+      <View className="flex-1 bg-white p-4">
+        {/* Bloquear dia */}
+        <TouchableOpacity
+          className="flex-row justify-center mb-4"
+          onPress={bloquearDia}
+        >
+          <Ionicons
+            name="lock-closed-outline"
+            size={30}
+            color="#4b5563"
+            className="bg-slate-100 p-3 rounded-full"
+          />
+        </TouchableOpacity>
 
-    useEffect(() => {
-        const dias = Array.from(
-            { length: getDiasMes(mesSelecionado, anoAtual) },
-            (_, i) => i + 1
-        );
-        setDiasNoMes(dias);
-        setDiaSelecionado(1);
-    }, [mesSelecionado]);
+        {/* Seletor mês */}
+        <View className="flex-row justify-between items-center mb-4 px-4">
+          <Text className="text-lg">Selecione o mês:</Text>
+          <View className="border border-slate-400 rounded-full w-32">
+            <RNPicker
+              selectedValue={mesSelecionado}
+              onValueChange={(v) => setMesSelecionado(v)}
+            >
+              {meses.map((m) => (
+                <RNPicker.Item
+                  key={m.value}
+                  label={m.name}
+                  value={m.value}
+                />
+              ))}
+            </RNPicker>
+          </View>
+        </View>
 
-    const acaoPermitida = (acao: string, status: number): boolean => {
-        if (status === 1 && acao === 'Disponibilizar') return false; // Já está disponível
-        if (status === 1 && acao === 'Cancelar') return false; // Não pode cancelar o que não foi agendado
-        if (status === 2 && acao !== 'Cancelar') return false; // Agendado só pode ser cancelado
-        if (status === 3 && acao !== 'Disponibilizar') return false; // Bloqueado só pode ser disponibilizado
-        return true;
-    };
+        {/* Seletor dia */}
+        <View className="flex-row justify-between items-center mb-6 px-4">
+          <Text className="text-lg">Selecione o dia:</Text>
+          <View className="border border-slate-400 rounded-full w-32">
+            <RNPicker
+              selectedValue={diaSelecionado}
+              onValueChange={(v) => setDiaSelecionado(v)}
+            >
+              {diasNoMes.map((d) => (
+                <RNPicker.Item
+                  key={d}
+                  label={`${d.toString().padStart(2, "0")}/${mesSelecionado.toString().padStart(2, "0")}`}
+                  value={d}
+                />
+              ))}
+            </RNPicker>
+          </View>
+        </View>
 
-    const gerarMensagemModal = (acao: string, horario: Horario) => {
-        switch (acao) {
-            case 'Disponibilizar':
-                setIconeModal('checkmark-circle-outline');
-                setTitleModal('Disponibilizar Horário');
-                return `Deseja disponibilizar o horário ${horario.name}?`;
-            case 'Cancelar':
-                setIconeModal('trash-bin-outline');
-                setTitleModal('Cancelar Agendamento');
-                return `Deseja cancelar o agendamento do horário ${horario.name}? Seu cliente será notificado sobre o cancelamento.`;
-            case 'Bloquear':
-                setIconeModal('remove-circle-outline');
-                setTitleModal('Bloquear Horário');
-                return `Deseja bloquear o horário ${horario.name}?`;
-            default:
-                setIconeModal('alert-circle-outline');
-                setTitleModal('Ação Inválida');
-                return 'Ação desconhecida.';
-        }
-    };
+        {/* Grade de horários */}
+        <Text className="text-center text-xl mb-4">Horários</Text>
+        <View className="flex-row flex-wrap justify-center gap-4">
+          {horarios.map((h) => {
+            const cls = getStatusCor(h.status);
+            return (
+              <TouchableOpacity
+                key={h.value}
+                className={`p-4 rounded-full border ${cls.border}`}
+                onPress={() => abrirStatusModal(h)}
+              >
+                <Text className={cls.text}>{h.name}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
-    const abrirMenu = (horario: Horario) => {
-        setHorarioSelecionado(horario);
-        setMenuVisivel(true);
-    };
+        {/* Botão Salvar */}
+        <View className="mt-6 items-center">
+          <PinkBtn
+            title="Salvar"
+            onPress={() => router.push("/(tabs)/Calendario/Index")}
+          />
+        </View>
 
-    const fecharMenu = () => {
-        setMenuVisivel(false);
-    }
+        {/* Modal de confirmação de bloqueio de dia */}
+        <ModalBase
+          visible={modalVisivel}
+          title="Bloquear dia"
+          text="Deseja realmente bloquear todos os horários deste dia?"
+          icone="lock-closed-outline"
+          onClose={() => setModalVisivel(false)}
+        >
+          <View className="flex-row justify-between mt-4">
+            <WhiteBtn title="Cancelar" onPress={() => setModalVisivel(false)} />
+            <PinkBtn title="Confirmar" onPress={confirmBloquearDia} />
+          </View>
+        </ModalBase>
 
-    const executarAcao = (acao: string) => {
-        if (!horarioSelecionado) return;
-
-        if (!acaoPermitida(acao, horarioSelecionado.status)) {
-            setTitleModal("Ação inválida");
-            setTextModal("Essa ação não é permitida para o status atual do horário.");
-            setIconeModal("alert-circle-outline");
-            setModalVisivel(true);
-            setMenuVisivel(false);
-            return;
-        }
-
-        const mensagem = gerarMensagemModal(acao, horarioSelecionado);
-        setAcaoSelecionada(acao);
-        setTextModal(mensagem);
-        setMenuVisivel(false);
-        setModalAcaoVisivel(true);
-    }
-
-    const confirmarAcao = () => {
-        if (!horarioSelecionado || !acaoSelecionada) return;
-      
-        const novoStatus = acaoSelecionada === 'Disponibilizar' ? 1 :
-                          acaoSelecionada === 'Cancelar' ? 1 :
-                          acaoSelecionada === 'Bloquear' ? 3 : 
-                          horarioSelecionado.status;
-      
-        const horariosAtualizados = horarios.map(h =>
-            h.value === horarioSelecionado.value ? { ...h, status: novoStatus } : h
-        );
-      
-        setHorarios(horariosAtualizados);
-        setModalAcaoVisivel(false);
-        setMenuVisivel(false);
-        setHorarioSelecionado(null);
-    };
-
-    const getAcoesDisponiveis = (status: number) => {
-        switch (status) {
-            case 1:
-                return ['Bloquear'];
-            case 2:
-                return ['Cancelar'];
-            case 3:
-                return ['Disponibilizar'];
-            default:
-                return [];
-        }
-    };
-
-    const bloquearDia = () => {
-        const horariosBloqueados = horarios.map(horario => ({
-            ...horario,
-            status: 3
-        }));
-        
-        setHorarios(horariosBloqueados);
-        setModalVisivel(false);
-    };
-
-    return (
-        <ScrollView>
-            <View className="flex flex-1 bg-white">
-                <TouchableOpacity className="flex flex-row justify-center m-5" onPress={() => setModalVisivel(true)}>
-                    <Ionicons accessibilityLabel="Bloquear o dia" size={30} name="lock-closed-outline" className="bg-slate-50 pb-6 pt-6 pl-1 pr-1 rounded-3xl border border-gray-400"/>
-                </TouchableOpacity>
-
-                <SafeAreaProvider>
-                    <SafeAreaView>
-                        <View className="flex flex-col justify-end mt-8">
-                            <View className="flex flex-row justify-between items-center mt-5 mr-16 ml-16">
-                                <View>
-                                    <Text className="text-lg">Selecione o mês:</Text>
-                                </View>
-
-                                <View className="w-40 border border-slate-400 rounded-full">
-                                    <RNPicker selectedValue={mesSelecionado} onValueChange={(itemValue) => setMesSelecionado(itemValue)}>
-                                        {meses.map((mes) => (
-                                            <RNPicker.Item key={mes.value} label={mes.name} value={mes.value}/>
-                                        ))}
-                                    </RNPicker>
-                                </View>
-                            </View>
-
-                            <View className="flex flex-row justify-between items-center mt-5 mr-16 ml-16">
-                                <View>
-                                    <Text className="text-lg">Selecione o dia:</Text>
-                                </View>
-
-                                <View className="w-40 border border-slate-400 rounded-full">
-                                    <RNPicker selectedValue={diaSelecionado} onValueChange={(itemValue) => setDiaSelecionado(itemValue)}>
-                                        {diasNoMes.map((dia) => (
-                                            <RNPicker.Item key={dia} label={`${dia.toString().padStart(2, '0')}/${mesSelecionado.toString().padStart(2, '0')}`} value={dia}/>
-                                        ))}
-                                    </RNPicker>
-                                </View>
-                            </View>
-                        </View>
-                    </SafeAreaView>
-                </SafeAreaProvider>
-
-                <View className='bg-white mt-10'>
-                    <View className='m-3 p-3'>
-                        <Text className='text-center text-xl mb-8'>Horários</Text>
-                            
-                        <View className="flex flex-row flex-wrap justify-center gap-5">
-                            {horarios.map(horario => {
-                                const statusClasses = getStatusCor(horario.status);
-
-                                return (
-                                <TouchableOpacity
-                                    key={horario.value}
-                                    className={`p-4 justify-center rounded-full border ${statusClasses.border}`}
-                                    onPress={() => abrirMenu(horario)}
-                                >
-                                    <Text className={`text-center ${statusClasses.text}`}>{horario.name}</Text>
-                                </TouchableOpacity>
-                                );
-                            })}
-                        </View>
-                    </View>
-                </View>
-
-                <View className='mt-6 mb-8 flex flex-row flex-wrap justify-evenly'>
-                    <PinkBtn title="Salvar" onPress={() => { router.push('/(tabs)/Calendario/Index') }} />
-                </View>
-
-                <Modal
-                    transparent
-                    visible={menuVisivel}
-                    animationType="fade"
-                    onRequestClose={fecharMenu}
-                >
-                    <TouchableOpacity 
-                        className="flex-1 bg-black/30 justify-center items-center" 
-                        onPress={fecharMenu}
-                        activeOpacity={1}
-                    >
-                        <View className="bg-white p-4 rounded-xl w-64">
-                            <Text className="text-center font-semibold mb-2">Escolha uma ação</Text>
-                            {horarioSelecionado && getAcoesDisponiveis(horarioSelecionado.status).map(acao => (
-                                <TouchableOpacity
-                                    key={acao}
-                                    className="p-3 border border-neutral-200 rounded-xl"
-                                    onPress={() => executarAcao(acao)}
-                                >
-                                    <Text className="text-center">{acao}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                    </TouchableOpacity>
-                </Modal>
-
-                <ModalBase
-                    visible={modalAcaoVisivel}
-                    title={titleModal}
-                    text={textModal}
-                    icone={iconeModal}
-                    onClose={() => setModalAcaoVisivel(false)}
-                >
-                    <View className='flex flex-wrap flex-row justify-between mt-6'>
-                        <WhiteBtn title="Cancelar" onPress={() => setModalAcaoVisivel(false)} />
-                        <PinkBtn title="Confirmar" onPress={confirmarAcao} />
-                    </View>
-                </ModalBase>
-
-                <ModalBase 
-                    visible={modalVisivel} 
-                    title="Bloquear dia" 
-                    text="Ao bloquear o dia selecionado os clientes não poderão agendar horários nesta data, caso houver agendamentos os mesmos serão cancelados. Deseja bloquear?" 
-                    icone="lock-closed-outline" 
-                    onClose={() => setModalVisivel(false)}
-                >
-                    <View className='flex flex-wrap flex-row justify-between mt-6'>
-                        <WhiteBtn title="Cancelar" onPress={() => setModalVisivel(false)}/>
-                        <PinkBtn title="Confirmar" onPress={bloquearDia}/>
-                    </View>
-                </ModalBase>
-            </View>
-        </ScrollView>
-    )
-}
+        {/* Modal de seleção de status de horário */}
+        <StatusModal
+          visible={statusModalVisivel}
+          currentStatus={horarioSelecionado?.status ?? 1}
+          onClose={fecharStatusModal}
+          onSelectStatus={handleSelectStatus}
+        />
+      </View>
+    </ScrollView>
+  );
+};
 
 export default Agenda;
