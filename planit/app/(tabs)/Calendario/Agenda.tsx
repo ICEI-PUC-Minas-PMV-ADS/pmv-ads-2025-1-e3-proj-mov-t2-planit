@@ -5,104 +5,15 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
+  Alert,
 } from "react-native";
 import { Picker as RNPicker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
-import { router, useRouter } from "expo-router";
 import ModalBase from "../../../components/modais/modalBase";
-import PinkBtn from "@/components/button/pinkBtn";
+import PinkBtn from "../../../components/button/pinkBtn";
 import WhiteBtn from "../../../components/button/whiteBtn";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-
-// Modal para escolher status de um horário
-function StatusModal({
-  visible,
-  currentStatus,
-  onClose,
-  onSelectStatus,
-}: {
-  visible: boolean;
-  currentStatus: number;
-  onClose: () => void;
-  onSelectStatus: (status: number) => void;
-}) {
-  const options = [
-    { status: 1, label: "Disponível", color: "green-600", icon: "checkmark-circle-outline" },
-    { status: 3, label: "Bloqueado", color: "pink-700", icon: "remove-circle-outline" },
-    { status: 2, label: "Agendado", color: "slate-500", icon: "calendar" },
-  ];
-
-  return (
-    <Modal visible={visible} transparent animationType="fade">
-      <View className="flex-1 bg-black/40 justify-center items-center px-4">
-        <View className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg">
-          {/* Header */}
-          <Text className="text-2xl font-semibold text-center mb-4">
-            Alterar status
-          </Text>
-          <View className="h-px bg-gray-200 mb-4" />
-
-          {/* Opções */}
-          {options.map(({ status, label, color, icon }) => {
-            const selected = currentStatus === status;
-            const disabled = status === 2; // desabilita "Agendado"
-            return (
-              <TouchableOpacity
-                key={status}
-                className={`flex-row items-center p-3 mb-2 rounded-lg ${
-                  disabled ? "opacity-50" : "hover:bg-gray-100"
-                }`}
-                disabled={disabled}
-                onPress={() => {
-                  onSelectStatus(status);
-                  onClose();
-                }}
-              >
-                <Ionicons
-                  name={icon as any}
-                  size={24}
-                  className={`mr-3 ${selected ? `text-${color}` : "text-gray-400"}`}
-                />
-                <Text
-                  className={`text-lg ${
-                    selected ? `text-${color}` : "text-gray-700"
-                  }`}
-                >
-                  {label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-
-          {/* Footer */}
-          <View className="h-px bg-gray-200 mt-4 mb-4" />
-          <TouchableOpacity
-            className="py-3 bg-gray-100 rounded-lg"
-            onPress={onClose}
-          >
-            <Text className="text-center text-gray-700 text-base">
-              Cancelar
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
-// Função auxiliar para cores de status
-const getStatusCor = (status: number) => {
-  switch (status) {
-    case 1:
-      return { text: "text-green-600", border: "border-green-600" };
-    case 2:
-      return { text: "text-pink-700", border: "border-pink-700" };
-    case 3:
-      return { text: "text-slate-500", border: "border-slate-500" };
-    default:
-      return { text: "text-black", border: "border-black" };
-  }
-};
+import { db } from "../../../firebaseConfig";
+import { doc, setDoc } from "firebase/firestore";
 
 const meses = [
   { name: "Jan", value: 1 },
@@ -118,108 +29,233 @@ const meses = [
   { name: "Nov", value: 11 },
   { name: "Dez", value: 12 },
 ];
-const getDiasMes = (mes: number, ano: number) => new Date(ano, mes, 0).getDate();
+
+const getDiasMes = (mes: number, ano: number) =>
+  new Date(ano, mes, 0).getDate();
+
+function StatusModal({ visible, currentStatus, onClose, onSelectStatus }) {
+  const options = [
+    {
+      status: 1,
+      label: "Disponível",
+      color: "green",
+      icon: "checkmark-circle-outline",
+    },
+    {
+      status: 3,
+      label: "Bloqueado",
+      color: "pink",
+      icon: "remove-circle-outline",
+    },
+    {
+      status: 2,
+      label: "Agendado",
+      color: "gray",
+      icon: "calendar",
+    },
+  ];
+
+  return (
+    <Modal visible={visible} transparent animationType="fade">
+      <View className="flex-1 bg-black/40 justify-center items-center px-4">
+        <View className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg">
+          <Text className="text-2xl font-semibold text-center mb-4">
+            Alterar status
+          </Text>
+          <View className="h-px bg-gray-200 mb-4" />
+          {options.map(({ status, label, color, icon }) => (
+            <TouchableOpacity
+              key={status}
+              disabled={status === 2}
+              onPress={() => {
+                onSelectStatus(status);
+                onClose();
+              }}
+              className={`flex-row items-center p-3 mb-2 rounded-lg ${
+                status === 2 ? "opacity-50" : ""
+              }`}
+            >
+              <Ionicons
+                name={icon}
+                size={24}
+                color={color}
+                style={{ marginRight: 10 }}
+              />
+              <Text className="text-lg" style={{ color }}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+          <View className="h-px bg-gray-200 mt-4 mb-4" />
+          <TouchableOpacity
+            className="py-3 bg-gray-100 rounded-lg"
+            onPress={onClose}
+          >
+            <Text className="text-center text-gray-700 text-base">Cancelar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const getStatusCor = (status: number) => {
+  switch (status) {
+    case 1:
+      return { text: "text-green-600", border: "border-green-600" };
+    case 2:
+      return { text: "text-pink-700", border: "border-pink-700" };
+    case 3:
+      return { text: "text-slate-500", border: "border-slate-500" };
+    default:
+      return { text: "text-black", border: "border-black" };
+  }
+};
 
 const Agenda = () => {
-  const router = useRouter();
-
-  type Horario = {
-    name: string;
-    value: number;
-    status: number;
-  };
-
-  const [horarios, setHorarios] = useState<Horario[]>([
-    { name: "08:00", value: 1, status: 1 },
-    { name: "08:30", value: 2, status: 1 },
-    { name: "09:00", value: 3, status: 1 },
-    { name: "09:30", value: 4, status: 1 },
-    { name: "10:00", value: 5, status: 1 },
-    { name: "10:30", value: 6, status: 2 },
-    { name: "11:00", value: 7, status: 1 },
-    { name: "11:30", value: 8, status: 1 },
-    { name: "12:00", value: 9, status: 2 },
-    { name: "12:30", value: 10, status: 1 },
-    { name: "13:00", value: 11, status: 3 },
-    { name: "13:30", value: 12, status: 1 },
-    { name: "14:00", value: 13, status: 1 },
-    { name: "14:30", value: 14, status: 1 },
-    { name: "15:00", value: 15, status: 1 },
-    { name: "15:30", value: 16, status: 1 },
-    { name: "16:00", value: 17, status: 1 },
-    { name: "16:30", value: 18, status: 3 },
-    { name: "17:00", value: 19, status: 1 },
-    { name: "17:30", value: 20, status: 1 },
-    { name: "18:00", value: 21, status: 1 },
-  ]);
-
   const anoAtual = new Date().getFullYear();
-  const [mesSelecionado, setMesSelecionado] = useState<number>(
-    new Date().getMonth() + 1
-  );
-  const [diaSelecionado, setDiaSelecionado] = useState<number>(1);
+
+  const [mesSelecionado, setMesSelecionado] = useState(new Date().getMonth() + 1);
+  const [diaSelecionado, setDiaSelecionado] = useState(new Date().getDate());
   const [diasNoMes, setDiasNoMes] = useState<number[]>([]);
 
-  // Bloquear dia modal
   const [modalVisivel, setModalVisivel] = useState(false);
-
-  // StatusModal
   const [statusModalVisivel, setStatusModalVisivel] = useState(false);
-  const [horarioSelecionadoState, setHorarioSelecionadoState] = useState<
-    Horario | null
-  >(null);
+  const [horarioSelecionadoState, setHorarioSelecionadoState] = useState(null);
 
+  // Horários base (pode ajustar se quiser mais ou outros horários)
+
+
+const horariosBase = [
+  { name: "08:00", value: 1, status: 1 },
+  { name: "08:30", value: 2, status: 1 },
+  { name: "09:00", value: 3, status: 1 },
+  { name: "09:30", value: 4, status: 1 },
+  { name: "10:00", value: 5, status: 1 },
+  { name: "10:30", value: 6, status: 1 },
+  { name: "11:00", value: 7, status: 1 },
+  { name: "11:30", value: 8, status: 1 },
+  { name: "12:00", value: 9, status: 1 },
+  { name: "12:30", value: 10, status: 1 },
+  { name: "13:00", value: 11, status: 1 },
+  { name: "13:30", value: 12, status: 1 },
+  { name: "14:00", value: 13, status: 1 },
+  { name: "14:30", value: 14, status: 1 },
+  { name: "15:00", value: 15, status: 1 },
+  { name: "15:30", value: 16, status: 1 },
+  { name: "16:00", value: 17, status: 1 },
+  { name: "16:30", value: 18, status: 1 },
+  { name: "17:00", value: 19, status: 1 },
+  { name: "17:30", value: 20, status: 1 },
+  { name: "18:00", value: 21, status: 1 },
+];
+
+
+  const [horarios, setHorarios] = useState(horariosBase);
+
+  // Atualiza os dias disponíveis no mês
   useEffect(() => {
     const dias = Array.from(
       { length: getDiasMes(mesSelecionado, anoAtual) },
       (_, i) => i + 1
     );
     setDiasNoMes(dias);
-    setDiaSelecionado(1);
-  }, [mesSelecionado]);
 
-  // Ações de bloqueio de dia
-  const bloquearDia = () => setModalVisivel(true);
-  const confirmBloquearDia = () => {
-    setHorarios((prev) => prev.map((h) => ({ ...h, status: 3 })));
-    setModalVisivel(false);
-  };
+    // Ajustar dia selecionado caso ultrapasse o número de dias do mês
+    if (diaSelecionado > dias.length) {
+      setDiaSelecionado(1);
+    }
+  }, [mesSelecionado, anoAtual]);
 
-  // Abrir modal de status de horário
-  const abrirStatusModal = (h: Horario) => {
+  // Abrir modal para alterar status do horário
+  const abrirStatusModal = (h) => {
     setHorarioSelecionadoState(h);
     setStatusModalVisivel(true);
   };
+
   const fecharStatusModal = () => setStatusModalVisivel(false);
 
-  const handleSelectStatus = (novoStatus: number) => {
+  // Atualizar status de horário selecionado
+  const handleSelectStatus = async (novoStatus) => {
     if (!horarioSelecionadoState) return;
-    setHorarios((prev) =>
-      prev.map((h) =>
-        h.value === horarioSelecionadoState.value
-          ? { ...h, status: novoStatus }
-          : h
-      )
+
+    const novoHorarios = horarios.map((h) =>
+      h.value === horarioSelecionadoState.value ? { ...h, status: novoStatus } : h
     );
+    setHorarios(novoHorarios);
+
+    // Gerar a chave do documento no Firestore (ex: "2025-05-24")
+    const dataKey = `${anoAtual}-${String(mesSelecionado).padStart(
+      2,
+      "0"
+    )}-${String(diaSelecionado).padStart(2, "0")}`;
+
+    try {
+      // Salva ou atualiza o documento no Firestore
+      await setDoc(doc(db, "agenda", dataKey), {
+        data: dataKey,
+        horarios: novoHorarios,
+      });
+      Alert.alert("Sucesso", "Status atualizado com sucesso!");
+    } catch (err) {
+      console.error("Erro ao salvar alteração de status:", err);
+      Alert.alert("Erro", "Falha ao salvar no Firebase.");
+    }
+  };
+
+  // Modal para bloquear o dia inteiro
+  const bloquearDia = () => setModalVisivel(true);
+  const confirmBloquearDia = async () => {
+    const novoHorarios = horarios.map((h) => ({ ...h, status: 3 })); // status 3 = bloqueado
+    setHorarios(novoHorarios);
+    setModalVisivel(false);
+
+    const dataKey = `${anoAtual}-${String(mesSelecionado).padStart(
+      2,
+      "0"
+    )}-${String(diaSelecionado).padStart(2, "0")}`;
+
+    try {
+      await setDoc(doc(db, "agenda", dataKey), {
+        data: dataKey,
+        horarios: novoHorarios,
+      });
+      Alert.alert("Sucesso", "Dia bloqueado com sucesso!");
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Erro", "Falha ao bloquear o dia.");
+    }
+  };
+
+  // Salvar agenda manualmente
+  const salvarNoFirestore = async () => {
+    const dataKey = `${anoAtual}-${String(mesSelecionado).padStart(
+      2,
+      "0"
+    )}-${String(diaSelecionado).padStart(2, "0")}`;
+    try {
+      await setDoc(doc(db, "agenda", dataKey), {
+        data: dataKey,
+        horarios,
+      });
+      Alert.alert("Sucesso", "Horários salvos no Firebase!");
+    } catch (e) {
+      Alert.alert("Erro", "Não foi possível salvar no Firebase.");
+      console.error(e);
+    }
   };
 
   return (
     <ScrollView>
       <View className="flex-1 bg-white p-4">
-        {/* Botão bloquear dia */}
         <TouchableOpacity
           className="flex-row justify-center mb-4"
           onPress={bloquearDia}
         >
-          <Ionicons
-            name="lock-closed-outline"
-            size={30}
-            color="#4b5563"
-            className="bg-slate-100 p-3 rounded-full"
-          />
+          <Ionicons name="lock-closed-outline" size={30} color="#4b5563" />
         </TouchableOpacity>
 
-        {/* Seletor mês */}
+        {/* Seleção de mês */}
         <View className="flex-row justify-between items-center mb-4 px-4">
           <Text className="text-lg">Selecione o mês:</Text>
           <View className="border border-slate-400 rounded-full w-32">
@@ -234,7 +270,7 @@ const Agenda = () => {
           </View>
         </View>
 
-        {/* Seletor dia */}
+        {/* Seleção de dia */}
         <View className="flex-row justify-between items-center mb-6 px-4">
           <Text className="text-lg">Selecione o dia:</Text>
           <View className="border border-slate-400 rounded-full w-32">
@@ -245,9 +281,9 @@ const Agenda = () => {
               {diasNoMes.map((d) => (
                 <RNPicker.Item
                   key={d}
-                  label={`${d.toString().padStart(2, "0")}/${mesSelecionado
-                    .toString()
-                    .padStart(2, "0")}`}
+                  label={`${String(d).padStart(2, "0")}/${String(
+                    mesSelecionado
+                  ).padStart(2, "0")}`}
                   value={d}
                 />
               ))}
@@ -255,7 +291,7 @@ const Agenda = () => {
           </View>
         </View>
 
-        {/* Grade de horários */}
+        {/* Lista de horários */}
         <Text className="text-center text-xl mb-4">Horários</Text>
         <View className="flex-row flex-wrap justify-center gap-4">
           {horarios.map((h) => {
@@ -272,15 +308,12 @@ const Agenda = () => {
           })}
         </View>
 
-        {/* Botão Salvar */}
+        {/* Botão salvar */}
         <View className="mt-6 items-center">
-          <PinkBtn
-            title="Salvar"
-            onPress={() => router.push("/(tabs)/Calendario/Index")}
-          />
+          <PinkBtn title="Salvar" onPress={salvarNoFirestore} />
         </View>
 
-        {/* Modal de confirmação de bloqueio de dia */}
+        {/* Modal bloquear dia */}
         <ModalBase
           visible={modalVisivel}
           title="Bloquear dia"
@@ -294,7 +327,7 @@ const Agenda = () => {
           </View>
         </ModalBase>
 
-        {/* Modal de seleção de status de horário */}
+        {/* Modal status */}
         <StatusModal
           visible={statusModalVisivel}
           currentStatus={horarioSelecionadoState?.status ?? 1}
