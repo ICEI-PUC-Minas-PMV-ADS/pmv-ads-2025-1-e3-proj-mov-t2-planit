@@ -1,58 +1,100 @@
+import { View, Text, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import CompCalendar from "../../../components/calendar/index";
+import PinkBtn from "../../../components/button/pinkBtn";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from 'expo-router';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../../../firebaseConfig';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import CompCalendar from '../../../components/calendar';
-import PinkBtn from "../../../components/button/pinkBtn";
 
 const Calendario = () => {
-  const [dataSelecionada, setDataSelecionada] = useState('2025-05-24');
-  const [horarios, setHorarios] = useState<{ hora: string; status: string }[]>([]);
+  const [horariosDisponiveis, setHorariosDisponiveis] = useState<string[]>([]);
+  const [horariosAgendados, setHorariosAgendados] = useState<string[]>([]);
+  const [horariosBloqueados, setHorariosBloqueados] = useState<string[]>([]);
+  const [dataSelecionada, setDataSelecionada] = useState("2025-05-24"); // futuramente controlada pelo CompCalendar
 
   useEffect(() => {
-    const q = query(collection(db, 'agenda'), where('data', '==', dataSelecionada));
-    const unsubscribe = onSnapshot(q, snapshot => {
-      const dados: any[] = [];
-      snapshot.forEach(doc => dados.push(doc.data()));
-      setHorarios(dados);
+    const q = query(collection(db, 'agendamentos'), where('data', '==', dataSelecionada));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const disponiveis: string[] = [];
+      const agendados: string[] = [];
+      const bloqueados: string[] = [];
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.status === 'disponivel') disponiveis.push(data.hora);
+        if (data.status === 'agendado') agendados.push(data.hora);
+        if (data.status === 'bloqueado') bloqueados.push(data.hora);
+      });
+
+      setHorariosDisponiveis(disponiveis);
+      setHorariosAgendados(agendados);
+      setHorariosBloqueados(bloqueados);
     });
 
-    return unsubscribe;
+    return () => unsubscribe();
   }, [dataSelecionada]);
 
-  const renderHorarios = (status: string, color: string) => {
-    const filtrados = horarios.filter(h => h.status === status);
-
-    return (
-      <View className="m-3 p-3 border border-neutral-200 rounded-2xl bg-white">
-        <Text className="text-center text-xl mb-8 capitalize">Horários {status}</Text>
-        <View className="flex flex-row flex-wrap justify-center align-middle gap-5">
-          <Ionicons size={20} name="time-outline" />
-          {filtrados.map((h, index) => (
-            <View key={index} className={`border p-4 justify-center rounded-full border-${color}-600`}>
-              <Text className={`text-${color}-600`}>{h.hora}</Text>
-            </View>
-          ))}
-        </View>
+  const renderHorarios = (lista: string[], cor: string) => (
+    <View className='flex flex-row flex-wrap justify-center gap-5'>
+      <View>
+        <Ionicons size={20} name="time-outline" className='p-4 justify-center' />
       </View>
-    );
-  };
+      {lista.map((hora, index) => (
+        <View
+          key={index}
+          className={`border p-4 justify-center rounded-full ${
+            cor === 'green' ? 'border-green-600' :
+            cor === 'pink' ? 'border-pink-700' :
+            'border-slate-500'
+          }`}
+        >
+          <Text className={`${
+            cor === 'green' ? 'text-green-600' :
+            cor === 'pink' ? 'text-pink-700' :
+            'text-slate-500'
+          }`}>
+            {hora}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
 
   return (
-    <View className="flex flex-1 bg-white">
-      <ScrollView>
-        <View className="mt-6 mb-5">
-          <CompCalendar onChangeDate={setDataSelecionada} />
+    <View className='flex flex-1 bg-white'>
+      <ScrollView className='h-auto'>
+        <View className='mt-6 mb-5'>
+          <CompCalendar onChangeDate={setDataSelecionada} /> 
         </View>
 
-        {renderHorarios('disponivel', 'green')}
-        {renderHorarios('agendado', 'pink')}
-        {renderHorarios('bloqueado', 'blue')}
+        {/* Disponíveis */}
+        <View className='bg-white'>
+          <View className='m-3 p-3 border border-neutral-200 rounded-2xl'>
+            <Text className='text-center text-xl mb-8'>Horários Disponíveis</Text>
+            {renderHorarios(horariosDisponiveis, 'green')}
+          </View>
+        </View>
 
-        <View className="mt-6 mb-8 flex flex-row flex-wrap justify-evenly">
-          <PinkBtn title="Editar Agenda" onPress={() => router.push('/(tabs)/Calendario/Agenda')} />
+        {/* Agendados */}
+        <View className='bg-white'>
+          <View className='m-3 p-3 border border-neutral-200 rounded-2xl'>
+            <Text className='text-center text-xl mb-8'>Horários Agendados</Text>
+            {renderHorarios(horariosAgendados, 'pink')}
+          </View>
+        </View>
+
+        {/* Bloqueados */}
+        <View className='bg-white'>
+          <View className='m-3 p-3 border border-neutral-200 rounded-2xl'>
+            <Text className='text-center text-xl mb-8'>Horários Bloqueados</Text>
+            {renderHorarios(horariosBloqueados, 'slate')}
+          </View>
+        </View>
+
+        <View className='mt-6 mb-8 flex flex-row flex-wrap justify-evenly'>
+          <PinkBtn title="Editar Agenda" onPress={() => { router.push('/(tabs)/Calendario/Agenda') }} />
         </View>
       </ScrollView>
     </View>
