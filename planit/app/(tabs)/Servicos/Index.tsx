@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import {View,Text,TouchableOpacity,StyleSheet,ScrollView,ActivityIndicator,Alert,} from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import {View,Text,TouchableOpacity,StyleSheet,ActivityIndicator,Alert,FlatList,ListRenderItem,} from 'react-native';
 import { useRouter } from 'expo-router';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {collection,onSnapshot,query,where,orderBy,updateDoc,doc,Timestamp,Query,QuerySnapshot,QueryDocumentSnapshot,FirestoreError,limit,startAfter,} from 'firebase/firestore';
+import {collection,onSnapshot,query,where,orderBy,updateDoc,doc,Timestamp,Query,QueryDocumentSnapshot,FirestoreError,limit,startAfter,getDocs,} from 'firebase/firestore';
 import { auth, db } from '../../../firebaseConfig';
 
 interface Servico {
@@ -14,164 +14,151 @@ interface Servico {
   criadoEm: Timestamp;
 }
 
-const Servicos: React.FC = () => {
+type Filtro = 'Todos' | 'Ativos' | 'Inativos' | 'Recentes';
+
+const PAGE_SIZE = 10;
+
+export default function Servicos() {
   const router = useRouter();
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filtro, setFiltro] = useState<'Todos' | 'Ativos' | 'Inativos' | 'Recentes'>('Todos');
+  const [filtro, setFiltro] = useState<Filtro>('Todos');
+  const [debouncedFiltro, setDebouncedFiltro] = useState<Filtro>(filtro);
   const [switches, setSwitches] = useState<Record<string, boolean>>({});
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
   const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-    setServicos([]); 
-    setLastDoc(null); 
-    setHasMore(true);
+    const timeout = setTimeout(() => setDebouncedFiltro(filtro), 500);
+    return () => clearTimeout(timeout);
+  }, [filtro]);
 
+  const buildBaseQuery = useCallback((): Query => {
     const user = auth.currentUser;
-    if (!user) {
-      router.replace('/Login');
-      return;
-    }
+    if (!user) throw new Error('no-user');
+    let base = query(collection(db, 'Servicos'), where('uid', '==', user.uid));
+    if (debouncedFiltro === 'Recentes') base = query(base, orderBy('criadoEm', 'desc'));
+    if (debouncedFiltro === 'Ativos') base = query(base, where('ativo', '==', true));
+    if (debouncedFiltro === 'Inativos') base = query(base, where('ativo', '==', false));
+    return query(base, limit(PAGE_SIZE));
+  }, [debouncedFiltro]);
 
-    let q: Query = query(
-      collection(db, 'Servicos'),
-      where('uid', '==', user.uid),
-      limit(10) 
-    );
+  useEffect(() => {
+    setLoading(true);
+    setServicos([]);
+    setLastDoc(null);
+    setHasMore(true);
+    const user = auth.currentUser;
+    if (!user) return router.replace('/Login');
 
-    if (filtro === 'Recentes') {
-      q = query(q, where('uid', '==', user.uid), orderBy('criadoEm', 'desc'), limit(10));
-    } else if (filtro === 'Ativos') {
-      q = query(q, where('uid', '==', user.uid), where('ativo', '==', true), limit(10));
-    } else if (filtro === 'Inativos') {
-      q = query(q, where('uid', '==', user.uid), where('ativo', '==', false), limit(10));
-    }
-
-    const unsub = onSnapshot(
+    const q = buildBaseQuery();
+    const unsubscribe = onSnapshot(
       q,
-      (snapshot: QuerySnapshot) => {
-        const lista: Servico[] = [];
-        const mapSwitches: Record<string, boolean> = {};
-
-        snapshot.forEach((docSnap: QueryDocumentSnapshot) => {
-          const data = docSnap.data() as any;
-          lista.push({
-            id: docSnap.id,
+      (snap) => {
+        const items: Servico[] = [];
+        const switchStates: Record<string, boolean> = {};
+        snap.forEach((d: QueryDocumentSnapshot) => {
+          const data = d.data() as any;
+          items.push({
+            id: d.id,
             nome: data.nome,
             duracao: data.duracao,
             valor: data.valor,
             ativo: data.ativo,
             criadoEm: data.criadoEm,
           });
-          mapSwitches[docSnap.id] = data.ativo;
+          switchStates[d.id] = data.ativo;
         });
-
-        setServicos(lista);
-        setSwitches(mapSwitches);
-        setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
-        setHasMore(snapshot.docs.length === 10); 
+        setServicos(items);
+        setSwitches(switchStates);
+        setLastDoc(snap.docs[snap.docs.length - 1] || null);
+        setHasMore(snap.docs.length === PAGE_SIZE);
         setLoading(false);
       },
-      (error: FirestoreError) => {
-        console.error('Erro ao ler serviços:', error);
+      (err: FirestoreError) => {
+        console.error(err);
         Alert.alert('Erro', 'Não foi possível carregar serviços.');
         setLoading(false);
       }
     );
+    return unsubscribe;
+  }, [buildBaseQuery, router]);
 
-    return () => unsub();
-  }, [filtro, router]);
-
-  const carregarMais = () => {
+  const carregarMais = useCallback(async () => {
     if (!lastDoc || !hasMore) return;
-
     setLoading(true);
-
     const user = auth.currentUser;
-    if (!user) {
-      router.replace('/Login');
-      return;
-    }
+    if (!user) return router.replace('/Login');
 
-    let q: Query = query(
-      collection(db, 'Servicos'),
-      where('uid', '==', user.uid),
-      startAfter(lastDoc),
-      limit(10)
-    );
-
-    if (filtro === 'Recentes') {
-      q = query(
-        q,
-        where('uid', '==', user.uid),
-        orderBy('criadoEm', 'desc'),
-        startAfter(lastDoc),
-        limit(10)
+    try {
+      let paged = query(
+        collection(db, 'Servicos'),
+        where('uid', '==', user.uid)
       );
-    } else if (filtro === 'Ativos') {
-      q = query(
-        q,
-        where('uid', '==', user.uid),
-        where('ativo', '==', true),
-        startAfter(lastDoc),
-        limit(10)
-      );
-    } else if (filtro === 'Inativos') {
-      q = query(
-        q,
-        where('uid', '==', user.uid),
-        where('ativo', '==', false),
-        startAfter(lastDoc),
-        limit(10)
-      );
-    }
+      if (debouncedFiltro === 'Recentes') paged = query(paged, orderBy('criadoEm', 'desc'));
+      if (debouncedFiltro === 'Ativos') paged = query(paged, where('ativo', '==', true));
+      if (debouncedFiltro === 'Inativos') paged = query(paged, where('ativo', '==', false));
+      paged = query(paged, startAfter(lastDoc), limit(PAGE_SIZE));
 
-    onSnapshot(
-      q,
-      (snapshot: QuerySnapshot) => {
-        const lista: Servico[] = [...servicos];
-        const mapSwitches: Record<string, boolean> = { ...switches };
-
-        snapshot.forEach((docSnap: QueryDocumentSnapshot) => {
-          const data = docSnap.data() as any;
-          lista.push({
-            id: docSnap.id,
-            nome: data.nome,
-            duracao: data.duracao,
-            valor: data.valor,
-            ativo: data.ativo,
-            criadoEm: data.criadoEm,
-          });
-          mapSwitches[docSnap.id] = data.ativo;
+      const snap = await getDocs(paged);
+      const items = [...servicos];
+      const switchStates = { ...switches };
+      snap.forEach((d: QueryDocumentSnapshot) => {
+        const data = d.data() as any;
+        items.push({
+          id: d.id,
+          nome: data.nome,
+          duracao: data.duracao,
+          valor: data.valor,
+          ativo: data.ativo,
+          criadoEm: data.criadoEm,
         });
+        switchStates[d.id] = data.ativo;
+      });
+      setServicos(items);
+      setSwitches(switchStates);
+      setLastDoc(snap.docs[snap.docs.length - 1] || null);
+      setHasMore(snap.docs.length === PAGE_SIZE);
+    } catch (e) {
+      console.error(e);
+      Alert.alert('Erro', 'Não foi possível carregar mais serviços.');
+    } finally {
+      setLoading(false);
+    }
+  }, [debouncedFiltro, hasMore, lastDoc, router, servicos, switches]);
 
-        setServicos(lista);
-        setSwitches(mapSwitches);
-        setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
-        setHasMore(snapshot.docs.length === 10);
-        setLoading(false);
-      },
-      (error: FirestoreError) => {
-        console.error('Erro ao carregar mais serviços:', error);
-        Alert.alert('Erro', 'Não foi possível carregar mais serviços.');
-        setLoading(false);
-      }
-    );
-  };
-
-  const toggleAtivo = async (id: string) => {
+  const toggleAtivo = useCallback(async (id: string) => {
     try {
       await updateDoc(doc(db, 'Servicos', id), { ativo: !switches[id] });
-    } catch (error) {
-      console.error('Erro ao atualizar:', error);
-      Alert.alert('Erro', 'Não foi possível alterar o status.');
+    } catch {
+      Alert.alert('Erro', 'Não foi possível alterar status.');
     }
-  };
+  }, [switches]);
 
   const countAtivos = servicos.filter((s) => s.ativo).length;
-  const countAndamento = servicos.length - countAtivos;
+  const countInativos = servicos.length - countAtivos;
+
+  const renderItem: ListRenderItem<Servico> = ({ item }) => (
+    <View style={styles.card}>
+      <View>
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>{item.nome}</Text>
+          <TouchableOpacity
+            onPress={() => router.push({ pathname: '/(tabs)/Servicos/EditarServicos', params: { id: item.id } })}
+          >
+            <Ionicons name="create-outline" size={16} color="#000" />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.cardDetails}>{item.duracao} • R$ {item.valor}</Text>
+      </View>
+      <TouchableOpacity
+        onPress={() => toggleAtivo(item.id)}
+        style={[styles.switchOuter, { backgroundColor: switches[item.id] ? '#FF007F' : '#D1D5DB' }]}
+      >
+        <View style={[styles.switchInner, { alignSelf: switches[item.id] ? 'flex-end' : 'flex-start' }]} />
+      </TouchableOpacity>
+    </View>
+  );
 
   if (loading && servicos.length === 0) {
     return (
@@ -196,88 +183,50 @@ const Servicos: React.FC = () => {
           <Text style={styles.statsValue}>{countAtivos}</Text>
         </View>
         <View style={styles.cardEstatisticaRosa}>
-          <Text style={styles.statsTitle}>Em Andamento</Text>
-          <Text style={styles.statsValue}>{countAndamento}</Text>
+          <Text style={styles.statsTitle}>Serviços Inativos</Text>
+          <Text style={styles.statsValue}>{countInativos}</Text>
         </View>
       </View>
 
       <View style={styles.filters}>
-        {['Todos', 'Ativos', 'Inativos', 'Recentes'].map((f) => (
+        {( ['Todos', 'Ativos', 'Inativos', 'Recentes'] as Filtro[] ).map((f) => (
           <TouchableOpacity
             key={f}
-            onPress={() => setFiltro(f as any)}
+            onPress={() => setFiltro(f)}
             style={filtro === f ? styles.filterActive : styles.filterInactive}
           >
-            <Text style={filtro === f ? styles.filterTextActive : styles.filterTextInactive}>
-              {f}
-            </Text>
+            <Text style={filtro === f ? styles.filterTextActive : styles.filterTextInactive}>{f}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <ScrollView contentContainerStyle={styles.list}>
-        {servicos.map((item) => (
-          <View key={item.id} style={styles.card}>
-            <View>
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>{item.nome}</Text>
-                <TouchableOpacity
-                  onPress={() =>
-                    router.push({
-                      pathname: '/(tabs)/Servicos/EditarServicos',
-                      params: { id: item.id },
-                    })
-                  }
-                >
-                  <Ionicons name="create-outline" size={16} color="#000" />
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.cardDetails}>
-                {item.duracao} • R$ {item.valor}
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              onPress={() => toggleAtivo(item.id)}
-              style={[
-                styles.switchOuter,
-                { backgroundColor: switches[item.id] ? '#FF007F' : '#D1D5DB' },
-              ]}
-            >
-              <View
-                style={[
-                  styles.switchInner,
-                  { alignSelf: switches[item.id] ? 'flex-end' : 'flex-start' },
-                ]}
-              />
-            </TouchableOpacity>
-          </View>
-        ))}
-
-        {hasMore && (
-          <TouchableOpacity
-            style={styles.loadMoreButton}
-            onPress={carregarMais}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator size="small" color="#FFF" />
-            ) : (
-              <Text style={styles.loadMoreButtonText}>Carregar Mais</Text>
+      <FlatList
+        data={servicos}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        contentContainerStyle={styles.list}
+        onEndReached={carregarMais}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={() => (
+          <>
+            {hasMore && !loading && (
+              <TouchableOpacity style={styles.loadMoreButton} onPress={carregarMais}>
+                <Text style={styles.loadMoreButtonText}>Carregar Mais</Text>
+              </TouchableOpacity>
             )}
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => router.push('/(tabs)/Servicos/CadastroServicos')}
+            >
+              <Text style={styles.addButtonText}>Adicionar</Text>
+            </TouchableOpacity>
+            {loading && <ActivityIndicator style={{ marginTop: 16 }} color="#FF006F" />}
+          </>
         )}
-
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => router.push('/(tabs)/Servicos/CadastroServicos')}
-        >
-          <Text style={styles.addButtonText}>Adicionar</Text>
-        </TouchableOpacity>
-      </ScrollView>
+      />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   loadingContainer: {
@@ -437,5 +386,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-
-export default Servicos;
