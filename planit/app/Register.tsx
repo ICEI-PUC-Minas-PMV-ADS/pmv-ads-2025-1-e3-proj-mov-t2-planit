@@ -13,6 +13,7 @@ export default function CadastroScreen() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [profissao, setProfissao] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +22,7 @@ export default function CadastroScreen() {
   const isStrongPassword = (password: string) =>/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
 
   const handleCadastro = async () => {
-    if (!nomeCompleto || !email || !senha || !confirmarSenha) {
+    if (!nomeCompleto || !email || !senha || !confirmarSenha || !profissao) {
       Alert.alert('Erro', 'Preencha todos os campos.');
       return;
     }
@@ -59,6 +60,7 @@ export default function CadastroScreen() {
         uid: user.uid,
         nomeCompleto,
         email,
+        profissao,
         criadoEm: new Date(),
       });
 
@@ -118,7 +120,13 @@ export default function CadastroScreen() {
           value={email}
           onChangeText={setEmail}
         />
-
+        <TextInput
+          className="border-b border-gray-300 py-2 mb-5 text-base"
+          placeholder="Profissão"
+          value={profissao}
+          onChangeText={setProfissao}
+          maxLength={20}
+        />
         <View className="flex-row items-center border-b border-gray-300 mb-5">
           <TextInput
             className="flex-1 py-2 text-base"
