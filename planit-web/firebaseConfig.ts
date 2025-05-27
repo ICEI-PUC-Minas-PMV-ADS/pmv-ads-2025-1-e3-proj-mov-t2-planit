@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, setLogLevel, doc, getDoc, query, collection, getDocs, where, /*addDoc, updateDoc, serverTimestamp, QuerySnapshot*/ } from "firebase/firestore";
+import { getFirestore, setLogLevel, doc, getDoc, query, collection, getDocs, where, addDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { Profissional, Servico, /*Agendamento*/ } from './types'
+import { Profissional, Servico, Agendamento } from './types'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -22,56 +22,15 @@ const auth = getAuth(app);
 export { app, db, auth };
 
 export async function getProfissional(profId: string): Promise<Profissional> {
-  try {
-    const q = query(collection(db, "Profissional"),
-    where("uid", "==", profId));
-    const querySnapshot = await getDocs(q);
+  const docRef = doc(db, "Profissional", profId);
+  const docSnap = await getDoc(docRef);
 
-    if (querySnapshot.empty) {
-      console.error("Nenhum profissional encontrado com uid:", profId);
-      throw new Error("Profissional não encontrado");
-    }
-
-    const docSnap = querySnapshot.docs[0];
-    const data = docSnap.data();
-
-    return {
-      id: docSnap.id,
-      nome: data.nomeCompleto || "Profissional",
-      profissao: data.profissao || "Autônomo",
-      fotoPerfil: data.fotoPerfil || undefined,
-      ...data
-    } as Profissional;
-  } catch (error) {
-    console.error("Erro detalhado:", error);
-    throw new Error("Falha ao buscar profissional");
+  if (!docSnap.exists()) {
+    throw new Error("Profissional não encontrado"); 
   }
-}
 
-function extraiMinutos(duracaoString: string): number {
-  const match = duracaoString.match(/\d+/);
-  return match ? parseInt(match[0]) : 0;
-}
-
-export async function getServicos(profId: string): Promise<Servico[]> {
-  const q = query(
-    collection(db, "Servicos"),
-    where("uid", "==", profId),
-    where("ativo", "==", true)
-  );
-
-  const querySnapshot = await getDocs(q);
-
-  return querySnapshot.docs.map(doc => {
-    const data = doc.data();
-
-    return {
-      id: doc.id,
-      nome: data.nome,
-      descricao: data.descricao,
-      duracao: extraiMinutos(data.duracao),
-      valor: parseFloat(data.valor) || 0,
-      uid: data.uid
-    } as Servico;
-  });
+  return {
+    id: docSnap.id,
+    ...docSnap.data()
+  } as Profissional;
 }
