@@ -1,16 +1,18 @@
 export interface Profissional {
     id: string 
     nome: string
-    profissao: string
+    profissao?: string
     fotoPerfil?: string 
+    [key: string]: any
 }
 
 export interface Servico {
     nome: string 
     descricao: string
-    duracao: string 
-    valor: string 
+    duracao: number 
+    valor: number 
     uid: string
+    id?: string
 }
 
 export interface Agendamento {
