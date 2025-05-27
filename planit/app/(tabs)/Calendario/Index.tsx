@@ -6,12 +6,14 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../firebaseConfig';
 import PinkBtn from '../../../components/button/pinkBtn';
 
-const statusMap = {
+// Mapeia status numérico para string
+const statusMap: Record<number, 'disponivel' | 'agendado' | 'bloqueado'> = {
   1: 'disponivel',
   2: 'agendado',
   3: 'bloqueado',
 };
 
+// Formata a data no formato YYYY-MM-DD
 const formatDate = (date: Date) => {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -19,35 +21,34 @@ const formatDate = (date: Date) => {
   return `${y}-${m}-${d}`;
 };
 
+interface Horario {
+  hora: string;
+  status: 'disponivel' | 'agendado' | 'bloqueado';
+}
+
 const Calendario = () => {
   const [dataSelecionada, setDataSelecionada] = useState(formatDate(new Date()));
-  const [horarios, setHorarios] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [horarios, setHorarios] = useState<Horario[]>([]);
+  const [loading, setLoading] = useState(true);
   const [mensagem, setMensagem] = useState<string | null>(null);
+  const [markedDates, setMarkedDates] = useState<Record<string, any>>({});
 
   useEffect(() => {
-    if (!dataSelecionada) {
-      setHorarios([]);
-      setMensagem(null);
-      return;
-    }
+    if (!dataSelecionada) return;
 
     setLoading(true);
     setMensagem(null);
 
-    const docRef = doc(db, 'agenda', dataSelecionada);
+    const ref = doc(db, 'agenda', dataSelecionada);
 
-    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+    const unsubscribe = onSnapshot(ref, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
-        const lista = data.horarios || [];
-
-        const horariosConvertidos = lista.map((h) => ({
+        const horariosLista = (data.horarios || []).map((h: any) => ({
           hora: h.name,
           status: statusMap[h.status] || 'disponivel',
         }));
-
-        setHorarios(horariosConvertidos);
+        setHorarios(horariosLista);
         setMensagem(null);
       } else {
         setHorarios([]);
@@ -55,26 +56,58 @@ const Calendario = () => {
       }
       setLoading(false);
     }, (error) => {
-      console.error('Erro ao buscar horários:', error);
+      console.error('Erro ao escutar documento:', error);
       setMensagem('Erro ao buscar horários.');
       setHorarios([]);
       setLoading(false);
     });
 
+    setMarkedDates({
+      [dataSelecionada]: {
+        selected: true,
+        selectedColor: '#FF69B4',
+      }
+    });
+
     return () => unsubscribe();
   }, [dataSelecionada]);
 
-  const renderHorarios = (status: string, cor: string) => {
-    const filtrados = horarios.filter(h => h.status === status);
+  const renderHorarios = (status: Horario['status'], cor: string) => {
+    const filtrados = horarios.filter((h) => h.status === status);
     if (filtrados.length === 0) return null;
 
     return (
-      <View style={{ margin: 12, padding: 12, borderWidth: 1, borderColor: '#ccc', borderRadius: 16, backgroundColor: '#fff' }}>
-        <Text style={{ textAlign: 'center', fontSize: 20, marginBottom: 16, textTransform: 'capitalize' }}>Horários {status}</Text>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 12 }}>
+      <View
+        key={status}
+        style={{
+          margin: 12,
+          padding: 12,
+          borderWidth: 1,
+          borderColor: '#ccc',
+          borderRadius: 16,
+          backgroundColor: '#fff',
+        }}
+      >
+        <Text
+          style={{
+            textAlign: 'center',
+            fontSize: 20,
+            marginBottom: 16,
+            textTransform: 'capitalize',
+          }}
+        >
+          Horários {status}
+        </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+          }}
+        >
           {filtrados.map((h, i) => (
             <View
-              key={i}
+              key={`${status}-${i}`}
               style={{
                 borderWidth: 2,
                 padding: 12,
@@ -97,12 +130,7 @@ const Calendario = () => {
         <View style={{ marginTop: 24, marginBottom: 20 }}>
           <Calendar
             onDayPress={(day) => setDataSelecionada(day.dateString)}
-            markedDates={{
-              [dataSelecionada]: {
-                selected: true,
-                selectedColor: '#FF69B4', // rosa
-              },
-            }}
+            markedDates={markedDates}
           />
         </View>
 
@@ -116,12 +144,19 @@ const Calendario = () => {
         ) : (
           <>
             {renderHorarios('disponivel', 'green')}
-            {renderHorarios('agendado', 'pink')}
+            {renderHorarios('agendado', '#FF69B4')}
             {renderHorarios('bloqueado', 'blue')}
           </>
         )}
 
-        <View style={{ marginTop: 24, marginBottom: 32, flexDirection: 'row', justifyContent: 'space-evenly' }}>
+        <View
+          style={{
+            marginTop: 24,
+            marginBottom: 32,
+            flexDirection: 'row',
+            justifyContent: 'space-evenly',
+          }}
+        >
           <PinkBtn
             title="Editar Agenda"
             onPress={() => router.push('/(tabs)/Calendario/Agenda')}
