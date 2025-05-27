@@ -9,11 +9,19 @@ import {
 import { Picker as RNPicker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+
 import ModalBase from "../../../components/modais/modalBase";
 import PinkBtn from "../../../components/button/pinkBtn";
 import WhiteBtn from "../../../components/button/whiteBtn";
+
 import { db } from "../../../firebaseConfig";
 import { doc, setDoc, getDoc } from "firebase/firestore";
+
+type Horario = {
+  name: string;
+  value: number;
+  status: number;
+};
 
 const meses = [
   { name: "Jan", value: 1 },
@@ -33,7 +41,19 @@ const meses = [
 const getDiasMes = (mes: number, ano: number) =>
   new Date(ano, mes, 0).getDate();
 
-function StatusModal({ visible, currentStatus, onClose, onSelectStatus }) {
+interface StatusModalProps {
+  visible: boolean;
+  currentStatus: number | null;
+  onClose: () => void;
+  onSelectStatus: (status: number) => void;
+}
+
+function StatusModal({
+  visible,
+  currentStatus,
+  onClose,
+  onSelectStatus,
+}: StatusModalProps) {
   const options = [
     {
       status: 1,
@@ -70,10 +90,10 @@ function StatusModal({ visible, currentStatus, onClose, onSelectStatus }) {
                 onSelectStatus(status);
                 onClose();
               }}
-              className={`flex-row items-center p-3 mb-2 rounded-lg`}
+              className="flex-row items-center p-3 mb-2 rounded-lg"
             >
               <Ionicons
-                name={icon}
+                name={icon as any}
                 size={24}
                 color={color}
                 style={{ marginRight: 10 }}
@@ -111,17 +131,24 @@ const getStatusCor = (status: number) => {
 
 const Agenda = () => {
   const navigation = useNavigation();
+
   const anoAtual = new Date().getFullYear();
 
-  const [mesSelecionado, setMesSelecionado] = useState(new Date().getMonth() + 1);
-  const [diaSelecionado, setDiaSelecionado] = useState(new Date().getDate());
+  const [mesSelecionado, setMesSelecionado] = useState<number>(
+    new Date().getMonth() + 1
+  );
+  const [diaSelecionado, setDiaSelecionado] = useState<number>(
+    new Date().getDate()
+  );
   const [diasNoMes, setDiasNoMes] = useState<number[]>([]);
 
   const [modalVisivel, setModalVisivel] = useState(false);
   const [statusModalVisivel, setStatusModalVisivel] = useState(false);
-  const [horarioSelecionadoState, setHorarioSelecionadoState] = useState(null);
+  const [horarioSelecionadoState, setHorarioSelecionadoState] = useState<
+    Horario | null
+  >(null);
 
-  const horariosBase = [
+  const horariosBase: Horario[] = [
     { name: "08:00", value: 1, status: 1 },
     { name: "08:30", value: 2, status: 1 },
     { name: "09:00", value: 3, status: 1 },
@@ -145,13 +172,12 @@ const Agenda = () => {
     { name: "18:00", value: 21, status: 1 },
   ];
 
-  const [horarios, setHorarios] = useState(horariosBase);
+  const [horarios, setHorarios] = useState<Horario[]>(horariosBase);
 
   const dataKey = `${anoAtual}-${String(mesSelecionado).padStart(2, "0")}-${String(
     diaSelecionado
   ).padStart(2, "0")}`;
 
-  // Atualiza os dias e carrega do Firestore
   useEffect(() => {
     const dias = Array.from(
       { length: getDiasMes(mesSelecionado, anoAtual) },
@@ -164,13 +190,18 @@ const Agenda = () => {
     }
 
     const carregarHorarios = async () => {
-      const docRef = doc(db, "agenda", dataKey);
-      const docSnap = await getDoc(docRef);
+      try {
+        const docRef = doc(db, "agenda", dataKey);
+        const docSnap = await getDoc(docRef);
 
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setHorarios(data.horarios || horariosBase);
-      } else {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setHorarios(data.horarios || horariosBase);
+        } else {
+          setHorarios(horariosBase);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar horários:", error);
         setHorarios(horariosBase);
       }
     };
@@ -178,14 +209,14 @@ const Agenda = () => {
     carregarHorarios();
   }, [mesSelecionado, diaSelecionado]);
 
-  const abrirStatusModal = (h) => {
+  const abrirStatusModal = (h: Horario) => {
     setHorarioSelecionadoState(h);
     setStatusModalVisivel(true);
   };
 
   const fecharStatusModal = () => setStatusModalVisivel(false);
 
-  const handleSelectStatus = async (novoStatus) => {
+  const handleSelectStatus = async (novoStatus: number) => {
     if (!horarioSelecionadoState) return;
 
     const novoHorarios = horarios.map((h) =>
@@ -248,6 +279,8 @@ const Agenda = () => {
             <RNPicker
               selectedValue={mesSelecionado}
               onValueChange={(v) => setMesSelecionado(v)}
+              mode="dropdown"
+              dropdownIconColor="#000"
             >
               {meses.map((m) => (
                 <RNPicker.Item key={m.value} label={m.name} value={m.value} />
@@ -262,6 +295,8 @@ const Agenda = () => {
             <RNPicker
               selectedValue={diaSelecionado}
               onValueChange={(v) => setDiaSelecionado(v)}
+              mode="dropdown"
+              dropdownIconColor="#000"
             >
               {diasNoMes.map((d) => (
                 <RNPicker.Item
@@ -309,7 +344,7 @@ const Agenda = () => {
 
         <StatusModal
           visible={statusModalVisivel}
-          currentStatus={horarioSelecionadoState?.status}
+          currentStatus={horarioSelecionadoState?.status || null}
           onClose={fecharStatusModal}
           onSelectStatus={handleSelectStatus}
         />

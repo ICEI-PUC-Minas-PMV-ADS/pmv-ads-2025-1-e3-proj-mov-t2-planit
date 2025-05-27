@@ -6,7 +6,7 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../firebaseConfig';
 import PinkBtn from '../../../components/button/pinkBtn';
 
-// ✅ Interface para o parâmetro day do onDayPress
+
 interface CalendarDay {
   dateString: string;
   day: number;
@@ -15,7 +15,7 @@ interface CalendarDay {
   timestamp: number;
 }
 
-// Mapeia status numérico para string
+
 const statusMap: Record<number, 'disponivel' | 'agendado' | 'bloqueado'> = {
   1: 'disponivel',
   2: 'agendado',
