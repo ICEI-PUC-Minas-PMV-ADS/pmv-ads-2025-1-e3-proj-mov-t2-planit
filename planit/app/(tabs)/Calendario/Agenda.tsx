@@ -13,7 +13,7 @@ import ModalBase from "../../../components/modais/modalBase";
 import PinkBtn from "../../../components/button/pinkBtn";
 import WhiteBtn from "../../../components/button/whiteBtn";
 import { db } from "../../../firebaseConfig";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 const meses = [
   { name: "Jan", value: 1 },
@@ -111,7 +111,6 @@ const getStatusCor = (status: number) => {
 
 const Agenda = () => {
   const navigation = useNavigation();
-
   const anoAtual = new Date().getFullYear();
 
   const [mesSelecionado, setMesSelecionado] = useState(new Date().getMonth() + 1);
@@ -148,6 +147,11 @@ const Agenda = () => {
 
   const [horarios, setHorarios] = useState(horariosBase);
 
+  const dataKey = `${anoAtual}-${String(mesSelecionado).padStart(2, "0")}-${String(
+    diaSelecionado
+  ).padStart(2, "0")}`;
+
+  // Atualiza os dias e carrega do Firestore
   useEffect(() => {
     const dias = Array.from(
       { length: getDiasMes(mesSelecionado, anoAtual) },
@@ -158,7 +162,21 @@ const Agenda = () => {
     if (diaSelecionado > dias.length) {
       setDiaSelecionado(1);
     }
-  }, [mesSelecionado, anoAtual]);
+
+    const carregarHorarios = async () => {
+      const docRef = doc(db, "agenda", dataKey);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setHorarios(data.horarios || horariosBase);
+      } else {
+        setHorarios(horariosBase);
+      }
+    };
+
+    carregarHorarios();
+  }, [mesSelecionado, diaSelecionado]);
 
   const abrirStatusModal = (h) => {
     setHorarioSelecionadoState(h);
@@ -174,10 +192,6 @@ const Agenda = () => {
       h.value === horarioSelecionadoState.value ? { ...h, status: novoStatus } : h
     );
     setHorarios(novoHorarios);
-
-    const dataKey = `${anoAtual}-${String(mesSelecionado).padStart(2, "0")}-${String(
-      diaSelecionado
-    ).padStart(2, "0")}`;
 
     try {
       await setDoc(doc(db, "agenda", dataKey), {
@@ -196,10 +210,6 @@ const Agenda = () => {
     setHorarios(novoHorarios);
     setModalVisivel(false);
 
-    const dataKey = `${anoAtual}-${String(mesSelecionado).padStart(2, "0")}-${String(
-      diaSelecionado
-    ).padStart(2, "0")}`;
-
     try {
       await setDoc(doc(db, "agenda", dataKey), {
         data: dataKey,
@@ -211,9 +221,6 @@ const Agenda = () => {
   };
 
   const salvarNoFirestore = async () => {
-    const dataKey = `${anoAtual}-${String(mesSelecionado).padStart(2, "0")}-${String(
-      diaSelecionado
-    ).padStart(2, "0")}`;
     try {
       await setDoc(doc(db, "agenda", dataKey), {
         data: dataKey,
