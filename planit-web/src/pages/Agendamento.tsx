@@ -2,10 +2,12 @@ import '../App.css'
 import { IonIcon } from '@ionic/react';
 import { heartCircleOutline, timeOutline } from 'ionicons/icons'
 import { chevronBackCircleOutline, chevronForwardCircleOutline, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
+
 import { useNavigate } from 'react-router-dom';
-// import { useEffect, useState } from 'react'
-// // import { getProfessionalById, getProfessionalServices } from '../firebaseConfig'
-// // import { Servicos, Profissional } from '../../types'
+import { useEffect, useState } from 'react';
+import { getProfissional, getServicos } from '../../firebaseConfig';
+import { Profissional, Servico } from '../../types';
+
 import Calendar from 'react-calendar';
 import perfilPlanit from '../assets/perfilPlanit.jpg';
 import WhiteBtn from '../components/whiteBtn';
@@ -14,6 +16,37 @@ import GreenBtn from '../components/greenBtn';
 
 function Agendar() {
   const navigate = useNavigate();
+  const [profissional, setProfissional] = useState<Profissional | null>(null);
+  const [servicos, setServicos] = useState<Servico[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const carregarDados = async () => {
+      try {
+        const profId = localStorage.getItem('profissionalId');
+
+        if (!profId) {
+          navigate('/home');
+          return;
+        }
+
+        const [profData, servicosData] = await Promise.all([
+          getProfissional(profId),
+          getServicos(profId)
+        ]);
+
+        setProfissional(profData);
+        setServicos(servicosData);
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        navigate('/home');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    carregarDados();
+  }, [navigate])
 
   const formatMonthYear = (_locale: unknown, date: Date) => {
     const months = [
@@ -25,19 +58,27 @@ function Agendar() {
     return `${months[monthIndex]} ${date.getFullYear()}`;
   };
 
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Carregando...</div>;
+  }
+
+  if (!profissional) {
+    return null;
+  }
+
   return (
     <div>
       <div className='m-5 flex flex-col gap-10'>
         <div className='flex flex-wrap gap-6 items-center'>
           <div>
-            <img className='rounded-full w-20' src={perfilPlanit} alt="Perfil Profissional" />
+            <img className='rounded-full w-20' src={profissional.fotoPerfil || perfilPlanit} alt="Perfil Profissional" />
           </div>
 
           <div>
-            <p className='text-xl font-bold'>Iriana Darua</p>
+            <p className='text-xl font-bold'>{profissional.nome}</p>
 
             <div>
-              <p className='text-emerald-500 font-light'>Médica</p>
+              <p className='text-emerald-500 font-light'>{profissional.profissao}</p>
             </div>
           </div>
         </div>
@@ -47,107 +88,34 @@ function Agendar() {
         <div>
           <p className='text-pink-600 font-bold'>Selecione o Serviço Desejado: </p>
 
-          <div className='flex justify-center'>
-            <div className='mt-10 w-72 p-5 rounded-3xl border border-gray-100 shadow-gray-200 shadow-2xl flex flex-col gap-3 hover:scale-105'>
-              <div className='flex flex-row justify-between'>
-                <div>
-                  <p className='text-xl text-emerald-600'>Primeira Consulta</p>
-                </div>
-
-                <div>
-                  <IonIcon icon={heartCircleOutline} style={{ fontSize: "30px", color: "#059669" }} className='text-shadow-emerald-600'></IonIcon>
-                </div>
-              </div>
-
-              <div>
-                <p className='font-extralight'>Primeiro contato do cliente conosco</p>
-              </div>
-
-              <div className='flex flex-row gap-6 justify-end mt-7'>
-                <div className='flex flex-row'>
+          {servicos.map(servico => (
+            <div key={servico.id} className='flex justify-center'>
+              <div className='mt-10 w-72 p-5 rounded-3xl border border-gray-100 shadow-gray-200 shadow-2xl flex flex-col gap-3 hover:scale-105'>
+                <div className='flex flex-row justify-between'>
                   <div>
-                    <IonIcon icon={timeOutline} style={{ fontSize: "20px", paddingTop: "3px", fontWeight: 900 }}></IonIcon>
+                    <p className='text-xl text-emerald-600'>{servico.nome}</p>
                   </div>
-
                   <div>
-                    <p className='font-bold'>30 Min</p>
+                    <IonIcon icon={heartCircleOutline} style={{ fontSize: "30px", color: "#059669" }} />
                   </div>
                 </div>
 
                 <div>
-                  <p className='text-emerald-600 font-bold'>R$ 150,00</p>
+                  <p className='font-extralight'>{servico.descricao}</p>
+                </div>
+
+                <div className='flex flex-row gap-6 justify-end mt-7'>
+                  <div className='flex flex-row'>
+                    <IonIcon icon={timeOutline} style={{ fontSize: "20px", paddingTop: "3px", fontWeight: 900 }} />
+                    <p className='font-bold'>{servico.duracao} Min</p>
+                  </div>
+                  <div>
+                    <p className='text-emerald-600 font-bold'>R$ {servico.valor.toFixed(2)}</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className='flex justify-center'>
-            <div className='mt-10 w-72 p-5 rounded-3xl border border-gray-100 shadow-gray-200 shadow-2xl flex flex-col gap-3 hover:scale-105'>
-              <div className='flex flex-row justify-between'>
-                <div>
-                  <p className='text-xl text-emerald-600'>Consulta de Rotina</p>
-                </div>
-
-                <div>
-                  <IonIcon icon={heartCircleOutline} style={{ fontSize: "30px", color: "#059669" }} className='text-shadow-emerald-600'></IonIcon>
-                </div>
-              </div>
-
-              <div>
-                <p className='font-extralight'>Consulta periódica</p>
-              </div>
-
-              <div className='flex flex-row gap-6 justify-end mt-7'>
-                <div className='flex flex-row'>
-                  <div>
-                    <IonIcon icon={timeOutline} style={{ fontSize: "20px", paddingTop: "3px", fontWeight: 900 }}></IonIcon>
-                  </div>
-
-                  <div>
-                    <p className='font-bold'>30 Min</p>
-                  </div>
-                </div>
-
-                <div>
-                  <p className='text-emerald-600 font-bold'>R$ 150,00</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className='flex justify-center'>
-            <div className='mt-10 w-72 p-5 rounded-3xl border border-gray-100 shadow-gray-200 shadow-2xl flex flex-col gap-3 hover:scale-105'>
-              <div className='flex flex-row justify-between'>
-                <div>
-                  <p className='text-xl text-emerald-600'>Retorno</p>
-                </div>
-
-                <div>
-                  <IonIcon icon={heartCircleOutline} style={{ fontSize: "30px", color: "#059669" }} className='text-shadow-emerald-600'></IonIcon>
-                </div>
-              </div>
-
-              <div>
-                <p className='font-extralight'>Checkup após emergência</p>
-              </div>
-
-              <div className='flex flex-row gap-6 justify-end mt-7'>
-                <div className='flex flex-row'>
-                  <div>
-                    <IonIcon icon={timeOutline} style={{ fontSize: "20px", paddingTop: "3px", fontWeight: 900 }}></IonIcon>
-                  </div>
-
-                  <div>
-                    <p className='font-bold'>30 Min</p>
-                  </div>
-                </div>
-
-                <div>
-                  <p className='text-emerald-600 font-bold'>R$ 150,00</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
 
         <div>
@@ -190,7 +158,7 @@ function Agendar() {
       </div>
 
       <div className='flex justify-around m-5'>
-        <WhiteBtn title='Pular' onClick={() => navigate('/home')}/>
+        <WhiteBtn title='Pular' onClick={() => navigate('/home')} />
         <GreenBtn title='Agendar' onClick={() => navigate('/home')} type='submit' />
       </div>
     </div>
