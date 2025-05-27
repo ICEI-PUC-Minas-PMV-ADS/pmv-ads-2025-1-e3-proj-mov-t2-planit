@@ -6,6 +6,15 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../firebaseConfig';
 import PinkBtn from '../../../components/button/pinkBtn';
 
+// ✅ Interface para o parâmetro day do onDayPress
+interface CalendarDay {
+  dateString: string;
+  day: number;
+  month: number;
+  year: number;
+  timestamp: number;
+}
+
 // Mapeia status numérico para string
 const statusMap: Record<number, 'disponivel' | 'agendado' | 'bloqueado'> = {
   1: 'disponivel',
@@ -41,32 +50,36 @@ const Calendario = () => {
 
     const ref = doc(db, 'agenda', dataSelecionada);
 
-    const unsubscribe = onSnapshot(ref, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        const horariosLista = (data.horarios || []).map((h: any) => ({
-          hora: h.name,
-          status: statusMap[h.status] || 'disponivel',
-        }));
-        setHorarios(horariosLista);
-        setMensagem(null);
-      } else {
+    const unsubscribe = onSnapshot(
+      ref,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const horariosLista = (data.horarios || []).map((h: any) => ({
+            hora: h.name,
+            status: statusMap[h.status] || 'disponivel',
+          }));
+          setHorarios(horariosLista);
+          setMensagem(null);
+        } else {
+          setHorarios([]);
+          setMensagem('Nenhum horário cadastrado para essa data.');
+        }
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Erro ao escutar documento:', error);
+        setMensagem('Erro ao buscar horários.');
         setHorarios([]);
-        setMensagem('Nenhum horário cadastrado para essa data.');
+        setLoading(false);
       }
-      setLoading(false);
-    }, (error) => {
-      console.error('Erro ao escutar documento:', error);
-      setMensagem('Erro ao buscar horários.');
-      setHorarios([]);
-      setLoading(false);
-    });
+    );
 
     setMarkedDates({
       [dataSelecionada]: {
         selected: true,
         selectedColor: '#FF69B4',
-      }
+      },
     });
 
     return () => unsubscribe();
@@ -129,7 +142,7 @@ const Calendario = () => {
       <ScrollView>
         <View style={{ marginTop: 24, marginBottom: 20 }}>
           <Calendar
-            onDayPress={(day) => setDataSelecionada(day.dateString)}
+            onDayPress={(day: CalendarDay) => setDataSelecionada(day.dateString)}
             markedDates={markedDates}
           />
         </View>
