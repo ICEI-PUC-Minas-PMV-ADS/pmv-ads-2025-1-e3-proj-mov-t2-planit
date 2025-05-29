@@ -1,26 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
-import { useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import useAuth from "@/hooks/useAuth";
 
 interface HeaderProps {
-  userName?: string;
   consultasHoje?: number;
   consultasSemana?: number;
 }
 
-const Home = ({
-  userName = "Iriana Darua",
-  consultasHoje = 12,
-  consultasSemana = 48,
-}: HeaderProps) => {
+const Home = ({ consultasHoje = 12, consultasSemana = 48 }: HeaderProps) => {
   const [saudacao, setGreeting] = useState("Bom dia");
   const router = useRouter();
-  const navigation = useNavigation<any>();
   const { user } = useAuth();
+  const profileImage =
+    "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
 
   useEffect(() => {
     const updateGreeting = () => {
@@ -74,7 +69,7 @@ const Home = ({
           <View key={index} className="items-center">
             <View
               className={`w-14 h-12 rounded-full justify-center items-center mb-2
-                ${dia.isToday ? "bg-pink-500" : "bg-secundaria"}`}
+                ${dia.isToday ? "bg-principal" : "bg-secundaria"}`}
             >
               <Text
                 className={`text-lg font-bold
@@ -99,19 +94,19 @@ const Home = ({
     return (
       <View className="flex-row mx-4 my-3 rounded-lg shadow-s py-4">
         <View className="flex-1 bg-secundaria p-5 rounded-xl mr-2 ">
-          <Text className="text-1xl text-pink-500 mb-1">Hoje</Text>
-          <Text className="text-4xl font-bold  text-pink-500 mb-1 p-1 ">
+          <Text className="text-1xl text-principal mb-1">Hoje</Text>
+          <Text className="text-4xl font-bold  text-principal mb-1 p-1 ">
             {consultasHoje}
           </Text>
-          <Text className="text-1xl text-pink-500">Consultas</Text>
+          <Text className="text-1xl text-principal">Consultas</Text>
         </View>
 
         <View className="flex-1 bg-pink-100 p-5 rounded-xl ml-2">
-          <Text className="text-1x1 text-pink-500 mb-1">Esta semana</Text>
-          <Text className="text-4xl font-bold text-pink-500 mb-1 p-1">
+          <Text className="text-1x1 text-principal mb-1">Esta semana</Text>
+          <Text className="text-4xl font-bold text-principal mb-1 p-1">
             {consultasSemana}
           </Text>
-          <Text className="text-1x1 text-pink-500">Consultas</Text>
+          <Text className="text-1x1 text-principal">Consultas</Text>
         </View>
       </View>
     );
@@ -140,10 +135,17 @@ const Home = ({
         valor: "100,00",
         foto: "https://randomuser.me/api/portraits/men/75.jpg",
       },
+      {
+        nome: "Marcela",
+        horario: "18:00",
+        tipo: "Retorno",
+        valor: "100,00",
+        foto: "https://randomuser.me/api/portraits/women/75.jpg",
+      },
     ];
 
     return (
-      <View className="bg-white rounded-xl mx-4 my-3 p-4 shadow-sm">
+      <View className="bg-white rounded-xl mx-4 my-3 p-4">
         <Text className="text-2xl font-bold text-gray-800 mb-10">
           Agenda de Hoje
         </Text>
@@ -170,7 +172,7 @@ const Home = ({
                   <Text className="text-base text-gray-600">
                     {consulta.tipo}
                   </Text>
-                  <Text className="text-base font-bold text-pink-500">
+                  <Text className="text-base font-bold text-principal">
                     R$ {consulta.valor}
                   </Text>
                 </View>
@@ -187,36 +189,36 @@ const Home = ({
   };
 
   return (
-    <View className="bg-white">
-      <View className="flex justify-between flex-row items-center px-6 py-4">
-        <View>
-          <TouchableOpacity onPress={() => router.push("/Notificacao")}>
-            <Feather name="bell" size={20} color={Colors.preto} />
-          </TouchableOpacity>
-        </View>
-        <View className="flex items-end flex-row">
-          <View className="flex-col items-start mr-2">
-            <Text className="text-sm text-gray-300">{saudacao}</Text>
-            <Text className="text-lg font-bold text-gray-600">
-              {user?.displayName || "Usuário"}
-            </Text>
-          </View>
+    <ScrollView showsVerticalScrollIndicator={false}>
+      <View className="bg-white">
+        <View className="flex justify-between flex-row items-center px-6 py-4">
           <View>
-            <TouchableOpacity onPress={() => router.push("/(tabs)/Perfil")}>
-              <Image
-                source={{
-                  uri: "https://i.pinimg.com/280x280_RS/53/3e/03/533e031c488dd2ec98c186e90a89d1c0.jpg",
-                }}
-                className="w-[55px] h-[55px] rounded-full"
-              />
+            <TouchableOpacity onPress={() => router.push("/Notificacao")}>
+              <Ionicons name="notifications" size={20} color={Colors.preto} />
             </TouchableOpacity>
           </View>
+          <View className="flex items-end flex-row">
+            <View className="flex-col items-start mr-2">
+              <Text className="text-sm text-gray-300">{saudacao}</Text>
+              <Text className="text-lg font-bold text-gray-600">
+                {user?.displayName || "Usuário"}
+              </Text>
+            </View>
+            <View>
+              <TouchableOpacity onPress={() => router.push("/(tabs)/Perfil")}>
+                <Image
+                  source={{ uri: user?.photoURL || profileImage }}
+                  className="w-[55px] h-[55px] rounded-full"
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
+        {renderCalendarioSemana()}
+        {renderResumoConsultas()}
+        {renderAgendaHoje()}
       </View>
-      {renderCalendarioSemana()}
-      {renderResumoConsultas()}
-      {renderAgendaHoje()}
-    </View>
+    </ScrollView>
   );
 };
 
