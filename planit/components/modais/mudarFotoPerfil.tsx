@@ -11,6 +11,7 @@ type Props = {
   icone?: keyof typeof Ionicons.glyphMap;
   onClose: () => void;
   onConfirm: () => void;
+  setNewImageUrl: (url: string) => void;
 };
 
 export default function MudarFotoPerfil({
@@ -20,6 +21,7 @@ export default function MudarFotoPerfil({
   icone,
   onClose,
   onConfirm,
+  setNewImageUrl,
 }: Readonly<Props>) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
@@ -32,7 +34,10 @@ export default function MudarFotoPerfil({
     });
 
     if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      console.log("URI DA IMAGEM:", uri);
+      setSelectedImage(uri);
+      setNewImageUrl(uri);
     }
   };
 

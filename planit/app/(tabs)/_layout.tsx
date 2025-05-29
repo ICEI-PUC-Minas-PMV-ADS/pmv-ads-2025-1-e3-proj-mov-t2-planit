@@ -9,10 +9,14 @@ const _layout = () => {
       screenOptions={{
         tabBarActiveTintColor: Colors.principal,
         tabBarInactiveTintColor: Colors.iconNavDefault,
+        tabBarStyle: {
+          paddingTop: 5,
+          borderTopWidth: 0,
+        },
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="Home"
         options={{
           title: "",
           headerShown: false,

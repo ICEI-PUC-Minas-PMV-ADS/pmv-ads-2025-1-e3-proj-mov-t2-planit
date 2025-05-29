@@ -10,7 +10,7 @@ import {
   Alert,
   TextInput,
 } from "react-native";
-import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
 import { X } from "lucide-react-native";
 import * as Clipboard from "expo-clipboard";
 import { Colors } from "@/constants/Colors";
@@ -20,11 +20,11 @@ import MudarFotoPerfil from "@/components/modais/mudarFotoPerfil";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebaseConfig";
 import useAuth from "@/hooks/useAuth";
-import { getAuth, updateProfile, User } from "firebase/auth";
+import { updateProfile } from "firebase/auth";
 
 const shareLink = "www.planit.com/id.name=iriana";
 const profileImage =
-  "https://i.pinimg.com/280x280_RS/53/3e/03/533e031c488dd2ec98c186e90a89d1c0.jpg";
+  "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
 
 export default function Perfil() {
   const [shareModalVisible, setShareModalVisible] = useState(false);
@@ -32,11 +32,12 @@ export default function Perfil() {
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [profileImageModalVisible, setProfileImageModalVisible] =
     useState(false);
-
   const [cardName, setCardName] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [cvv, setCvv] = useState("");
+  const { user } = useAuth();
+  const [newImageUrl, setNewImageUrl] = useState(user?.photoURL || "");
   const onConfirmLogout = () => {
     setLogoutModalVisible(false);
     signOut(auth).then(() => {
@@ -44,32 +45,41 @@ export default function Perfil() {
       router.replace("/Login");
     });
   };
-  const onConfirmProfileImage = () => {
-    setProfileImageModalVisible(false);
+  const onConfirmProfileImage = async () => {
+    try {
+      if (auth.currentUser && newImageUrl) {
+        await updateProfile(auth.currentUser, {
+          photoURL: newImageUrl,
+        });
+        console.log("Foto atualizada!");
+      }
+      setProfileImageModalVisible(false);
+    } catch (error) {
+      console.error("Erro ao atualizar foto:", error);
+      Alert.alert("Erro", "Não foi possível atualizar a foto.");
+    }
   };
 
-  const { user } = useAuth();
-
   return (
-    <>
-      <ScrollView className="bg-white px-4 pt-10">
+    <View className="bg-white flex-1">
+      <ScrollView className="px-4 pt-10">
         {/* Foto do Perfil */}
         <View className="flex-row items-center my-6 ml-3">
           <Pressable onPress={() => setProfileImageModalVisible(true)}>
             <Image
-              source={{ uri: profileImage }}
+              source={{ uri: user?.photoURL || profileImage }}
               className="w-24 h-24 rounded-full"
             />
           </Pressable>
           <Text className="text-2xl font-semibold ml-6">
-            {user?.displayName || user?.uid || "Usuário"}
+            {user?.displayName || "Usuário"}
           </Text>
         </View>
 
         {/* Lista de Opções */}
         <View className="mx-3">
           <Item
-            icon={<Ionicons name="person" size={15} color={Colors.preto} />}
+            icon={<Feather name="user" size={15} color={Colors.preto} />}
             label="Conta"
             onPress={() => router.push("/Perfil/Conta")}
           />
@@ -117,6 +127,7 @@ export default function Perfil() {
         icone="folder-open-outline"
         onClose={() => setProfileImageModalVisible(false)}
         onConfirm={onConfirmProfileImage}
+        setNewImageUrl={setNewImageUrl}
       ></MudarFotoPerfil>
 
       {/* Modal Compartilhar Agenda */}
@@ -299,7 +310,7 @@ export default function Perfil() {
           </View>
         </View>
       </Modal>
-    </>
+    </View>
   );
 }
 
@@ -319,7 +330,7 @@ const Item = ({
     className="flex-row items-center justify-between py-7 border-b border-gray-100"
   >
     <View className="flex-row items-center">
-      <View className="bg-violet-100 justify-center items-center w-10 h-10 rounded-2xl mr-3">
+      <View className="bg-slate-100 justify-center items-center w-10 h-10 rounded-2xl mr-3">
         {icon}
       </View>
       <Text className={`text-base ${textColor}`}>{label}</Text>

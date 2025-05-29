@@ -1,7 +1,17 @@
 import React, { useRef, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { useRouter } from "expo-router";
-import { signInWithEmailAndPassword,sendPasswordResetEmail } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+} from "firebase/auth";
 import { auth } from "../firebaseConfig";
 
 export default function LoginScreen() {
@@ -22,11 +32,12 @@ export default function LoginScreen() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       Alert.alert("Sucesso", "Login realizado com sucesso!");
-      router.replace("/(tabs)");
+      router.replace("/(tabs)/Home");
     } catch (error: any) {
       console.error("Erro ao fazer login:", error);
 
-      let userMessage = "Ocorreu um erro inesperado. Tente novamente mais tarde.";
+      let userMessage =
+        "Ocorreu um erro inesperado. Tente novamente mais tarde.";
       switch (error.code) {
         case "auth/invalid-email":
           userMessage = "Formato de e‑mail inválido.";
@@ -42,7 +53,7 @@ export default function LoginScreen() {
       setErrorMessage(userMessage);
       Alert.alert("Erro", userMessage);
     } finally {
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   };
 
@@ -91,16 +102,18 @@ export default function LoginScreen() {
                 setErrorMessage(null);
               }}
             />
-          <TouchableOpacity
-            onPress={() => {
-              if (email) {
-                sendPasswordResetEmail(auth, email)
-                  .then(() => Alert.alert("Sucesso", "Email de recuperação enviado!"))
-                  .catch(() => Alert.alert("Erro", "Falha ao enviar email."));
-              } else {
-                Alert.alert("Erro", "Insira seu email primeiro.");
-              }
-            }}
+            <TouchableOpacity
+              onPress={() => {
+                if (email) {
+                  sendPasswordResetEmail(auth, email)
+                    .then(() =>
+                      Alert.alert("Sucesso", "Email de recuperação enviado!")
+                    )
+                    .catch(() => Alert.alert("Erro", "Falha ao enviar email."));
+                } else {
+                  Alert.alert("Erro", "Insira seu email primeiro.");
+                }
+              }}
             >
               <Text className="text-pink-500 text-sm ml-2">
                 Esqueceu a senha?
@@ -131,7 +144,7 @@ export default function LoginScreen() {
             className="bg-pink-500 py-3 rounded-full items-center"
             onPress={handleLogin}
             disabled={isLoading}
-            >
+          >
             {isLoading ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
