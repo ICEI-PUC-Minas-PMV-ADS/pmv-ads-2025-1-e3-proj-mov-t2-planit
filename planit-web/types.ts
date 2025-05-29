@@ -12,7 +12,7 @@ export interface Servico {
     duracao: number 
     valor: number 
     uid: string
-    id?: string
+    id: string
 }
 
 export interface Horario {
@@ -24,11 +24,13 @@ export interface Horario {
 }
 
 export interface Agendamento {
-    horaInicio: string
-    horaFim: string 
-    observacao: string 
-    profId: string
-    servId: string
-    clieId: string 
-    status: string
+  dataInicio: string  
+  horaInicio: string  
+  dataFim: string    
+  horaFim: string    
+  servicoId: string
+  profissionalId: string
+  clienteId: string
+  status: 'agendado' | 'confirmado' | 'cancelado'
+  duracao: number
 }
