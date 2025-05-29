@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {View,Text,TextInput,TouchableOpacity,StyleSheet,ScrollView,Modal,ActivityIndicator,Alert} from 'react-native';
 import { useRouter } from 'expo-router';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { collection, doc, setDoc, Timestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebaseConfig';
 
 const CadastroServicos: React.FC = () => {
@@ -39,21 +39,27 @@ const CadastroServicos: React.FC = () => {
 
     setLoading(true);
 
-    const novoServico = {
-      nome: nome.trim(),
-      descricao: descricao.trim(),
-      duracao: `${duracaoValue.trim()}${duracaoUnit}`,
-      categoria: categoriaSelecionada,
-      valor: valor.trim(),
-      ativo: true,
-      criadoEm: Timestamp.now(),
-      uid: auth.currentUser?.uid,
-    };
-
     try {
-      const docRef = await addDoc(collection(db, 'Servicos'), novoServico);
-      console.log('Serviço cadastrado com ID:', docRef.id);
-      Alert.alert('Sucesso', 'Serviço cadastrado com sucesso!');
+      const servicoRef = doc(collection(db, 'Servicos'));
+      const serviceId = servicoRef.id;
+
+      const novoServico = {
+        id: serviceId,                     
+        nome: nome.trim(),
+        descricao: descricao.trim(),
+        duracao: `${duracaoValue.trim()}${duracaoUnit}`,
+        categoria: categoriaSelecionada,
+        valor: valor.trim(),
+        ativo: true,
+        criadoEm: Timestamp.now(),
+        uid: auth.currentUser?.uid,        
+      };
+
+      await setDoc(servicoRef, novoServico);
+
+      console.log('Serviço cadastrado com ID:', serviceId);
+      Alert.alert('Sucesso', `Serviço cadastrado com sucesso!`);
+
       setNome('');
       setDescricao('');
       setValor('');
