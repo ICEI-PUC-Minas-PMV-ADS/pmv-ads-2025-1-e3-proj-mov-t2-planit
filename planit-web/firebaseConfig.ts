@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, setLogLevel, doc, getDoc, query, collection, getDocs, where, /*addDoc, updateDoc, serverTimestamp, QuerySnapshot*/ } from "firebase/firestore";
+import { getFirestore, setLogLevel, /*doc, getDoc,*/ query, collection, getDocs, where, /*addDoc, updateDoc, serverTimestamp, QuerySnapshot*/ } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { Profissional, Servico, /*Agendamento*/ } from './types'
+import { Horario, Profissional, Servico, /*Agendamento*/ } from './types'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -48,11 +48,6 @@ export async function getProfissional(profId: string): Promise<Profissional> {
   }
 }
 
-function extraiMinutos(duracaoString: string): number {
-  const match = duracaoString.match(/\d+/);
-  return match ? parseInt(match[0]) : 0;
-}
-
 export async function getServicos(profId: string): Promise<Servico[]> {
   const q = query(
     collection(db, "Servicos"),
@@ -69,9 +64,32 @@ export async function getServicos(profId: string): Promise<Servico[]> {
       id: doc.id,
       nome: data.nome,
       descricao: data.descricao,
-      duracao: extraiMinutos(data.duracao),
+      duracao: data.duracao,
       valor: parseFloat(data.valor) || 0,
       uid: data.uid
     } as Servico;
+  });
+}
+
+export async function getHorarios(profissionalId: string, dataSelecionada: string): Promise<Horario[]> {
+  const q = query (
+    collection(db, "agenda"),
+    where("uid", "==", profissionalId),
+    where("data", "==", dataSelecionada),
+    where("status", "==", 'disponivel')
+  );
+
+  const querySnapshot = await getDocs(q);
+
+  return querySnapshot.docs.map(doc => {
+    const data = doc.data();
+
+    return {
+      id: doc.id,
+      data: data.data,
+      hora: data.hora,
+      status: data.status,
+      uid: data.uid
+    } as Horario;
   });
 }

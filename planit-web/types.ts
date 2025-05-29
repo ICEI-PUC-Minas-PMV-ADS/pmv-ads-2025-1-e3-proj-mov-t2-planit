@@ -15,6 +15,14 @@ export interface Servico {
     id?: string
 }
 
+export interface Horario {
+    id?: string
+    data: string
+    hora: string 
+    status: 'disponivel' | 'bloqueado' | 'cancelado'
+    uid: string 
+}
+
 export interface Agendamento {
     horaInicio: string
     horaFim: string 

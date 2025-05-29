@@ -5,10 +5,10 @@ import { chevronBackCircleOutline, chevronForwardCircleOutline, chevronBackOutli
 
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { getProfissional, getServicos } from '../../firebaseConfig';
-import { Profissional, Servico } from '../../types';
+import { getProfissional, getServicos, getHorarios } from '../../firebaseConfig';
+import { Profissional, Servico, Horario } from '../../types';
 
-import Calendar from 'react-calendar';
+import Calendar, { CalendarProps } from 'react-calendar';
 import perfilPlanit from '../assets/perfilPlanit.jpg';
 import WhiteBtn from '../components/whiteBtn';
 import GreenBtn from '../components/greenBtn';
@@ -18,7 +18,10 @@ function Agendar() {
   const navigate = useNavigate();
   const [profissional, setProfissional] = useState<Profissional | null>(null);
   const [servicos, setServicos] = useState<Servico[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [date, setDate] = useState<Date | null>(null);
+  const [horarios, setHorarios] = useState<Horario[]>([]);
+  const [horaSelecionada, setHoraSelecionada] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const carregarDados = async () => {
@@ -66,6 +69,37 @@ function Agendar() {
     return null;
   }
 
+  const handleDateChange: CalendarProps['onChange'] = async (value) => {
+    const horaSelecionada = (Array.isArray(value) ? value[0] : value) as Date;
+    
+    setDate(horaSelecionada);
+    setLoading(true);
+  
+    try {
+      const profId = localStorage.getItem('profissionalId');
+      if (!profId) {
+        window.alert('Erro ao buscar Profissional');
+        navigate("/home");
+        return;
+      }
+  
+      const dataFormatada = horaSelecionada.toISOString().split('T')[0];
+      const horarioDisponiveis = await getHorarios(profId, dataFormatada);
+      setHorarios(horarioDisponiveis);
+  
+    } catch (error) {
+      window.alert('Erro ao buscar horarios');
+      console.error("Erro ao buscar horários:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatHora = (hora: string) => {
+    const [h, m] = hora.split(':');
+    return `${parseInt(h)}h${m}`;
+  };
+
   return (
     <div>
       <div className='m-5 flex flex-col gap-10'>
@@ -90,7 +124,7 @@ function Agendar() {
 
           {servicos.map(servico => (
             <div key={servico.id} className='flex justify-center'>
-              <div className='mt-10 w-72 p-5 rounded-3xl border border-gray-100 shadow-gray-200 shadow-2xl flex flex-col gap-3 hover:scale-105'>
+              <div className='mt-10 w-72 p-5 rounded-3xl border border-gray-100 shadow-gray-200 shadow-2xl flex flex-col gap-3 hover:scale-105 cursor-pointer'>
                 <div className='flex flex-row justify-between'>
                   <div>
                     <p className='text-xl text-emerald-600'>{servico.nome}</p>
@@ -107,7 +141,7 @@ function Agendar() {
                 <div className='flex flex-row gap-6 justify-end mt-7'>
                   <div className='flex flex-row'>
                     <IonIcon icon={timeOutline} style={{ fontSize: "20px", paddingTop: "3px", fontWeight: 900 }} />
-                    <p className='font-bold'>{servico.duracao} Min</p>
+                    <p className='font-bold'>{servico.duracao}</p>
                   </div>
                   <div>
                     <p className='text-emerald-600 font-bold'>R$ {servico.valor.toFixed(2)}</p>
@@ -125,6 +159,9 @@ function Agendar() {
 
           <div className='flex justify-center'>
             <Calendar
+              onChange={handleDateChange}
+              value={date}
+              minDate={new Date()}
               prevLabel={<IonIcon icon={chevronBackOutline} />}
               nextLabel={<IonIcon icon={chevronForwardOutline} />}
               prev2Label={<IonIcon icon={chevronBackCircleOutline} />}
@@ -139,16 +176,22 @@ function Agendar() {
             </div>
 
             <div className='flex justify-center'>
-              <form action="">
-                <select id='horario' name='horario' className=' w-80 pt-2 pb-2 pl-5 pr-5 rounded-2xl border border-gray-200'>
-                  <option value="1">De 9h00 ás 9h30</option>
-                  <option value="2">De 9h30 ás 10h00</option>
-                  <option value="3">De 10h00 ás 10h30</option>
-                  <option value="4">De 10h30 ás 11h00</option>
-                  <option value="5">De 11h00 ás 11h30</option>
-                  <option value="6">De 11h30 ás 12h00</option>
-                  <option value="7">De 13h00 ás 13h30</option>
-                  <option value="8">De 13h30 ás 14h00</option>
+              <form>
+                <select id='horario' name='horario' value={horaSelecionada} onChange={(e) => setHoraSelecionada(e.target.value)} disabled={!date || loading} className=' w-80 pt-2 pb-2 pl-5 pr-5 rounded-2xl border border-gray-200'>
+                  {loading ? (
+                    <option value="">Carregando...</option>
+                  ) : horarios.length === 0 ? (
+                    <option value="">Nenhum horário disponível</option>
+                  ) : (
+                    <>
+                      <option value="">Selecione um horário</option>
+                      {horarios.map((horario) => (
+                        <option key={horario.id} value={horario.hora}>
+                          {formatHora(horario.hora)}
+                        </option>
+                      ))}
+                    </>
+                  )}
                 </select>
               </form>
             </div>
