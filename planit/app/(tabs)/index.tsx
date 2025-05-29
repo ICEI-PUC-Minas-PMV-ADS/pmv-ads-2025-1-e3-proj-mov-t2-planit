@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from "react";
+import { View, Text, Image, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
+import useAuth from "@/hooks/useAuth";
 
 interface HeaderProps {
   userName?: string;
@@ -14,11 +15,12 @@ interface HeaderProps {
 const Home = ({
   userName = "Iriana Darua",
   consultasHoje = 12,
-  consultasSemana = 48
+  consultasSemana = 48,
 }: HeaderProps) => {
-  const [saudacao, setGreeting] = useState('Bom dia');
+  const [saudacao, setGreeting] = useState("Bom dia");
   const router = useRouter();
   const navigation = useNavigation<any>();
+  const { user } = useAuth();
 
   useEffect(() => {
     const updateGreeting = () => {
@@ -26,11 +28,11 @@ const Home = ({
       const hours = now.getHours();
 
       if (hours >= 5 && hours < 12) {
-        setGreeting('Bom dia!');
+        setGreeting("Bom dia!");
       } else if (hours >= 12 && hours < 18) {
-        setGreeting('Boa tarde!');
+        setGreeting("Boa tarde!");
       } else {
-        setGreeting('Boa noite!');
+        setGreeting("Boa noite!");
       }
     };
 
@@ -44,7 +46,7 @@ const Home = ({
     const hoje = new Date();
     const atualDiaDaSemana = hoje.getDay();
     const AtualDia = hoje.getDate();
-    const diasDaSemana = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+    const diasDaSemana = ["D", "S", "T", "Q", "Q", "S", "S"];
 
     const obterDiasDaSemanaComDatas = () => {
       const resultado = [];
@@ -58,7 +60,7 @@ const Home = ({
         resultado.push({
           letter: diasDaSemana[i],
           number: dataDoDia.getDate().toString(),
-          isToday: dataDoDia.getDate() === AtualDia
+          isToday: dataDoDia.getDate() === AtualDia,
         });
       }
       return resultado;
@@ -72,16 +74,18 @@ const Home = ({
           <View key={index} className="items-center">
             <View
               className={`w-14 h-12 rounded-full justify-center items-center mb-2
-                ${dia.isToday ? 'bg-pink-500' : 'bg-secundaria'}`}
+                ${dia.isToday ? "bg-pink-500" : "bg-secundaria"}`}
             >
-              <Text className={`text-lg font-bold
-                ${dia.isToday ? 'text-secundaria' : 'text-gray-600'}`}
+              <Text
+                className={`text-lg font-bold
+                ${dia.isToday ? "text-secundaria" : "text-gray-600"}`}
               >
                 {dia.letter}
               </Text>
             </View>
-            <Text className={`text-lg
-              ${dia.isToday ? 'font-bold text-gray-500' : 'text-gray-300'}`}
+            <Text
+              className={`text-lg
+              ${dia.isToday ? "font-bold text-gray-500" : "text-gray-300"}`}
             >
               {dia.number}
             </Text>
@@ -110,9 +114,8 @@ const Home = ({
           <Text className="text-1x1 text-pink-500">Consultas</Text>
         </View>
       </View>
-
-    )
-  }
+    );
+  };
 
   const renderAgendaHoje = () => {
     const consultas = [
@@ -121,27 +124,29 @@ const Home = ({
         horario: "09:30",
         tipo: "Consulta de rotina",
         valor: "150,00",
-        foto: "https://randomuser.me/api/portraits/women/44.jpg" // Foto estática exemplo
+        foto: "https://randomuser.me/api/portraits/women/44.jpg", // Foto estática exemplo
       },
       {
         nome: "Sérgio",
         horario: "10:20",
         tipo: "Primeira Consulta",
         valor: "95,00",
-        foto: "https://randomuser.me/api/portraits/men/32.jpg"
+        foto: "https://randomuser.me/api/portraits/men/32.jpg",
       },
       {
         nome: "Mauricio",
         horario: "11:00",
         tipo: "Retorno",
         valor: "100,00",
-        foto: "https://randomuser.me/api/portraits/men/75.jpg"
-      }
+        foto: "https://randomuser.me/api/portraits/men/75.jpg",
+      },
     ];
 
     return (
       <View className="bg-white rounded-xl mx-4 my-3 p-4 shadow-sm">
-        <Text className="text-2xl font-bold text-gray-800 mb-10">Agenda de Hoje</Text>
+        <Text className="text-2xl font-bold text-gray-800 mb-10">
+          Agenda de Hoje
+        </Text>
 
         {consultas.map((consulta, index) => (
           <View key={index} className="mb-10">
@@ -178,8 +183,8 @@ const Home = ({
           </View>
         ))}
       </View>
-    )
-  }
+    );
+  };
 
   return (
     <View className="bg-white">
@@ -189,13 +194,11 @@ const Home = ({
             <Feather name="bell" size={20} color={Colors.preto} />
           </TouchableOpacity>
         </View>
-        <View className='flex items-end flex-row'>
+        <View className="flex items-end flex-row">
           <View className="flex-col items-start mr-2">
-            <Text className="text-sm text-gray-300">
-              {saudacao}
-            </Text>
+            <Text className="text-sm text-gray-300">{saudacao}</Text>
             <Text className="text-lg font-bold text-gray-600">
-              {userName}
+              {user?.displayName || "Usuário"}
             </Text>
           </View>
           <View>
@@ -209,14 +212,11 @@ const Home = ({
             </TouchableOpacity>
           </View>
         </View>
-
       </View>
       {renderCalendarioSemana()}
       {renderResumoConsultas()}
       {renderAgendaHoje()}
-
     </View>
-
   );
 };
 
