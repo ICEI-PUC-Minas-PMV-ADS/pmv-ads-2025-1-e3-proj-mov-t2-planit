@@ -19,6 +19,8 @@ import SairContaModal from "@/components/modais/sairConta";
 import MudarFotoPerfil from "@/components/modais/mudarFotoPerfil";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebaseConfig";
+import useAuth from "@/hooks/useAuth";
+import { getAuth, updateProfile, User } from "firebase/auth";
 
 const shareLink = "www.planit.com/id.name=iriana";
 const profileImage =
@@ -45,6 +47,9 @@ export default function Perfil() {
   const onConfirmProfileImage = () => {
     setProfileImageModalVisible(false);
   };
+
+  const { user } = useAuth();
+
   return (
     <>
       <ScrollView className="bg-white px-4 pt-10">
@@ -56,7 +61,9 @@ export default function Perfil() {
               className="w-24 h-24 rounded-full"
             />
           </Pressable>
-          <Text className="text-2xl font-semibold ml-6">Iriana Darua</Text>
+          <Text className="text-2xl font-semibold ml-6">
+            {user?.displayName || user?.uid || "Usuário"}
+          </Text>
         </View>
 
         {/* Lista de Opções */}
