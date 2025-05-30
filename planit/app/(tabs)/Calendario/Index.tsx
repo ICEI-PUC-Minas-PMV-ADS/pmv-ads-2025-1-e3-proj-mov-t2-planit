@@ -6,7 +6,6 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../firebaseConfig';
 import PinkBtn from '../../../components/button/pinkBtn';
 
-
 interface CalendarDay {
   dateString: string;
   day: number;
@@ -15,10 +14,9 @@ interface CalendarDay {
   timestamp: number;
 }
 
-
-const statusMap: Record<number, 'disponivel' | 'agendado' | 'bloqueado'> = {
+const statusMap: Record<number, 'disponivel' | 'cancelar' | 'bloqueado'> = {
   1: 'disponivel',
-  2: 'agendado',
+  2: 'cancelar',
   3: 'bloqueado',
 };
 
@@ -32,7 +30,7 @@ const formatDate = (date: Date) => {
 
 interface Horario {
   hora: string;
-  status: 'disponivel' | 'agendado' | 'bloqueado';
+  status: 'disponivel' | 'cancelar' | 'bloqueado';
 }
 
 const Calendario = () => {
@@ -48,7 +46,7 @@ const Calendario = () => {
     setLoading(true);
     setMensagem(null);
 
-    const ref = doc(db, 'agenda', dataSelecionada);
+    const ref = doc(db, 'Agenda', dataSelecionada);
 
     const unsubscribe = onSnapshot(
       ref,
@@ -156,8 +154,8 @@ const Calendario = () => {
           <Text style={{ textAlign: 'center', color: '#888', marginTop: 24 }}>{mensagem}</Text>
         ) : (
           <>
-            {renderHorarios('disponivel', 'green')}
-            {renderHorarios('agendado', '#FF69B4')}
+            {/* Exibe somente cancelados e bloqueados */}
+            {renderHorarios('cancelar', '#FF69B4')}
             {renderHorarios('bloqueado', 'blue')}
           </>
         )}
