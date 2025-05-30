@@ -3,6 +3,7 @@ import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { router } from 'expo-router';
 import { doc, onSnapshot } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { db } from '../../../firebaseConfig';
 import PinkBtn from '../../../components/button/pinkBtn';
 
@@ -20,7 +21,6 @@ const statusMap: Record<number, 'disponivel' | 'cancelar' | 'bloqueado'> = {
   3: 'bloqueado',
 };
 
-// Formata a data no formato YYYY-MM-DD
 const formatDate = (date: Date) => {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -39,14 +39,24 @@ const Calendario = () => {
   const [loading, setLoading] = useState(true);
   const [mensagem, setMensagem] = useState<string | null>(null);
   const [markedDates, setMarkedDates] = useState<Record<string, any>>({});
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!dataSelecionada) return;
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) setUserId(user.uid);
+      else setUserId(null);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!dataSelecionada || !userId) return;
 
     setLoading(true);
     setMensagem(null);
 
-    const ref = doc(db, 'Agenda', dataSelecionada);
+    const ref = doc(db, 'Agenda', userId, 'Horarios', dataSelecionada);
 
     const unsubscribe = onSnapshot(
       ref,
@@ -81,7 +91,7 @@ const Calendario = () => {
     });
 
     return () => unsubscribe();
-  }, [dataSelecionada]);
+  }, [dataSelecionada, userId]);
 
   const renderHorarios = (status: Horario['status'], cor: string) => {
     const filtrados = horarios.filter((h) => h.status === status);
@@ -154,7 +164,6 @@ const Calendario = () => {
           <Text style={{ textAlign: 'center', color: '#888', marginTop: 24 }}>{mensagem}</Text>
         ) : (
           <>
-            {/* Exibe somente cancelados e bloqueados */}
             {renderHorarios('cancelar', '#FF69B4')}
             {renderHorarios('bloqueado', 'blue')}
           </>

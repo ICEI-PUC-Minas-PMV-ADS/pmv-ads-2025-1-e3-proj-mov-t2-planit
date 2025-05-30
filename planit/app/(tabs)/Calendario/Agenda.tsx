@@ -12,11 +12,10 @@ import { useNavigation } from "@react-navigation/native";
 
 import ModalBase from "../../../components/modais/modalBase";
 import PinkBtn from "../../../components/button/pinkBtn";
-import WhiteBtn from "../../../components/button/whiteBtn";
 
 import { db } from "../../../firebaseConfig";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 type Horario = {
   name: string;
@@ -56,33 +55,16 @@ function StatusModal({
   onSelectStatus,
 }: StatusModalProps) {
   const options = [
-    {
-      status: 1,
-      label: "Disponível",
-      color: "green",
-      icon: "checkmark-circle-outline",
-    },
-    {
-      status: 3,
-      label: "Bloquear",
-      color: "red",
-      icon: "remove-circle-outline",
-    },
-    {
-      status: 2,
-      label: "Cancelar",
-      color: "gray",
-      icon: "close-outline",
-    },
+    { status: 1, label: "Disponível", color: "green", icon: "checkmark-circle-outline" },
+    { status: 3, label: "Bloquear", color: "red", icon: "remove-circle-outline" },
+    { status: 2, label: "Cancelar", color: "gray", icon: "close-outline" },
   ];
 
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View className="flex-1 bg-black/40 justify-center items-center px-4">
         <View className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg">
-          <Text className="text-2xl font-semibold text-center mb-4">
-            Alterar status
-          </Text>
+          <Text className="text-2xl font-semibold text-center mb-4">Alterar status</Text>
           <View className="h-px bg-gray-200 mb-4" />
           {options.map(({ status, label, color, icon }) => (
             <TouchableOpacity
@@ -93,22 +75,12 @@ function StatusModal({
               }}
               className="flex-row items-center p-3 mb-2 rounded-lg"
             >
-              <Ionicons
-                name={icon as any}
-                size={24}
-                color={color}
-                style={{ marginRight: 10 }}
-              />
-              <Text className="text-lg" style={{ color }}>
-                {label}
-              </Text>
+              <Ionicons name={icon as any} size={24} color={color} style={{ marginRight: 10 }} />
+              <Text className="text-lg" style={{ color }}>{label}</Text>
             </TouchableOpacity>
           ))}
           <View className="h-px bg-gray-200 mt-4 mb-4" />
-          <TouchableOpacity
-            className="py-3 bg-gray-100 rounded-lg"
-            onPress={onClose}
-          >
+          <TouchableOpacity className="py-3 bg-gray-100 rounded-lg" onPress={onClose}>
             <Text className="text-center text-gray-700 text-base">Cancelar</Text>
           </TouchableOpacity>
         </View>
@@ -132,20 +104,21 @@ const getStatusCor = (status: number) => {
 
 const Agenda = () => {
   const navigation = useNavigation();
-  const auth = getAuth();
-  const user = auth.currentUser;
-  const userId = user ? user.uid : null;
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) setUserId(user.uid);
+      else setUserId(null);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const anoAtual = new Date().getFullYear();
-
-  const [mesSelecionado, setMesSelecionado] = useState<number>(
-    new Date().getMonth() + 1
-  );
-  const [diaSelecionado, setDiaSelecionado] = useState<number>(
-    new Date().getDate()
-  );
+  const [mesSelecionado, setMesSelecionado] = useState<number>(new Date().getMonth() + 1);
+  const [diaSelecionado, setDiaSelecionado] = useState<number>(new Date().getDate());
   const [diasNoMes, setDiasNoMes] = useState<number[]>([]);
-
   const [modalVisivel, setModalVisivel] = useState(false);
   const [statusModalVisivel, setStatusModalVisivel] = useState(false);
   const [horarioSelecionadoState, setHorarioSelecionadoState] = useState<Horario | null>(null);
@@ -176,30 +149,20 @@ const Agenda = () => {
 
   const [horarios, setHorarios] = useState<Horario[]>(horariosBase);
 
-  // Atualiza dataKey dinamicamente quando mes ou dia mudam
-  const dataKey = `${anoAtual}-${String(mesSelecionado).padStart(2, "0")}-${String(
-    diaSelecionado
-  ).padStart(2, "0")}`;
+  const dataKey = `${anoAtual}-${String(mesSelecionado).padStart(2, "0")}-${String(diaSelecionado).padStart(2, "0")}`;
 
   useEffect(() => {
-    // Atualiza dias no mês
-    const dias = Array.from(
-      { length: getDiasMes(mesSelecionado, anoAtual) },
-      (_, i) => i + 1
-    );
+    const dias = Array.from({ length: getDiasMes(mesSelecionado, anoAtual) }, (_, i) => i + 1);
     setDiasNoMes(dias);
+    if (diaSelecionado > dias.length) setDiaSelecionado(1);
+  }, [mesSelecionado]);
 
-    // Ajusta diaSelecionado caso ultrapasse o limite do mês
-    if (diaSelecionado > dias.length) {
-      setDiaSelecionado(1);
-    }
-
-    // Função para carregar horários do Firestore
+  useEffect(() => {
     const carregarHorarios = async () => {
+      if (!userId) return;
       try {
-        const docRef = doc(db, "Agenda", dataKey);
+        const docRef = doc(db, "Agenda", userId, "Horarios", dataKey);
         const docSnap = await getDoc(docRef);
-
         if (docSnap.exists()) {
           const data = docSnap.data();
           setHorarios(data.horarios || horariosBase);
@@ -211,9 +174,8 @@ const Agenda = () => {
         setHorarios(horariosBase);
       }
     };
-
     carregarHorarios();
-  }, [mesSelecionado, diaSelecionado]);
+  }, [userId, mesSelecionado, diaSelecionado]);
 
   const abrirStatusModal = (h: Horario) => {
     setHorarioSelecionadoState(h);
@@ -223,92 +185,53 @@ const Agenda = () => {
   const fecharStatusModal = () => setStatusModalVisivel(false);
 
   const handleSelectStatus = async (novoStatus: number) => {
-    if (!horarioSelecionadoState) return;
-
+    if (!horarioSelecionadoState || !userId) return;
     const novoHorarios = horarios.map((h) =>
       h.value === horarioSelecionadoState.value ? { ...h, status: novoStatus } : h
     );
     setHorarios(novoHorarios);
-
-    const horariosComExtras = novoHorarios.map(h => ({
-      ...h,
+    await setDoc(doc(db, "Agenda", userId, "Horarios", dataKey), {
+      userId: userId,
       data: dataKey,
-      userId,
-    }));
-
-    try {
-      await setDoc(doc(db, "Agenda", dataKey), {
-        data: dataKey,
-        horarios: horariosComExtras,
-        userId,
-      });
-    } catch (err) {
-      console.error("Erro ao salvar alteração de status:", err);
-    }
+      horarios: novoHorarios,
+    });
   };
 
   const bloquearDia = () => setModalVisivel(true);
 
   const confirmBloquearDia = async () => {
+    if (!userId) return;
     const novoHorarios = horarios.map((h) => ({ ...h, status: 3 }));
     setHorarios(novoHorarios);
     setModalVisivel(false);
-
-    const horariosComExtras = novoHorarios.map(h => ({
-      ...h,
+    await setDoc(doc(db, "Agenda", userId, "Horarios", dataKey), {
+      userId: userId,
       data: dataKey,
-      userId,
-    }));
-
-    try {
-      await setDoc(doc(db, "Agenda", dataKey), {
-        data: dataKey,
-        horarios: horariosComExtras,
-        userId,
-      });
-    } catch (err) {
-      console.error(err);
-    }
+      horarios: novoHorarios,
+    });
   };
 
   const salvarNoFirestore = async () => {
-    const horariosComExtras = horarios.map(h => ({
-      ...h,
+    if (!userId) return;
+    await setDoc(doc(db, "Agenda", userId, "Horarios", dataKey), {
+      userId: userId,
       data: dataKey,
-      userId,
-    }));
-
-    try {
-      await setDoc(doc(db, "Agenda", dataKey), {
-        data: dataKey,
-        horarios: horariosComExtras,
-        userId,
-      });
-      navigation.goBack();
-    } catch (e) {
-      console.error("Erro ao salvar no Firebase:", e);
-    }
+      horarios: horarios,
+    });
+    navigation.goBack();
   };
 
   return (
     <ScrollView>
       <View className="flex-1 bg-white p-4">
-        <TouchableOpacity
-          className="flex-row justify-center mb-4"
-          onPress={bloquearDia}
-        >
+        <TouchableOpacity className="flex-row justify-center mb-4" onPress={bloquearDia}>
           <Ionicons name="lock-closed-outline" size={30} color="#4b5563" />
         </TouchableOpacity>
 
         <View className="flex-row justify-between items-center mb-4 px-4">
           <Text className="text-lg">Selecione o mês:</Text>
           <View className="border border-slate-400 rounded-full w-32">
-            <RNPicker
-              selectedValue={mesSelecionado}
-              onValueChange={(v) => setMesSelecionado(v)}
-              mode="dropdown"
-              dropdownIconColor="#000"
-            >
+            <RNPicker selectedValue={mesSelecionado} onValueChange={(v) => setMesSelecionado(v)} mode="dropdown" dropdownIconColor="#000">
               {meses.map((m) => (
                 <RNPicker.Item key={m.value} label={m.name} value={m.value} />
               ))}
@@ -319,18 +242,9 @@ const Agenda = () => {
         <View className="flex-row justify-between items-center mb-6 px-4">
           <Text className="text-lg">Selecione o dia:</Text>
           <View className="border border-slate-400 rounded-full w-32">
-            <RNPicker
-              selectedValue={diaSelecionado}
-              onValueChange={(v) => setDiaSelecionado(v)}
-              mode="dropdown"
-              dropdownIconColor="#000"
-            >
+            <RNPicker selectedValue={diaSelecionado} onValueChange={(v) => setDiaSelecionado(v)} mode="dropdown" dropdownIconColor="#000">
               {diasNoMes.map((d) => (
-                <RNPicker.Item
-                  key={d}
-                  label={`${String(d).padStart(2, "0")}/${String(mesSelecionado).padStart(2, "0")}`}
-                  value={d}
-                />
+                <RNPicker.Item key={d} label={`${String(d).padStart(2, "0")}/${String(mesSelecionado).padStart(2, "0")}`} value={d} />
               ))}
             </RNPicker>
           </View>
@@ -341,11 +255,7 @@ const Agenda = () => {
           {horarios.map((h) => {
             const cls = getStatusCor(h.status);
             return (
-              <TouchableOpacity
-                key={h.value}
-                className={`p-4 rounded-full border ${cls.border}`}
-                onPress={() => abrirStatusModal(h)}
-              >
+              <TouchableOpacity key={h.value} className={`p-4 rounded-full border ${cls.border}`} onPress={() => abrirStatusModal(h)}>
                 <Text className={cls.text}>{h.name}</Text>
               </TouchableOpacity>
             );
@@ -356,13 +266,13 @@ const Agenda = () => {
           <PinkBtn title="Salvar" onPress={salvarNoFirestore} />
         </View>
 
-       <ModalBase
-  visible={modalVisivel}
-  title="Bloquear dia"
-  text="Deseja realmente bloquear todos os horários deste dia?"
-  icone="lock-closed-outline"
-  onClose={() => setModalVisivel(false)}
-/>
+        <ModalBase
+          visible={modalVisivel}
+          title="Bloquear dia"
+          text="Deseja realmente bloquear todos os horários deste dia?"
+          icone="lock-closed-outline"
+          onClose={() => setModalVisivel(false)}
+        />
 
         <StatusModal
           visible={statusModalVisivel}
