@@ -16,6 +16,7 @@ import WhiteBtn from "../../../components/button/whiteBtn";
 
 import { db } from "../../../firebaseConfig";
 import { doc, setDoc, getDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 type Horario = {
   name: string;
@@ -63,15 +64,15 @@ function StatusModal({
     },
     {
       status: 3,
-      label: "Bloqueado",
+      label: "Bloquear",
       color: "red",
       icon: "remove-circle-outline",
     },
     {
       status: 2,
-      label: "Agendado",
+      label: "Cancelar",
       color: "gray",
-      icon: "calendar",
+      icon: "close-outline",
     },
   ];
 
@@ -131,6 +132,9 @@ const getStatusCor = (status: number) => {
 
 const Agenda = () => {
   const navigation = useNavigation();
+  const auth = getAuth();
+  const user = auth.currentUser;
+  const userId = user ? user.uid : null;
 
   const anoAtual = new Date().getFullYear();
 
@@ -144,9 +148,7 @@ const Agenda = () => {
 
   const [modalVisivel, setModalVisivel] = useState(false);
   const [statusModalVisivel, setStatusModalVisivel] = useState(false);
-  const [horarioSelecionadoState, setHorarioSelecionadoState] = useState<
-    Horario | null
-  >(null);
+  const [horarioSelecionadoState, setHorarioSelecionadoState] = useState<Horario | null>(null);
 
   const horariosBase: Horario[] = [
     { name: "08:00", value: 1, status: 1 },
@@ -174,24 +176,28 @@ const Agenda = () => {
 
   const [horarios, setHorarios] = useState<Horario[]>(horariosBase);
 
+  // Atualiza dataKey dinamicamente quando mes ou dia mudam
   const dataKey = `${anoAtual}-${String(mesSelecionado).padStart(2, "0")}-${String(
     diaSelecionado
   ).padStart(2, "0")}`;
 
   useEffect(() => {
+    // Atualiza dias no mês
     const dias = Array.from(
       { length: getDiasMes(mesSelecionado, anoAtual) },
       (_, i) => i + 1
     );
     setDiasNoMes(dias);
 
+    // Ajusta diaSelecionado caso ultrapasse o limite do mês
     if (diaSelecionado > dias.length) {
       setDiaSelecionado(1);
     }
 
+    // Função para carregar horários do Firestore
     const carregarHorarios = async () => {
       try {
-        const docRef = doc(db, "agenda", dataKey);
+        const docRef = doc(db, "Agenda", dataKey);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -224,10 +230,17 @@ const Agenda = () => {
     );
     setHorarios(novoHorarios);
 
+    const horariosComExtras = novoHorarios.map(h => ({
+      ...h,
+      data: dataKey,
+      userId,
+    }));
+
     try {
-      await setDoc(doc(db, "agenda", dataKey), {
+      await setDoc(doc(db, "Agenda", dataKey), {
         data: dataKey,
-        horarios: novoHorarios,
+        horarios: horariosComExtras,
+        userId,
       });
     } catch (err) {
       console.error("Erro ao salvar alteração de status:", err);
@@ -241,10 +254,17 @@ const Agenda = () => {
     setHorarios(novoHorarios);
     setModalVisivel(false);
 
+    const horariosComExtras = novoHorarios.map(h => ({
+      ...h,
+      data: dataKey,
+      userId,
+    }));
+
     try {
-      await setDoc(doc(db, "agenda", dataKey), {
+      await setDoc(doc(db, "Agenda", dataKey), {
         data: dataKey,
-        horarios: novoHorarios,
+        horarios: horariosComExtras,
+        userId,
       });
     } catch (err) {
       console.error(err);
@@ -252,10 +272,17 @@ const Agenda = () => {
   };
 
   const salvarNoFirestore = async () => {
+    const horariosComExtras = horarios.map(h => ({
+      ...h,
+      data: dataKey,
+      userId,
+    }));
+
     try {
-      await setDoc(doc(db, "agenda", dataKey), {
+      await setDoc(doc(db, "Agenda", dataKey), {
         data: dataKey,
-        horarios,
+        horarios: horariosComExtras,
+        userId,
       });
       navigation.goBack();
     } catch (e) {
@@ -329,18 +356,13 @@ const Agenda = () => {
           <PinkBtn title="Salvar" onPress={salvarNoFirestore} />
         </View>
 
-        <ModalBase
-          visible={modalVisivel}
-          title="Bloquear dia"
-          text="Deseja realmente bloquear todos os horários deste dia?"
-          icone="lock-closed-outline"
-          onClose={() => setModalVisivel(false)}
-        >
-          <View className="flex-row justify-between mt-4">
-            <WhiteBtn title="Cancelar" onPress={() => setModalVisivel(false)} />
-            <PinkBtn title="Confirmar" onPress={confirmBloquearDia} />
-          </View>
-        </ModalBase>
+       <ModalBase
+  visible={modalVisivel}
+  title="Bloquear dia"
+  text="Deseja realmente bloquear todos os horários deste dia?"
+  icone="lock-closed-outline"
+  onClose={() => setModalVisivel(false)}
+/>
 
         <StatusModal
           visible={statusModalVisivel}
