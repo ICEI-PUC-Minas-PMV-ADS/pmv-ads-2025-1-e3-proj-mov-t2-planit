@@ -5,8 +5,8 @@ import { chevronBackCircleOutline, chevronForwardCircleOutline, chevronBackOutli
 
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { getProfissional, getServicos, getHorarios } from '../../firebaseConfig';
-import { Profissional, Servico, Horario } from '../../types';
+import { auth, getProfissional, getServicos, getHorarios, createAgendamento } from '../../firebaseConfig';
+import { Profissional, Servico, Horario, Agendamento } from '../../types';
 
 import Calendar, { CalendarProps } from 'react-calendar';
 import perfilPlanit from '../assets/perfilPlanit.jpg';
@@ -17,10 +17,14 @@ import GreenBtn from '../components/greenBtn';
 function Agendar() {
   const navigate = useNavigate();
   const [profissional, setProfissional] = useState<Profissional | null>(null);
+
   const [servicos, setServicos] = useState<Servico[]>([]);
+  const [servicoSelecionado, setServicoSelecionado] = useState<Servico | null>(null);
+
   const [date, setDate] = useState<Date | null>(null);
   const [horarios, setHorarios] = useState<Horario[]>([]);
   const [horaSelecionada, setHoraSelecionada] = useState('');
+
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -71,10 +75,10 @@ function Agendar() {
 
   const handleDateChange: CalendarProps['onChange'] = async (value) => {
     const horaSelecionada = (Array.isArray(value) ? value[0] : value) as Date;
-    
+
     setDate(horaSelecionada);
     setLoading(true);
-  
+
     try {
       const profId = localStorage.getItem('profissionalId');
       if (!profId) {
@@ -82,11 +86,11 @@ function Agendar() {
         navigate("/home");
         return;
       }
-  
+
       const dataFormatada = horaSelecionada.toISOString().split('T')[0];
       const horarioDisponiveis = await getHorarios(profId, dataFormatada);
       setHorarios(horarioDisponiveis);
-  
+
     } catch (error) {
       window.alert('Erro ao buscar horarios');
       console.error("Erro ao buscar horários:", error);
@@ -99,6 +103,38 @@ function Agendar() {
     const [h, m] = hora.split(':');
     return `${parseInt(h)}h${m}`;
   };
+
+  const handleAgendamento = async () => {
+    if (!servicoSelecionado || !date || !horaSelecionada) {
+      window.alert("Selecione o serviço, a data e o horário antes de agendar.");
+      return;
+    }
+  
+    const [h, m] = horaSelecionada.split(':').map(Number);
+    const dataSelecionada = new Date(date); // Cópia do objeto Date
+    dataSelecionada.setHours(h, m);
+  
+    const clienteId = auth.currentUser?.uid;
+  
+    if (!clienteId) {
+      window.alert("Cliente não identificado.");
+      return;
+    }
+  
+    try {
+      setLoading(true);
+      console.log("Data selecionada:", dataSelecionada);
+      await createAgendamento(dataSelecionada, horaSelecionada, servicoSelecionado, clienteId);
+      window.alert("Agendamento realizado com sucesso!");
+      navigate("/home");
+    } catch (error) {
+      console.error("Erro ao agendar:", error);
+      window.alert("Falha ao realizar o agendamento: Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
 
   return (
     <div>
@@ -124,7 +160,7 @@ function Agendar() {
 
           {servicos.map(servico => (
             <div key={servico.id} className='flex justify-center'>
-              <div className='mt-10 w-72 p-5 rounded-3xl border border-gray-100 shadow-gray-200 shadow-2xl flex flex-col gap-3 hover:scale-105 cursor-pointer'>
+              <div onClick={() => setServicoSelecionado(servico)} className={`mt-10 w-72 p-5 rounded-3xl border shadow-2xl flex flex-col gap-3 hover:scale-105 cursor-pointer ${servicoSelecionado?.id === servico.id ? 'border-pink-600' : 'border-gray-100'}`}>
                 <div className='flex flex-row justify-between'>
                   <div>
                     <p className='text-xl text-emerald-600'>{servico.nome}</p>
@@ -202,7 +238,7 @@ function Agendar() {
 
       <div className='flex justify-around m-5'>
         <WhiteBtn title='Pular' onClick={() => navigate('/home')} />
-        <GreenBtn title='Agendar' onClick={() => navigate('/home')} type='submit' />
+        <GreenBtn title='Agendar' onClick={handleAgendamento} type='submit' />
       </div>
     </div>
   )
