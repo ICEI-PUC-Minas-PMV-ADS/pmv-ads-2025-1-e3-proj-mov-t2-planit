@@ -112,13 +112,20 @@ function formatarHora(date: Date): string {
 }
 
 function parseDuracao(duracao: string): number {
-  if (duracao.endsWith('h')) {
-    return parseInt(duracao) * 60 * 60 * 1000;
-  }
-  if (duracao.endsWith('m')) {
-    return parseInt(duracao) * 60 * 1000;
-  }
-  return Number(duracao); // fallback
+  if (typeof duracao !== "string") return NaN;
+
+  const regex = /^(\d+)(h|m|min)$/; 
+  const match = duracao.match(regex);
+
+  if (!match) return NaN;
+
+  const valor = parseInt(match[1]);
+  const unidade = match[2];
+
+  if (unidade === "h") return valor * 60 * 60 * 1000;
+  if (unidade === "m" || unidade === "min") return valor * 60 * 1000;
+
+  return NaN;
 }
 
 
@@ -170,9 +177,14 @@ export async function createAgendamento(dataSelecionada: Date, horaSelecionada: 
 
     const duracaoMs = typeof servico.duracao === "string"
       ? parseDuracao(servico.duracao)
-      : servico.duracao;
+      : Number(servico.duracao);
 
-    const fim = new Date(inicio.getTime() + duracaoMs + 60000);
+    if (isNaN(duracaoMs)) {
+      console.error("Erro: duração do serviço inválida", servico.duracao);
+      throw new Error("Duração do serviço inválida");
+    }
+
+    const fim = new Date(inicio.getTime() + duracaoMs);
 
     console.log("Duração do serviço (ms):", servico.duracao);
 

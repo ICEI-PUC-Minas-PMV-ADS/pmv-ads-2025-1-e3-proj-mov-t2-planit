@@ -6,7 +6,7 @@ import { chevronBackCircleOutline, chevronForwardCircleOutline, chevronBackOutli
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { auth, getProfissional, getServicos, getHorarios, createAgendamento } from '../../firebaseConfig';
-import { Profissional, Servico, Horario, Agendamento } from '../../types';
+import { Profissional, Servico, Horario } from '../../types';
 
 import Calendar, { CalendarProps } from 'react-calendar';
 import perfilPlanit from '../assets/perfilPlanit.jpg';
@@ -203,6 +203,25 @@ function Agendar() {
               prev2Label={<IonIcon icon={chevronBackCircleOutline} />}
               next2Label={<IonIcon icon={chevronForwardCircleOutline} />}
               formatMonthYear={formatMonthYear}
+              tileClassName={({ date: currentDate, view }) => {
+                if (view === 'month') {
+                  const today = new Date();
+                  const isToday =
+                    currentDate.getFullYear() === today.getFullYear() &&
+                    currentDate.getMonth() === today.getMonth() &&
+                    currentDate.getDate() === today.getDate();
+              
+                  const isSelected =
+                    date &&
+                    currentDate.getFullYear() === date.getFullYear() &&
+                    currentDate.getMonth() === date.getMonth() &&
+                    currentDate.getDate() === date.getDate();
+              
+                  if (isSelected) return 'selected-day';
+                  if (isToday) return 'today';
+                }
+                return '';
+              }}
             />
           </div>
 
