@@ -18,5 +18,6 @@ Para cada requisito funcional, pode ser entregue um artefato desse tipo
 |RF-007|A aplicação deve permitir realizar pagamentos   | - |    Mauricio  |
 |RF-008| A aplicação deve permitir um sistema de notificações quando houver conflitos com outras  agendas digitais   | - |  Ana Clara |
 |RF-009| A aplicação deve permitir um sistema de notificações de compromissos agendados  | -|   Ana Clara   |
+|RF-010| A aplicação deve permitir que o usuário agende um serviço  | pasta planit_web |   Emily   |
 
 
