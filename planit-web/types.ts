@@ -34,3 +34,9 @@ export interface Agendamento {
   status: 'agendado' | 'confirmado' | 'cancelado'
   duracao: number
 }
+
+export interface AgendamentoCompleto extends Agendamento {
+  id: string;
+  profissional: Profissional | null;
+  servico: Servico | null;
+}
