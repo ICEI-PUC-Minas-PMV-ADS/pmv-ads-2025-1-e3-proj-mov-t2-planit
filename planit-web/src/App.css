@@ -95,3 +95,16 @@
   .react-calendar__tile:hover {
     background-color: #f3f4f6;
   }
+
+  .selected-day {
+    background-color: #ec4899; /* rosa (Tailwind: pink-500) */
+    color: white !important;
+    border-radius: 50% !important;
+  }
+
+  .today {
+    background-color: #d1fae5; /* Tailwind: green-100 */
+    border-radius: 50%;
+  }
+  
+  
