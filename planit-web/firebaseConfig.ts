@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, setLogLevel, /*doc, getDoc,*/ query, collection, getDocs, where, addDoc, writeBatch, /*addDoc, updateDoc, serverTimestamp, QuerySnapshot*/ } from "firebase/firestore";
+import { getFirestore, setLogLevel, /*doc, getDoc,*/ query, collection, getDocs, where, addDoc, updateDoc, /*addDoc, updateDoc, serverTimestamp, QuerySnapshot*/ } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { Agendamento, Horario, Profissional, Servico, /*Agendamento*/ } from './types'
 
@@ -21,7 +21,7 @@ const auth = getAuth(app);
 
 export { app, db, auth };
 
-
+// FUNÇÃO QUE RESGATA O ID DO PROFISSIONAL
 export async function getProfissional(profId: string): Promise<Profissional> {
   try {
     const q = query(collection(db, "Profissional"),
@@ -49,7 +49,7 @@ export async function getProfissional(profId: string): Promise<Profissional> {
   }
 }
 
-
+// FUNÇÃO QUE RESGATA OS SERVIÇOS 
 export async function getServicos(profId: string): Promise<Servico[]> {
   const q = query(
     collection(db, "Servicos"),
@@ -73,10 +73,10 @@ export async function getServicos(profId: string): Promise<Servico[]> {
   });
 }
 
-
+//FUNÇÃO QUE RESGATA OS HORARIOS
 export async function getHorarios(profissionalId: string, dataSelecionada: string): Promise<Horario[]> {
   const q = query(
-    collection(db, "agenda"),
+    collection(db, "Agenda"),
     where("uid", "==", profissionalId),
     where("data", "==", dataSelecionada),
     where("status", "==", 'disponivel')
@@ -97,8 +97,13 @@ export async function getHorarios(profissionalId: string, dataSelecionada: strin
   });
 }
 
-
+// FUNÇÕES QUE COMPOEM O AGENDAMENTO 
 function formatarData(date: Date): string {
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
+    console.error("Data inválida passada para formatarData:", date);
+    throw new RangeError("Invalid time value em formatarData");
+  }
+
   return date.toISOString().split('T')[0];
 }
 
@@ -106,67 +111,104 @@ function formatarHora(date: Date): string {
   return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 }
 
-async function updateHorarios(profissionalId: string,
-  data: Date,
-  horaInicio: string,
-  duracao: number
-) {
-  const [hora, minuto] = horaInicio.split(':').map(Number);
-  const inicio = new Date(data);
-  inicio.setHours(hora, minuto);
-
-  const slotsParaAtualizar = [];
-  for (let i = 0; i < duracao; i += 30) {
-    const slotTime = new Date(inicio.getTime() + i * 60000);
-    slotsParaAtualizar.push({
-      data: formatarData(slotTime),
-      hora: formatarHora(slotTime)
-    });
+function parseDuracao(duracao: string): number {
+  if (duracao.endsWith('h')) {
+    return parseInt(duracao) * 60 * 60 * 1000;
   }
-
-  const batch = writeBatch(db);
-  for (const slot of slotsParaAtualizar) {
-    const q = query(
-      collection(db, "agenda"),
-      where("uid", "==", profissionalId),
-      where("data", "==", slot.data),
-      where("hora", "==", slot.hora)
-    );
-
-    const snapshot = await getDocs(q);
-    snapshot.forEach(doc => {
-      batch.update(doc.ref, { status: 'agendado' });
-    });
+  if (duracao.endsWith('m')) {
+    return parseInt(duracao) * 60 * 1000;
   }
+  return Number(duracao); // fallback
+}
 
-  await batch.commit();
+
+const updateHorarios = async (
+  data: string,
+  horaInicial: string,
+  duracaoEmMilissegundos: number,
+  uid: string
+) => {
+  try {
+    const duracaoMinutos = duracaoEmMilissegundos / 60000;
+
+    const horarioBase = new Date(`1970-01-01T${horaInicial}:00`);
+
+    const horariosAAtualizar: string[] = [];
+    for (let i = 0; i < duracaoMinutos; i += 30) {
+      const novoHorario = new Date(horarioBase.getTime() + i * 60000);
+      const horas = String(novoHorario.getHours()).padStart(2, "0");
+      const minutos = String(novoHorario.getMinutes()).padStart(2, "0");
+      horariosAAtualizar.push(`${horas}:${minutos}`);
+    }
+
+    for (const hora of horariosAAtualizar) {
+      const agendaRef = collection(db, "Agenda");
+      const q = query(
+        agendaRef,
+        where("data", "==", data),
+        where("hora", "==", hora),
+        where("uid", "==", uid)
+      );
+
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (doc) => {
+        await updateDoc(doc.ref, { status: "agendado" });
+        console.log(`Horário ${hora} atualizado com sucesso!`);
+      });
+    }
+  } catch (error) {
+    console.error("Erro ao atualizar horários:", error);
+  }
 };
 
+// FUNÇÃO QUE CRIA O AGENDAMENTO 
 export async function createAgendamento(dataSelecionada: Date, horaSelecionada: string, servico: Servico, clienteId: string): Promise<string> {
-  const [hora, minutos] = horaSelecionada.split(':').map(Number);
-  const inicio = new Date(dataSelecionada);
-  inicio.setHours(hora, minutos);
+  try {
+    const [hora, minutos] = horaSelecionada.split(':').map(Number);
+    const inicio = new Date(dataSelecionada);
+    inicio.setHours(hora, minutos);
 
-  const fim = new Date(inicio.getTime() + servico.duracao + 60000);
+    const duracaoMs = typeof servico.duracao === "string"
+      ? parseDuracao(servico.duracao)
+      : servico.duracao;
 
-  const agendamento: Agendamento = {
-    dataInicio: formatarData(inicio),
-    horaInicio: horaSelecionada,
-    dataFim: formatarData(fim),
-    horaFim: formatarHora(fim),
-    servicoId: servico.id,
-    profissionalId: servico.uid,
-    clienteId,
-    status: 'agendado',
-    duracao: servico.duracao
-  };
+    const fim = new Date(inicio.getTime() + duracaoMs + 60000);
 
-  const docRef = await addDoc(collection(db, "Agendamento"), agendamento);
+    console.log("Duração do serviço (ms):", servico.duracao);
 
-  await updateHorarios{
-    servico.uid,
-      dataSelecionada,
+    console.log("dataSelecionada recebida:", dataSelecionada);
+    console.log("horaSelecionada recebida:", horaSelecionada);
+    console.log("data + hora:", inicio);
+
+
+    const agendamento: Agendamento = {
+      dataInicio: formatarData(inicio),
+      horaInicio: horaSelecionada,
+      dataFim: formatarData(fim),
+      horaFim: formatarHora(fim),
+      servicoId: servico.id,
+      profissionalId: servico.uid,
+      clienteId,
+      status: 'agendado',
+      duracao: servico.duracao
+    };
+
+    const docRef = await addDoc(collection(db, "Agendamento"), agendamento);
+
+    const dataFormatada = dataSelecionada.toISOString().split("T")[0]; // "2025-06-02"
+
+    await updateHorarios(
+      dataFormatada,
       horaSelecionada,
-      servico.duracao
-  };
+      typeof servico.duracao === "string" ? parseDuracao(servico.duracao) : servico.duracao,
+      servico.uid
+    );
+
+    return docRef.id;
+
+  } catch (error) {
+    window.alert("Falha ao criar agendamento");
+    console.error("Erro ao criar agendamento:", error);
+    throw new Error("Falha ao criar agendamento");
+  }
 }
