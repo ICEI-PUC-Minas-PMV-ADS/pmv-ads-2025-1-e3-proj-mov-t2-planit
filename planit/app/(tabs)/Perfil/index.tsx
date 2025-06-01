@@ -1,18 +1,15 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
   ScrollView,
-  Modal,
   Pressable,
   Alert,
-  TextInput,
+  RefreshControl,
 } from "react-native";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
-import { X } from "lucide-react-native";
-import * as Clipboard from "expo-clipboard";
 import { Colors } from "@/constants/Colors";
 import { router } from "expo-router";
 import SairContaModal from "@/components/modais/sairConta";
@@ -24,7 +21,6 @@ import { updateProfile } from "firebase/auth";
 import MetodoPagamentoModal from "@/components/modais/pagamento";
 import CompartilharAgendaModal from "@/components/modais/compartilharPerfil";
 
-const shareLink = "www.planit.com/id.name=iriana";
 const profileImage =
   "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
 
@@ -34,10 +30,8 @@ export default function Perfil() {
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [profileImageModalVisible, setProfileImageModalVisible] =
     useState(false);
-  const [cardName, setCardName] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cvv, setCvv] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+
   const { user } = useAuth();
   const [newImageUrl, setNewImageUrl] = useState<string | null>(null);
 
@@ -63,10 +57,19 @@ export default function Perfil() {
       Alert.alert("Erro", "Não foi possível atualizar a foto.");
     }
   };
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 800);
+  }, []);
 
   return (
     <View className="bg-white flex-1">
-      <ScrollView className="px-4 pt-10">
+      <ScrollView
+        className="px-4 pt-10"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {/* Foto do Perfil */}
         <View className="flex-row items-center my-6 ml-3">
           <Pressable onPress={() => setProfileImageModalVisible(true)}>

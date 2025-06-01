@@ -59,9 +59,10 @@ export default function useAuth() {
         setLoading(false);
       }
     );
-
+   
+    
     return unsubscribe;
   }, []);
-
+  
   return { user, credential, loading, login, logout, error };
 }
