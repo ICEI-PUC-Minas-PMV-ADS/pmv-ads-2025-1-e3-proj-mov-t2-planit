@@ -109,18 +109,18 @@ function Agendar() {
       window.alert("Selecione o serviço, a data e o horário antes de agendar.");
       return;
     }
-  
+
     const [h, m] = horaSelecionada.split(':').map(Number);
     const dataSelecionada = new Date(date); // Cópia do objeto Date
     dataSelecionada.setHours(h, m);
-  
+
     const clienteId = auth.currentUser?.uid;
-  
+
     if (!clienteId) {
       window.alert("Cliente não identificado.");
       return;
     }
-  
+
     try {
       setLoading(true);
       console.log("Data selecionada:", dataSelecionada);
@@ -133,8 +133,10 @@ function Agendar() {
     } finally {
       setLoading(false);
     }
+
+    
   };
-  
+
 
   return (
     <div>
@@ -210,13 +212,13 @@ function Agendar() {
                     currentDate.getFullYear() === today.getFullYear() &&
                     currentDate.getMonth() === today.getMonth() &&
                     currentDate.getDate() === today.getDate();
-              
+
                   const isSelected =
                     date &&
                     currentDate.getFullYear() === date.getFullYear() &&
                     currentDate.getMonth() === date.getMonth() &&
                     currentDate.getDate() === date.getDate();
-              
+
                   if (isSelected) return 'selected-day';
                   if (isToday) return 'today';
                 }
