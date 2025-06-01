@@ -17,7 +17,7 @@ Taxa de sucesso: 100%
 |-----------|-----------------| ------ |----------|
 | RF-001 | Cadastro | ✅Aprovado | Vídeo (documentação "Registro de Testes de Usabilidade") |
 | RF-010 | Agendamento de Serviço | ✅Aprovado | Vídeo (documentação "Registro de Testes de Usabilidade") |
-
+| RF-010 | Cadastro de Horario | ✅Aprovado | Vídeo (documentação "Registro de Testes de Usabilidade") |
 
 ## Análise Crítica
 ### Pontos Fortes
@@ -33,3 +33,11 @@ Taxa de sucesso: 100%
 -100% dos usuários concluíram o agendamento sem ajuda;
 
 -Feedback visual claro (ícones de validação em tempo real).
+
+
+✅ Facilidade com o cadastramento de horario
+
+100% dos usuários concluíram o agendamento sem ajuda;
+
+-Feedback visual claro (ícones de validação em tempo real).
+
