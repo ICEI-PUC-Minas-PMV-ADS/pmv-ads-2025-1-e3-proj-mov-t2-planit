@@ -35,7 +35,6 @@ export default function MudarFotoPerfil({
 
     if (!result.canceled) {
       const uri = result.assets[0].uri;
-      console.log("URI DA IMAGEM:", uri);
       setSelectedImage(uri);
       setNewImageUrl(uri);
     }

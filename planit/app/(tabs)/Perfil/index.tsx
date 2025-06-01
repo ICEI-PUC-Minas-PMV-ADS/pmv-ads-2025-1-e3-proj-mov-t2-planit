@@ -13,7 +13,6 @@ import { Feather, MaterialIcons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { router } from "expo-router";
 import SairContaModal from "@/components/modais/sairConta";
-import MudarFotoPerfil from "@/components/modais/mudarFotoPerfil";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebaseConfig";
 import useAuth from "@/hooks/useAuth";
@@ -28,12 +27,10 @@ export default function Perfil() {
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const [payModalVisible, setPayModalVisible] = useState(false);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
-  const [profileImageModalVisible, setProfileImageModalVisible] =
-    useState(false);
+  useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const { user } = useAuth();
-  const [newImageUrl, setNewImageUrl] = useState<string | null>(null);
 
   const onConfirmLogout = () => {
     setLogoutModalVisible(false);
@@ -42,21 +39,7 @@ export default function Perfil() {
       router.replace("/Login");
     });
   };
-  const onConfirmProfileImage = async () => {
-    try {
-      if (auth.currentUser && newImageUrl) {
-        await updateProfile(auth.currentUser, {
-          photoURL: newImageUrl,
-        });
-        await auth.currentUser.reload();
-        setNewImageUrl(auth.currentUser.photoURL);
-      }
-      setProfileImageModalVisible(false);
-    } catch (error) {
-      console.error("Erro ao atualizar foto:", error);
-      Alert.alert("Erro", "Não foi possível atualizar a foto.");
-    }
-  };
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setTimeout(() => setRefreshing(false), 800);
@@ -72,12 +55,10 @@ export default function Perfil() {
       >
         {/* Foto do Perfil */}
         <View className="flex-row items-center my-6 ml-3">
-          <Pressable onPress={() => setProfileImageModalVisible(true)}>
-            <Image
-              source={{ uri: user?.photoURL || profileImage }}
-              className="w-24 h-24 rounded-full"
-            />
-          </Pressable>
+          <Image
+            source={{ uri: user?.photoURL || profileImage }}
+            className="w-24 h-24 rounded-full"
+          />
           <Text className="text-2xl font-semibold ml-6">
             {user?.displayName || "Usuário"}
           </Text>
@@ -126,16 +107,6 @@ export default function Perfil() {
         onClose={() => setLogoutModalVisible(false)}
         onConfirm={onConfirmLogout}
       ></SairContaModal>
-
-      <MudarFotoPerfil
-        visible={profileImageModalVisible}
-        title="Envie uma nova foto para atualizar seu perfil."
-        text="Envie e anexe arquivos a esta aba."
-        icone="folder-open-outline"
-        onClose={() => setProfileImageModalVisible(false)}
-        onConfirm={onConfirmProfileImage}
-        setNewImageUrl={setNewImageUrl}
-      ></MudarFotoPerfil>
 
       <CompartilharAgendaModal
         visible={shareModalVisible}

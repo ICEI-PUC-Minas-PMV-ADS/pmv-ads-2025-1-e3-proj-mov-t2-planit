@@ -5,7 +5,6 @@ import { auth } from "../firebaseConfig";
 
 export default function useAuth() {
   const [user, setUser] = useState<User | null>(null);
-  console.log(user)
   const [credential, setCredential] = useState<UserCredential | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
