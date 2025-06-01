@@ -1,7 +1,8 @@
 import { Stack } from "expo-router";
+import Toast from "react-native-toast-message";
 import { MenuProvider } from "react-native-popup-menu";
 
-export default function Layout() {
+export default function RootLayout() {
   return (
     <MenuProvider>
       <Stack>
@@ -11,6 +12,7 @@ export default function Layout() {
         <Stack.Screen name="Login" options={{ headerShown: false }} />
         <Stack.Screen name="Register" options={{ headerShown: false }} />
       </Stack>
+      <Toast />
     </MenuProvider>
   );
 }

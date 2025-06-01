@@ -74,7 +74,7 @@ export default function CadastroScreen() {
         console.log(auth.currentUser?.displayName);
 
         Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
-        router.replace("/(tabs)/Perfil/Conta");
+        router.replace("/(tabs)/Home");
       } catch (error) {
         if (error instanceof Error && "code" in error) {
           const firebaseError = error as { code: string };

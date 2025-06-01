@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { onAuthStateChanged , signOut , signInWithEmailAndPassword , createUserWithEmailAndPassword } from "firebase/auth";
 import type { User, UserCredential } from "firebase/auth";
 import { auth } from "../firebaseConfig";
+import { deleteUser } from "firebase/auth";
 
 export default function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -62,6 +63,20 @@ export default function useAuth() {
     
     return unsubscribe;
   }, []);
+
+  const deleteAccount = useCallback(async () => {
+    if (auth.currentUser) {
+      try {
+        await deleteUser(auth.currentUser);
+        setUser(null);
+        setCredential(null);
+        setError(null);
+      } catch (error: any) {
+        setError(error);
+        console.error("Erro ao excluir a conta:", error);
+      }
+    }
+  }, []);
   
-  return { user, credential, loading, login, logout, error };
+  return { user, credential, loading, login, logout, error, deleteAccount };
 }
