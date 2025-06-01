@@ -37,7 +37,7 @@ Taxa de sucesso: 100%
 
 ✅ Facilidade com o cadastramento de horario
 
-100% dos usuários concluíram o agendamento sem ajuda;
+100% dos usuários concluíram o cadastro de horários sem ajuda;
 
 -Feedback visual claro (ícones de validação em tempo real).
 
