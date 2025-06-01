@@ -8,13 +8,12 @@ export default function PerfilLayout() {
 
   return (
     <Stack>
-
-      
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
         name="Conta"
         options={{
           headerShown: true,
+          headerShadowVisible: false,
           headerRight: (_props) => (
             <TouchableOpacity
               onPress={() => alert("Salvo!")}
@@ -27,7 +26,11 @@ export default function PerfilLayout() {
       />
       <Stack.Screen
         name="Configuracao"
-        options={{ title: "Configurações", headerShown: true }}
+        options={{
+          title: "Configurações",
+          headerShown: true,
+          headerShadowVisible: false,
+        }}
       />
     </Stack>
   );

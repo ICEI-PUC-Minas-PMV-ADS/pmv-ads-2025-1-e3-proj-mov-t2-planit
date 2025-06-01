@@ -71,7 +71,7 @@ export default function MudarFotoPerfil({
       {/* Botões */}
       <View className="px-6 pb-6 w-full">
         <TouchableOpacity
-          className="bg-pink-500 rounded-md w-full py-3 mb-3"
+          className="bg-principal rounded-md w-full py-3 mb-3"
           onPress={onConfirm}
         >
           <Text className="text-center text-white font-bold">Confirmar</Text>

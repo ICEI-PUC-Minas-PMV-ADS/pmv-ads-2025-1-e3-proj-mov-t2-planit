@@ -1,7 +1,8 @@
 import React from "react";
-import { Tabs } from "expo-router";
+import { router, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "../../constants/Colors";
+import { Pressable } from "react-native";
 
 const _layout = () => {
   return (
@@ -23,6 +24,14 @@ const _layout = () => {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
+          tabBarButton: (props) => (
+            <Pressable
+              {...props}
+              onPress={() => {
+                router.replace("/(tabs)/Home");
+              }}
+            />
+          ),
         }}
       />
       <Tabs.Screen
@@ -39,7 +48,15 @@ const _layout = () => {
         name="Clientes"
         options={{
           title: "",
-          headerShown: false,
+          headerTitle: "Histórico de clientes",
+          headerShown: true,
+          headerTitleAlign: "center",
+          headerShadowVisible: false,
+          headerStyle: {
+            elevation: 0, //  Android - remove sombra
+            shadowOpacity: 0, //  iOS - remove sombra
+          },
+
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people" size={size} color={color} />
           ),
