@@ -82,3 +82,23 @@ Data: 31/05/2025
 | Satisfação (1-5)         | 5               |
 
 ---
+
+## Fluxo de Cadastro de serviços
+
+**Aplicativo:** Planit  
+**Data:** 01/06/2025
+
+### 🎥 Vídeo Demonstrativo
+
+<video controls src=https://github.com/user-attachments/assets/3fdf1c0a-67fb-402a-a3b3-ed6bb35093d6 ></video>
+
+### 📊 Métricas de Usabilidade
+
+| Métrica                  | Resultado Médio |
+| ------------------------ | --------------- |
+| Taxa de Sucesso (%)      | 100%            |
+| Tempo médio por operação | 2 segundos      |
+| Número de erros          | 0               |
+| Satisfação (1-5)         | 5               |
+
+---
