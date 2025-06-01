@@ -132,7 +132,7 @@ const CardCliente = React.memo(
     >
       <View style={styles.cardInfo}>
         <Image
-          source={cliente.imagem}
+          source={{ uri: cliente.imagem }}
           style={styles.avatar}
           defaultSource={require("../../assets/images/icon.png")}
         />
@@ -190,7 +190,7 @@ const ModalCliente = ({
       </TouchableOpacity>
       {cliente && (
         <>
-          <Image source={cliente.imagem} style={styles.modalAvatar} />
+          <Image source={{ uri: cliente.imagem }} style={styles.modalAvatar} />
           <Text style={styles.modalNome}>{cliente.nome}</Text>
           {cliente.consultas.map((c, i) => (
             <View key={i} style={styles.consultaCard}>
@@ -285,94 +285,94 @@ export default function ClienteScreen() {
 
   return (
     <Provider>
-      <View style={styles.container}>
-        <Text style={styles.titulo}>Histórico de clientes</Text>
-
-        {/* filtro rápido */}
-        <View style={styles.filtroRapido}>
-          {(["Todos", "Em andamento", "Concluídos"] as const).map((item) => (
-            <TouchableOpacity
-              key={item}
-              onPress={() => setFiltro(item)}
-              style={[
-                styles.botaoFiltro,
-                filtro === item && styles.botaoFiltroAtivo,
-              ]}
-            >
-              <Text
-                style={
-                  filtro === item ? styles.txtFiltroAtivo : styles.txtFiltro
-                }
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* busca + avançado */}
-        <View style={styles.buscaRow}>
-          <Menu
-            visible={menuFiltroVisivel}
-            onDismiss={() => setMenuFiltroVisivel(false)}
-            anchor={
+      <View className="bg-white flex-1">
+        <View style={styles.container}>
+          {/* filtro rápido */}
+          <View style={styles.filtroRapido}>
+            {(["Todos", "Em andamento", "Concluídos"] as const).map((item) => (
               <TouchableOpacity
-                onPress={() => setMenuFiltroVisivel(true)}
-                style={styles.iconBtn}
+                key={item}
+                onPress={() => setFiltro(item)}
+                style={[
+                  styles.botaoFiltro,
+                  filtro === item && styles.botaoFiltroAtivo,
+                ]}
               >
-                <Icon name="sliders" size={24} color="#333" />
-              </TouchableOpacity>
-            }
-            contentStyle={styles.menuContent}
-          >
-            <Text style={styles.menuTitle}>Selecione o filtro</Text>
-            {Object.values(StatusCliente).map((f, i) => (
-              <View key={i} style={styles.menuItem}>
-                <Checkbox
-                  status={
-                    filtrosSelecionados.includes(f) ? "checked" : "unchecked"
+                <Text
+                  style={
+                    filtro === item ? styles.txtFiltroAtivo : styles.txtFiltro
                   }
-                  onPress={() => toggleFiltro(f)}
-                />
-                <Text style={styles.menuTxt}>{f}</Text>
-              </View>
+                >
+                  {item}
+                </Text>
+              </TouchableOpacity>
             ))}
-          </Menu>
-
-          <TextInput
-            placeholder="Buscar cliente..."
-            value={busca}
-            onChangeText={onChangeBusca}
-            style={styles.inputBusca}
-            accessibilityLabel="Campo de busca de cliente"
-          />
-        </View>
-
-        <View style={styles.separador} />
-
-        {/* lista ou vazio */}
-        {clientesFiltrados.length === 0 ? (
-          <View style={styles.vazioContainer}>
-            <Text style={styles.vazioTexto}>Nenhum cliente encontrado</Text>
           </View>
-        ) : (
-          <FlatList
-            style={styles.lista}
-            data={clientesFiltrados}
-            keyExtractor={(i) => i.id}
-            showsVerticalScrollIndicator={false}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            renderItem={({ item }) => (
-              <CardCliente
-                cliente={item}
-                onPress={() => abrirPerfil(item)}
-                scaleAnim={scaleAnim}
-                rotateAnim={rotateAnim}
-              />
-            )}
-          />
-        )}
+
+          {/* busca + avançado */}
+          <View style={styles.buscaRow}>
+            <Menu
+              visible={menuFiltroVisivel}
+              onDismiss={() => setMenuFiltroVisivel(false)}
+              anchor={
+                <TouchableOpacity
+                  onPress={() => setMenuFiltroVisivel(true)}
+                  style={styles.iconBtn}
+                >
+                  <Icon name="sliders" size={24} color="#333" />
+                </TouchableOpacity>
+              }
+              contentStyle={styles.menuContent}
+            >
+              <Text style={styles.menuTitle}>Selecione o filtro</Text>
+              {Object.values(StatusCliente).map((f, i) => (
+                <View key={i} style={styles.menuItem}>
+                  <Checkbox
+                    status={
+                      filtrosSelecionados.includes(f) ? "checked" : "unchecked"
+                    }
+                    onPress={() => toggleFiltro(f)}
+                  />
+                  <Text style={styles.menuTxt}>{f}</Text>
+                </View>
+              ))}
+            </Menu>
+
+            <TextInput
+              placeholder="Buscar cliente..."
+              value={busca}
+              onChangeText={onChangeBusca}
+              style={styles.inputBusca}
+              accessibilityLabel="Campo de busca de cliente"
+            />
+          </View>
+
+          <View style={styles.separador} />
+
+          {/* lista ou vazio */}
+          {clientesFiltrados.length === 0 ? (
+            <View style={styles.vazioContainer}>
+              <Text style={styles.vazioTexto}>Nenhum cliente encontrado</Text>
+            </View>
+          ) : (
+            <FlatList
+              style={styles.lista}
+              data={clientesFiltrados}
+              keyExtractor={(i) => i.id}
+              showsVerticalScrollIndicator={false}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              renderItem={({ item }) => (
+                <CardCliente
+                  cliente={item}
+                  onPress={() => abrirPerfil(item)}
+                  scaleAnim={scaleAnim}
+                  rotateAnim={rotateAnim}
+                />
+              )}
+            />
+          )}
+        </View>
 
         {/* Modal de Perfil */}
         <ModalCliente
@@ -393,13 +393,7 @@ export default function ClienteScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fafafa", padding: 20 },
-  titulo: {
-    fontSize: 22,
-    fontWeight: "700",
-    textAlign: "center",
-    marginBottom: 20,
-  },
+  container: { flex: 1, padding: 20 },
 
   filtroRapido: {
     flexDirection: "row",
@@ -407,10 +401,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   botaoFiltro: {
-    backgroundColor: "#e0e0e0",
-    paddingHorizontal: 16,
+    backgroundColor: "#f1f5f9", // slate-100 do tailwind
+    paddingHorizontal: 24,
     paddingVertical: 8,
-    borderRadius: 999,
+    borderRadius: 20,
     marginHorizontal: 6,
   },
   botaoFiltroAtivo: { backgroundColor: Colors.principal },
@@ -433,7 +427,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderColor: "#ddd",
     borderWidth: 1,
-    borderRadius: 999,
+    borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
@@ -457,11 +451,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 12,
     justifyContent: "space-between",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
   },
   cardInfo: { flexDirection: "row", alignItems: "center" },
   avatar: {

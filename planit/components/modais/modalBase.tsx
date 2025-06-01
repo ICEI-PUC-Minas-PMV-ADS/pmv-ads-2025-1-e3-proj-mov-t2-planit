@@ -2,12 +2,14 @@ import { View, Text, Modal, ModalProps, Pressable } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { X } from "lucide-react-native";
+import { ReactNode } from "react";
 
 type ModalBaseProps = ModalProps & {
   icone?: keyof typeof Ionicons.glyphMap;
-  title?: string;
+  title?: ReactNode;
   text?: string;
   onClose?: () => void;
+  onConfirm?: () => void;
 };
 
 const ModalBase: React.FC<ModalBaseProps> = ({
@@ -17,6 +19,7 @@ const ModalBase: React.FC<ModalBaseProps> = ({
   visible,
   children,
   onClose,
+  onConfirm,
   transparent,
   ...props
 }) => {
@@ -46,12 +49,12 @@ const ModalBase: React.FC<ModalBaseProps> = ({
                 </Pressable>
               </View>
 
-              <View>
+              <View className="items-center">
                 <Text className="text-xl font-semibold">{title}</Text>
               </View>
 
-              <View>
-                <Text>{text}</Text>
+              <View className="items-center">
+                <Text className="text-center">{text}</Text>
               </View>
 
               {children}

@@ -141,7 +141,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="bg-pink-500 py-3 rounded-full items-center"
+            className="bg-principal py-3 rounded-full items-center"
             onPress={handleLogin}
             disabled={isLoading}
           >
