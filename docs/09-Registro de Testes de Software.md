@@ -45,6 +45,6 @@ Taxa de sucesso: 100%
 
 ✅ Facilidade com o cadastro e edição de serviços
 
-100% dos usuários concluíram o cadastro de serviços sem problemas;
+100% dos usuários concluíram o cadastro e edição de serviços sem problemas;
 
 -Feedback visual claro (ícones de validação em tempo real).
