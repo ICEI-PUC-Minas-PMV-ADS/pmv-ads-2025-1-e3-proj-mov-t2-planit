@@ -1,25 +1,21 @@
 import '../App.css';
 import { IonIcon } from '@ionic/react';
 import { heartCircleOutline, calendarClearOutline, timeOutline, pricetagOutline, trashOutline, pencilOutline, logOutOutline } from 'ionicons/icons';
-
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { auth, db, getProfissional } from '../../firebaseConfig';
+import { signOut } from 'firebase/auth';
+import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
+import { Servico, Profissional, Agendamento, AgendamentoCompleto } from '../../types';
 import ModalBase from '../components/modalBase';
 import PinkBtn from '../components/pinkBtn';
 import WhiteBtn from '../components/whiteBtn';
 import perfilPadrao from '../../src/assets/perfilPadrao.jpg';
 
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-import { auth, db } from '../../firebaseConfig';
-import { signOut } from 'firebase/auth';
-import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
-import { Servico, Profissional, Agendamento, AgendamentoCompleto } from '../../types';
-
-
 function Homepage() {
     const [modalVisivel, setModalVisivel] = useState(false);
     const [agendamentos, setAgendamentos] = useState<AgendamentoCompleto[]>([]);
-
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -34,130 +30,178 @@ function Homepage() {
     useEffect(() => {
         const fetchAgendamentos = async () => {
             try {
-                const agendamentoSnap = await getDocs(collection(db, 'Agendamento'));
+                setLoading(true);
+                const user = auth.currentUser;
+                if (!user) {
+                    navigate('/login');
+                    return;
+                }
 
-                const agendamentoData: AgendamentoCompleto[] = await Promise.all(
-                    agendamentoSnap.docs.map(async (docAg) => {
-                        const data = docAg.data() as Agendamento;
+                const q = query(
+                    collection(db, 'Agendamento'),
+                    where('clienteId', '==', user.uid)
+                );
 
-                        // Buscar profissional
-                        let profissional: Profissional | null = null;
-                        try {
-                            const profissionalDocRef = doc(db, 'Profissional', data.profissionalId);
-                            const profissionalDocSnap = await getDoc(profissionalDocRef);
-                            if (profissionalDocSnap.exists()) {
-                                const p = profissionalDocSnap.data();
-                                profissional = {
-                                    id: profissionalDocSnap.id,
-                                    nome: p.nome || 'Profissional',
-                                    especialidade: p.especialidade || 'Especialidade',
-                                    foto: p.foto || perfilPadrao,
-                                };
-                            }
-                        } catch (e) {
-                            console.error('Erro ao buscar profissional:', e);
-                        }
+                const querySnapshot = await getDocs(q);
 
-                        // Buscar serviço
-                        let servico: Servico | null = null;
-                        try {
-                            const servicoDocRef = doc(db, 'Servico', data.servicoId);
-                            const servicoDocSnap = await getDoc(servicoDocRef);
-                            if (servicoDocSnap.exists()) {
-                                const s = servicoDocSnap.data();
-                                servico = {
-                                    uid: servicoDocSnap.id,  // <== corrigido aqui
-                                    nome: s.nome || 'Serviço',
-                                    descricao: s.descricao || 'Descrição do serviço',
-                                    valor: s.valor || 0,
-                                    duracao: s.duracao || '',
-                                };
-                            }
-                        } catch (e) {
-                            console.error('Erro ao buscar serviço:', e);
-                        }
-
+                const agendamentosCompletos = await Promise.all(
+                    querySnapshot.docs.map(async (doc) => {
+                        const agendamento = doc.data() as Agendamento;
+                        
+                        const [profissional, servico] = await Promise.all([
+                            getProfissional(agendamento.profissionalId),
+                            getServicoById(agendamento.servicoId)
+                        ]);
 
                         return {
-                            id: docAg.id,
-                            ...data,
+                            id: doc.id,
+                            ...agendamento,
                             profissional,
-                            servico,
-                        };
+                            servico
+                        } as AgendamentoCompleto;
                     })
                 );
 
-                setAgendamentos(agendamentoData);
+                agendamentosCompletos.sort((a, b) => 
+                    new Date(b.dataInicio).getTime() - new Date(a.dataInicio).getTime()
+                );
+
+                setAgendamentos(agendamentosCompletos);
             } catch (error) {
                 console.error('Erro ao buscar agendamentos:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const getServicoById = async (servicoId: string): Promise<Servico | null> => {
+            try {
+                const docRef = doc(db, 'Servicos', servicoId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    return {
+                        id: docSnap.id,
+                        nome: data.nome || 'Serviço',
+                        descricao: data.descricao || 'Descrição não disponível',
+                        duracao: typeof data.duracao === 'string' ? 
+                                parseInt(data.duracao) || 30 : 
+                                data.duracao || 30,
+                        valor: data.valor || 0,
+                        uid: data.uid || ''
+                    };
+                }
+                return null;
+            } catch (error) {
+                console.error('Erro ao buscar serviço:', error);
+                return null;
             }
         };
 
         fetchAgendamentos();
-    }, []);
+    }, [navigate]);
 
+    const formatarData = (dataString: string) => {
+        const [year, month, day] = dataString.split('-');
+        return `${day}/${month}/${year}`;
+    };
+
+    const formatarValor = (valor?: number) => {
+        return valor ? valor.toLocaleString('pt-BR', { 
+            style: 'currency', 
+            currency: 'BRL' 
+        }) : 'R$ --,--';
+    };
 
     return (
         <div className='m-2'>
             <div className='flex justify-center border-b border-b-gray-100'>
-                <p className='text-xl font-light text-pink-700 p-5'>Serviços Agendados</p>
+                <p className='text-xl font-light text-pink-700 p-5'>Meus Agendamentos</p>
             </div>
 
-            <div className='flex justify-center'>
-                <div className='flex flex-col gap-6 mt-10 w-full items-center'>
-                    {agendamentos.map((item, idx) => (
-                        <div key={idx} className='flex flex-col gap-4 w-80 p-3 rounded-3xl shadow-xl'>
-                            <div className='flex flex-wrap gap-6 mt-3 items-center'>
-                                <div>
-                                    <img
-                                        className='rounded-full w-18'
-                                        src={item.profissional?.foto || perfilPadrao}
-                                        alt="Perfil Profissional"
-                                    />
-                                </div>
-
-                                <div>
-                                    <p className='text-lg font-bold'>{item.profissional?.nome || 'Profissional'}</p>
-                                    <p className='text-emerald-500 font-light'>{item.profissional?.especialidade || 'Especialidade'}</p>
-                                </div>
-                            </div>
-
-                            <div className='pr-3 pl-3 flex justify-between items-center'>
-                                <p className='text-xl text-emerald-500'>{item.servico?.nome || 'Serviço'}</p>
-                                <IonIcon className='text-emerald-500' icon={heartCircleOutline} style={{ fontSize: "25px" }} />
-                            </div>
-
-                            <p className='font-light text-center'>{item.servico?.descricao || 'Descrição do serviço'}</p>
-
-                            <div className='flex gap-5 p-3'>
-                                <div className='flex gap-1 items-center font-extralight'>
-                                    <IonIcon icon={calendarClearOutline} style={{ fontSize: "12px" }} />
-                                    <p className='text-xs'>{new Date(item.dataInicio).toLocaleDateString()}</p>
-                                </div>
-
-                                <div className='flex gap-1 items-center font-extralight'>
-                                    <IonIcon icon={timeOutline} style={{ fontSize: "12px" }} />
-                                    <p className='text-xs'>De {item.horaInicio} às {item.horaFim}</p>
-                                </div>
-
-                                <div className='flex gap-1 items-center font-extralight text-emerald-500'>
-                                    <IonIcon icon={pricetagOutline} style={{ fontSize: "12px" }} />
-                                    <p className='text-xs'>{item.servico?.valor?.toFixed(2) || '---'}</p>
-                                </div>
-                            </div>
-
-                            <div className='flex gap-5 justify-end m-3'>
-                                <div className='bg-pink-700 w-8 h-8 rounded-full' onClick={() => setModalVisivel(true)}>
-                                    <IonIcon className='m-2 text-white' icon={trashOutline} />
-                                </div>
-                                <div className='bg-white border border-gray-200 w-8 h-8 rounded-full' onClick={() => navigate('/editar')}>
-                                    <IonIcon className='m-2 text-pink-700' icon={pencilOutline} />
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+            {loading ? (
+                <div className='flex justify-center mt-10'>
+                    <p>Carregando agendamentos...</p>
                 </div>
-            </div>
+            ) : agendamentos.length === 0 ? (
+                <div className='flex justify-center mt-10'>
+                    <p className='text-gray-500'>Nenhum agendamento encontrado</p>
+                </div>
+            ) : (
+                <div className='flex justify-center'>
+                    <div className='flex flex-col gap-6 mt-10 w-full items-center'>
+                        {agendamentos.map((agendamento) => (
+                            <div key={agendamento.id} className='flex flex-col gap-4 w-80 p-3 rounded-3xl shadow-xl'>
+                                <div className='flex flex-wrap gap-6 mt-3 items-center'>
+                                    <div>
+                                        <img
+                                            className='rounded-full w-18 h-18 object-cover'
+                                            src={agendamento.profissional?.fotoPerfil || perfilPadrao}
+                                            alt={`Foto de ${agendamento.profissional?.nome}`}
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).src = perfilPadrao;
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <p className='text-lg font-bold'>
+                                            {agendamento.profissional?.nome || 'Profissional não encontrado'}
+                                        </p>
+                                        <p className='text-emerald-500 font-light'>
+                                            {agendamento.profissional?.profissao || 'Serviço profissional'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className='pr-3 pl-3 flex justify-between items-center'>
+                                    <p className='text-xl text-emerald-500'>
+                                        {agendamento.servico?.nome || 'Serviço não encontrado'}
+                                    </p>
+                                    <IonIcon className='text-emerald-500' icon={heartCircleOutline} style={{ fontSize: "25px" }} />
+                                </div>
+
+                                <p className='font-light'>
+                                    {agendamento.servico?.descricao || 'Descrição não disponível'}
+                                </p>
+
+                                <div className='flex gap-5 p-3 justify-center'>
+                                    <div className='flex gap-1 items-center font-extralight'>
+                                        <IonIcon icon={calendarClearOutline} style={{ fontSize: "12px" }} />
+                                        <p className='text-xs'>{formatarData(agendamento.dataInicio)}</p>
+                                    </div>
+
+                                    <div className='flex gap-1 items-center font-extralight'>
+                                        <IonIcon icon={timeOutline} style={{ fontSize: "12px" }} />
+                                        <p className='text-xs'>{agendamento.horaInicio} - {agendamento.horaFim}</p>
+                                    </div>
+
+                                    <div className='flex gap-1 items-center font-extralight text-emerald-500'>
+                                        <IonIcon icon={pricetagOutline} style={{ fontSize: "12px" }} />
+                                        <p className='text-xs'>{formatarValor(agendamento.servico?.valor)}</p>
+                                    </div>
+                                </div>
+
+                                <div className='flex gap-5 justify-end m-3'>
+                                    <button 
+                                        className='bg-pink-700 w-8 h-8 rounded-full flex items-center justify-center'
+                                        onClick={() => setModalVisivel(true)}
+                                    >
+                                        <IonIcon className='text-white' icon={trashOutline} style={{ fontSize: "16px" }} />
+                                    </button>
+                                    <button 
+                                        className='bg-white border border-gray-200 w-8 h-8 rounded-full flex items-center justify-center'
+                                        onClick={() => navigate(`/editar/${agendamento.id}`)}
+                                    >
+                                        <IonIcon className='text-pink-700' icon={pencilOutline} style={{ fontSize: "16px" }} />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className='flex mt-20 mb-20 ml-10'>
                 <div className='flex gap-3 items-center cursor-pointer' onClick={handleLogout}>
