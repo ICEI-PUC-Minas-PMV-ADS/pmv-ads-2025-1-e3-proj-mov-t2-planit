@@ -3,10 +3,10 @@
 ## Relatório de Testes de Software
 Aplicação: PlanIt
 
-Data: 31/05/2025
+Data: 01/06/2025
 
 ## Resumo Executivo
-Total de casos de teste executados: 3
+Total de casos de teste executados: 4
 
 Taxa de sucesso: 100%
 
@@ -18,6 +18,7 @@ Taxa de sucesso: 100%
 | RF-001 | Cadastro | ✅Aprovado | Vídeo (documentação "Registro de Testes de Usabilidade") |
 | RF-010 | Agendamento de Serviço | ✅Aprovado | Vídeo (documentação "Registro de Testes de Usabilidade") |
 | RF-010 | Cadastro de Horario | ✅Aprovado | Vídeo (documentação "Registro de Testes de Usabilidade") |
+| RF-011 | Cadastro de Serviço | ✅Aprovado | Vídeo (documentação "Registro de Testes de Usabilidade") |
 
 ## Análise Crítica
 ### Pontos Fortes
@@ -41,3 +42,9 @@ Taxa de sucesso: 100%
 
 -Feedback visual claro (ícones de validação em tempo real).
 
+
+✅ Facilidade com o cadastro e edição de serviços
+
+100% dos usuários concluíram o cadastro de serviços sem problemas;
+
+-Feedback visual claro (ícones de validação em tempo real).
