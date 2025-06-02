@@ -63,7 +63,7 @@ export default function CadastroScreen() {
         await updateProfile(user, {
           displayName: nome,
         });
-        await setDoc(doc(db, "Usuario", user.uid), {
+        await setDoc(doc(db, "Profissional", user.uid), {
           // aqui a mudanca do setDoc
           uid: user.uid,
           nome,

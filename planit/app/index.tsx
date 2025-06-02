@@ -6,10 +6,6 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
 
 export default function WelcomeScreen() {
-  useEffect(() => {
-    getDocs(collection(db, "Usuario")).then(console.log).catch(console.error);
-  }, []);
-
   const slides = [
     {
       title: "Bem-vindo ao PLANIT",

@@ -1,4 +1,4 @@
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
 import { useEffect, useState } from "react";
 import useAuth from "./useAuth";
@@ -8,7 +8,6 @@ type UserData = {
   profissao?: string;
   email?: string;
   uid?: string;
-  docId?: string;
 };
 
 export const useUserData = () => {
@@ -19,20 +18,13 @@ export const useUserData = () => {
     if (user?.uid) {
       const fetchUserData = async () => {
         try {
-          const q = query(
-            collection(db, "Usuario"),
-            where("uid", "==", user.uid)
-          );
+          const docRef = doc(db, "Profissional", user.uid);
+          const docSnap = await getDoc(docRef);
 
-          const querySnapshot = await getDocs(q);
-
-          if (!querySnapshot.empty) {
-            const doc = querySnapshot.docs[0];
-            setUserData({ ...doc.data(), docId: doc.id } as UserData);          
-          
+          if (docSnap.exists()) {
+            setUserData({ ...docSnap.data(), uid: user.uid } as UserData);
           } else {
-            console.log("Nenhum documento encontrado com este UID");
-          
+            console.log("Documento do usuário não encontrado.");
           }
         } catch (error) {
           console.error("Erro ao buscar dados do usuário:", error);

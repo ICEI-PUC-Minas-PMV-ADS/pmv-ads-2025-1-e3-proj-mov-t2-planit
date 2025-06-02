@@ -78,7 +78,7 @@ const Conta = () => {
       }
 
       if (profissao !== userData?.profissao) {
-        const userDocRef = doc(db, "Usuario", user.uid);
+        const userDocRef = doc(db, "Profissional", user.uid);
         await updateDoc(userDocRef, {
           profissao: profissao,
         });

@@ -90,7 +90,7 @@ Data: 31/05/2025
 
 ### 🎥 Vídeo Demonstrativo
 
-<video controls src=https://github.com/user-attachments/assets/3fdf1c0a-67fb-402a-a3b3-ed6bb35093d6 ></video>
+<video width=380 height=900 controls src=https://github.com/user-attachments/assets/3fdf1c0a-67fb-402a-a3b3-ed6bb35093d6 ></video>
 
 ### 📊 Métricas de Usabilidade
 
