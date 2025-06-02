@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db, getProfissional } from '../../firebaseConfig';
 import { signOut } from 'firebase/auth';
 import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
-import { Servico, Profissional, Agendamento, AgendamentoCompleto } from '../../types';
+import { Servico, Agendamento, AgendamentoCompleto } from '../../types';
 import ModalBase from '../components/modalBase';
 import PinkBtn from '../components/pinkBtn';
 import WhiteBtn from '../components/whiteBtn';
