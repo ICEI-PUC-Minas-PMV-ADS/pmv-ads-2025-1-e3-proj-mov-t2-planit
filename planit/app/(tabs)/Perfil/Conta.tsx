@@ -14,7 +14,7 @@ import { useUserData } from "@/hooks/useUserData";
 import useAuth from "@/hooks/useAuth";
 import { updateProfile, updateEmail } from "firebase/auth";
 import { auth, db } from "@/firebaseConfig";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, setDoc } from "firebase/firestore";
 import MudarFotoPerfil from "@/components/modais/mudarFotoPerfil";
 import { useRouter } from "expo-router";
 
@@ -52,6 +52,16 @@ const Conta = () => {
         await updateProfile(auth.currentUser, {
           photoURL: newImageUrl,
         });
+
+        const userDocRef = doc(db, "Profissional", auth.currentUser.uid);
+        await setDoc(
+          userDocRef,
+          {
+            photoURL: newImageUrl,
+          },
+          { merge: true }
+        );
+
         setNewImageUrl(auth.currentUser.photoURL);
         Alert.alert("Sucesso", "Foto de perfil atualizada.");
       }
@@ -77,12 +87,10 @@ const Conta = () => {
         await updateEmail(user, email);
       }
 
-      if (profissao !== userData?.profissao) {
-        const userDocRef = doc(db, "Profissional", user.uid);
-        await updateDoc(userDocRef, {
-          profissao: profissao,
-        });
-      }
+      const userDocRef = doc(db, "Profissional", user.uid);
+      await updateDoc(userDocRef, {
+        profissao: profissao,
+      });
 
       Alert.alert("Sucesso", "Perfil atualizado com sucesso!", [
         {

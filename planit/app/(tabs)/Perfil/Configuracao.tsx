@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Switch, ScrollView } from "react-native";
-import { ChevronDown, X } from "lucide-react-native";
+import { ChevronDown } from "lucide-react-native";
 import { Colors } from "@/constants/Colors";
 import useAuth from "@/hooks/useAuth";
 import { useRouter } from "expo-router";
