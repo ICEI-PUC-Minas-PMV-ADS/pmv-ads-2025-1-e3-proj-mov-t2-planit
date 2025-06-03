@@ -11,6 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
 import useAuth from "@/hooks/useAuth";
+import { countConsultasHoje, countConsultasSemana } from "@/firebaseConfig";
 
 interface HeaderProps {
   consultasHoje?: number;
@@ -28,14 +29,39 @@ const diasDaSemanaCompleto = [
 ];
 const diasDaSemanaCurto = ["D", "S", "T", "Q", "Q", "S", "S"];
 
-const Home = ({ consultasHoje = 12, consultasSemana = 48 }: HeaderProps) => {
+const Home = () => {
   const [saudacao, setGreeting] = useState("Bom dia");
   const [diaSelecionado, setDiaSelecionado] = useState(new Date());
+  const [consultasHoje, setConsultasHoje] = useState(0);
+  const [consultasSemana, setConsultasSemana] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
 
   const profileImage =
     "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+
+  // Carrega as consultas ao montar o componente e ao atualizar
+  const carregarConsultas = useCallback(async () => {
+    try {
+      const profId = user?.uid; // Assumindo que o usuário é o profissional
+      if (!profId) return;
+      
+      const [hoje, semana] = await Promise.all([
+        countConsultasHoje(profId),
+        countConsultasSemana(profId)
+      ]);
+      
+      setConsultasHoje(hoje);
+      setConsultasSemana(semana);
+    } catch (error) {
+      console.error("Erro ao carregar consultas:", error);
+    }
+  }, [user?.uid]);
+
+  useEffect(() => {
+    carregarConsultas();
+  }, [carregarConsultas]);
 
   useEffect(() => {
     const updateGreeting = () => {
@@ -55,6 +81,11 @@ const Home = ({ consultasHoje = 12, consultasSemana = 48 }: HeaderProps) => {
     const intervalId = setInterval(updateGreeting, 3600000);
     return () => clearInterval(intervalId);
   }, []);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    carregarConsultas().finally(() => setRefreshing(false));
+  }, [carregarConsultas]);
 
   const renderCalendarioSemana = () => {
     const hoje = new Date();
@@ -235,12 +266,6 @@ const Home = ({ consultasHoje = 12, consultasSemana = 48 }: HeaderProps) => {
       </View>
     );
   };
-  const [refreshing, setRefreshing] = useState(false);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 800);
-  }, []);
 
   return (
     <ScrollView

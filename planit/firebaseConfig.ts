@@ -1,12 +1,19 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { 
+  getFirestore, 
+  collection, 
+  query, 
+  where,
+  getCountFromServer,
+  getDocs,
+  addDoc,
+  updateDoc,
+  setLogLevel
+} from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyDAAhaVIEQd2QkVO8KxOUR_H-XY3PhUo6o",
   authDomain: "planit-bfa38.firebaseapp.com",
@@ -17,12 +24,51 @@ const firebaseConfig = {
   measurementId: "G-DMZBM9BCM0",
 };
 
-
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+setLogLevel('info');
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+// Funções para contar consultas
+export const countConsultasHoje = async (profissionalId: string): Promise<number> => {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  
+  const amanha = new Date(hoje);
+  amanha.setDate(amanha.getDate() + 1);
+  
+  const q = query(
+    collection(db, "Agendamento"),
+    where("profissionalId", "==", profissionalId),
+    where("dataInicio", ">=", hoje), // Usa o objeto Date completo
+    where("dataInicio", "<", amanha) // Usa o objeto Date completo
+  );
+  
+  const snapshot = await getCountFromServer(q);
+  return snapshot.data().count;
+};
+
+export const countConsultasSemana = async (profissionalId: string): Promise<number> => {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  
+  const inicioSemana = new Date(hoje);
+  inicioSemana.setDate(hoje.getDate() - hoje.getDay()); // Domingo da semana atual
+  
+  const fimSemana = new Date(inicioSemana);
+  fimSemana.setDate(inicioSemana.getDate() + 7);
+  
+  const q = query(
+    collection(db, "Agendamento"),
+    where("profissionalId", "==", profissionalId),
+    where("dataInicio", ">=", inicioSemana.toISOString().split('T')[0]),
+    where("dataInicio", "<", fimSemana.toISOString().split('T')[0])
+  );
+  
+  const snapshot = await getCountFromServer(q);
+  return snapshot.data().count;
+};
+
+// Exportações principais
 export { app, db, auth };
-
-
-
