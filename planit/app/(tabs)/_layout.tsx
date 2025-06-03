@@ -80,6 +80,14 @@ const _layout = () => {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" size={size} color={color} />
           ),
+          tabBarButton: (props) => (
+            <Pressable
+              {...props}
+              onPress={() => {
+                router.replace("/(tabs)/Perfil");
+              }}
+            />
+          ),
         }}
       />
     </Tabs>

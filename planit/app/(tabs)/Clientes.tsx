@@ -1,5 +1,10 @@
-// app/tabs/Clientes.tsx
-import React, { useState, useRef, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+  useEffect,
+} from "react";
 import {
   View,
   Text,
@@ -16,7 +21,6 @@ import Icon from "react-native-vector-icons/Feather";
 import { debounce } from "lodash";
 import { Colors } from "@/constants/Colors";
 
-// --- tipo Cliente ---
 enum StatusCliente {
   Finalizados = "Finalizados",
   Cancelados = "Cancelados",
@@ -34,7 +38,6 @@ type Cliente = {
   consultas: Consulta[];
 };
 
-// --- dados ---
 const clientes: Cliente[] = [
   {
     id: "1",
@@ -112,60 +115,83 @@ const clientes: Cliente[] = [
   },
 ];
 
-// ——— Componentes extraídos ———
 const CardCliente = React.memo(
   ({
     cliente,
     onPress,
-    scaleAnim,
-    rotateAnim,
+    isSelected,
   }: {
     cliente: Cliente;
-    onPress: () => void;
-    scaleAnim: Animated.Value;
-    rotateAnim: Animated.Value;
-  }) => (
-    <View
-      style={styles.card}
-      accessible
-      accessibilityLabel={`Cliente ${cliente.nome}`}
-    >
-      <View style={styles.cardInfo}>
-        <Image
-          source={{ uri: cliente.imagem }}
-          style={styles.avatar}
-          defaultSource={require("../../assets/images/icon.png")}
-        />
-        <View>
-          <Text style={styles.nome}>{cliente.nome}</Text>
-          <Text style={styles.ultima}>
-            Última visita: {cliente.ultimaVisita}
-          </Text>
-        </View>
-      </View>
-      <TouchableOpacity
-        onPress={onPress}
-        style={styles.iconBtn}
-        accessibilityLabel="Abrir perfil"
+    onPress: (c: Cliente) => void;
+    isSelected: boolean;
+  }) => {
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+    const rotateAnim = useRef(new Animated.Value(0)).current;
+
+    const rotateInterpolate = rotateAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: ["0deg", "90deg"],
+    });
+
+    useEffect(() => {
+      Animated.timing(rotateAnim, {
+        toValue: isSelected ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }, [isSelected, rotateAnim]);
+
+    const handlePress = () => {
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.2,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      onPress(cliente);
+    };
+
+    return (
+      <View
+        style={styles.card}
+        accessible
+        accessibilityLabel={`Cliente ${cliente.nome}`}
       >
-        <Animated.View
-          style={{
-            transform: [
-              { scale: scaleAnim },
-              {
-                rotate: rotateAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ["0deg", "90deg"],
-                }),
-              },
-            ],
-          }}
+        <View style={styles.cardInfo}>
+          <Image
+            source={{ uri: cliente.imagem }}
+            style={styles.avatar}
+            defaultSource={require("../../assets/images/icon.png")}
+          />
+          <View>
+            <Text style={styles.nome}>{cliente.nome}</Text>
+            <Text style={styles.ultima}>
+              Última visita: {cliente.ultimaVisita}
+            </Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          onPress={handlePress}
+          style={styles.iconBtn}
+          accessibilityLabel="Abrir perfil"
         >
-          <Icon name="chevron-right" size={24} color="#757575" />
-        </Animated.View>
-      </TouchableOpacity>
-    </View>
-  )
+          <Animated.View
+            style={{
+              transform: [{ scale: scaleAnim }, { rotate: rotateInterpolate }],
+            }}
+          >
+            <Icon name="chevron-right" size={24} color="#757575" />
+          </Animated.View>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 );
 
 const ModalCliente = ({
@@ -204,7 +230,6 @@ const ModalCliente = ({
   </Modal>
 );
 
-// ——— Tela principal ———
 export default function ClienteScreen() {
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState<"Todos" | "Em andamento" | "Concluídos">(
@@ -221,10 +246,6 @@ export default function ClienteScreen() {
     null
   );
 
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-
-  // Debounce na busca
   const [debouncedBusca, setDebouncedBusca] = useState("");
   const debounced = useRef(
     debounce((text: string) => setDebouncedBusca(text), 300)
@@ -262,32 +283,19 @@ export default function ClienteScreen() {
   }, [debouncedBusca, filtro, filtrosSelecionados]);
 
   const abrirPerfil = (c: Cliente) => {
-    Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 1.2,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    Animated.timing(rotateAnim, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
     setClienteSelecionado(c);
     setModalAberto(true);
+  };
+
+  const fecharModal = () => {
+    setModalAberto(false);
+    setClienteSelecionado(null);
   };
 
   return (
     <Provider>
       <View className="bg-white flex-1">
         <View style={styles.container}>
-          {/* filtro rápido */}
           <View style={styles.filtroRapido}>
             {(["Todos", "Em andamento", "Concluídos"] as const).map((item) => (
               <TouchableOpacity
@@ -309,7 +317,6 @@ export default function ClienteScreen() {
             ))}
           </View>
 
-          {/* busca + avançado */}
           <View style={styles.buscaRow}>
             <Menu
               visible={menuFiltroVisivel}
@@ -349,7 +356,6 @@ export default function ClienteScreen() {
 
           <View style={styles.separador} />
 
-          {/* lista ou vazio */}
           {clientesFiltrados.length === 0 ? (
             <View style={styles.vazioContainer}>
               <Text style={styles.vazioTexto}>Nenhum cliente encontrado</Text>
@@ -365,27 +371,18 @@ export default function ClienteScreen() {
               renderItem={({ item }) => (
                 <CardCliente
                   cliente={item}
-                  onPress={() => abrirPerfil(item)}
-                  scaleAnim={scaleAnim}
-                  rotateAnim={rotateAnim}
+                  onPress={abrirPerfil}
+                  isSelected={clienteSelecionado?.id === item.id}
                 />
               )}
             />
           )}
         </View>
 
-        {/* Modal de Perfil */}
         <ModalCliente
           cliente={clienteSelecionado}
           isVisible={modalAberto}
-          onClose={() => {
-            setModalAberto(false);
-            Animated.timing(rotateAnim, {
-              toValue: 0,
-              duration: 200,
-              useNativeDriver: true,
-            }).start();
-          }}
+          onClose={fecharModal}
         />
       </View>
     </Provider>
@@ -401,7 +398,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   botaoFiltro: {
-    backgroundColor: "#f1f5f9", // slate-100 do tailwind
+    backgroundColor: "#f1f5f9",
     paddingHorizontal: 24,
     paddingVertical: 8,
     borderRadius: 20,

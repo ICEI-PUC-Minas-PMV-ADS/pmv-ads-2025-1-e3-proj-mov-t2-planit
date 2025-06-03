@@ -1,32 +1,39 @@
-import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebaseConfig";
+import { db } from "@/firebaseConfig";
+import { useEffect, useState } from "react";
 import useAuth from "./useAuth";
 
-export function useUserData() {
+type UserData = {
+  nome?: string;
+  profissao?: string;
+  email?: string;
+  uid?: string;
+};
+
+export const useUserData = () => {
   const { user } = useAuth();
-  const [userData, setUserData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState<UserData | null>(null);
 
   useEffect(() => {
-    if (user) {
-      const docRef = doc(db, "Usuario", user.uid);
-      getDoc(docRef)
-        .then((docSnap) => {
+    if (user?.uid) {
+      const fetchUserData = async () => {
+        try {
+          const docRef = doc(db, "Profissional", user.uid);
+          const docSnap = await getDoc(docRef);
+
           if (docSnap.exists()) {
-            setUserData(docSnap.data());
+            setUserData({ ...docSnap.data(), uid: user.uid } as UserData);
           } else {
-            console.log("Documento não encontrado!");
+            console.log("Documento do usuário não encontrado.");
           }
-        })
-        .catch((error) => {
+        } catch (error) {
           console.error("Erro ao buscar dados do usuário:", error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+        }
+      };
+
+      fetchUserData();
     }
   }, [user]);
 
-  return { userData, loading };
-}
+  return { userData };
+};
