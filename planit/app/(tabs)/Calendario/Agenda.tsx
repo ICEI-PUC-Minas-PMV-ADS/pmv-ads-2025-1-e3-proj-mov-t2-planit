@@ -33,8 +33,7 @@ const meses = [
   { name: "Dez", value: 12 },
 ];
 
-const getDiasMes = (mes: number, ano: number) =>
-  new Date(ano, mes, 0).getDate();
+const getDiasMes = (mes: number, ano: number) => new Date(ano, mes, 0).getDate();
 
 interface StatusModalProps {
   visible: boolean;
@@ -43,35 +42,25 @@ interface StatusModalProps {
   onSelectStatus: (status: number) => void;
 }
 
-function StatusModal({
-  visible,
-  currentStatus,
-  onClose,
-  onSelectStatus,
-}: StatusModalProps) {
-  const options = [
-    {
-      status: 1,
-      label: "Disponível",
-      color: "green",
-      icon: "checkmark-circle-outline",
-    },
-    {
-      status: 3,
-      label: "Bloquear",
-      color: "red",
-      icon: "remove-circle-outline",
-    },
+function StatusModal({ visible, currentStatus, onClose, onSelectStatus }: StatusModalProps) {
+  const allOptions = [
+    { status: 1, label: "Disponibilizar", color: "green", icon: "checkmark-circle-outline" },
+    { status: 3, label: "Bloquear", color: "red", icon: "remove-circle-outline" },
     { status: 2, label: "Cancelar", color: "gray", icon: "close-outline" },
   ];
+
+  const options = allOptions.filter((opt) => {
+    if (currentStatus === 1) return opt.status === 3;
+    if (currentStatus === 2) return opt.status === 2;
+    if (currentStatus === 3) return opt.status === 1;
+    return false;
+  });
 
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View className="flex-1 bg-black/40 justify-center items-center px-4">
         <View className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg">
-          <Text className="text-2xl font-semibold text-center mb-4">
-            Alterar status
-          </Text>
+          <Text className="text-2xl font-semibold text-center mb-4">Alterar status</Text>
           <View className="h-px bg-gray-200 mb-4" />
           {options.map(({ status, label, color, icon }) => (
             <TouchableOpacity
@@ -82,25 +71,13 @@ function StatusModal({
               }}
               className="flex-row items-center p-3 mb-2 rounded-lg"
             >
-              <Ionicons
-                name={icon as any}
-                size={24}
-                color={color}
-                style={{ marginRight: 10 }}
-              />
-              <Text className="text-lg" style={{ color }}>
-                {label}
-              </Text>
+              <Ionicons name={icon as any} size={24} color={color} style={{ marginRight: 10 }} />
+              <Text className="text-lg" style={{ color }}>{label}</Text>
             </TouchableOpacity>
           ))}
           <View className="h-px bg-gray-200 mt-4 mb-4" />
-          <TouchableOpacity
-            className="py-3 bg-gray-100 rounded-lg"
-            onPress={onClose}
-          >
-            <Text className="text-center text-gray-700 text-base">
-              Cancelar
-            </Text>
+          <TouchableOpacity className="py-3 bg-gray-100 rounded-lg" onPress={onClose}>
+            <Text className="text-center text-gray-700 text-base">Cancelar</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -125,6 +102,7 @@ const Agenda = () => {
   const fecharModal = () => setModalVisivel(false);
   const navigation = useNavigation();
   const [userId, setUserId] = useState<string | null>(null);
+
   const confirmarBloquearDia = async () => {
     if (!userId) return;
     const novoHorarios = horarios.map((h) => ({ ...h, status: 3 }));
@@ -136,6 +114,7 @@ const Agenda = () => {
       horarios: novoHorarios,
     });
   };
+
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -146,17 +125,12 @@ const Agenda = () => {
   }, []);
 
   const anoAtual = new Date().getFullYear();
-  const [mesSelecionado, setMesSelecionado] = useState<number>(
-    new Date().getMonth() + 1
-  );
-  const [diaSelecionado, setDiaSelecionado] = useState<number>(
-    new Date().getDate()
-  );
+  const [mesSelecionado, setMesSelecionado] = useState<number>(new Date().getMonth() + 1);
+  const [diaSelecionado, setDiaSelecionado] = useState<number>(new Date().getDate());
   const [diasNoMes, setDiasNoMes] = useState<number[]>([]);
   const [modalVisivel, setModalVisivel] = useState(false);
   const [statusModalVisivel, setStatusModalVisivel] = useState(false);
-  const [horarioSelecionadoState, setHorarioSelecionadoState] =
-    useState<Horario | null>(null);
+  const [horarioSelecionadoState, setHorarioSelecionadoState] = useState<Horario | null>(null);
 
   const horariosBase: Horario[] = [
     { name: "08:00", value: 1, status: 1 },
@@ -184,16 +158,10 @@ const Agenda = () => {
 
   const [horarios, setHorarios] = useState<Horario[]>(horariosBase);
 
-  const dataKey = `${anoAtual}-${String(mesSelecionado).padStart(
-    2,
-    "0"
-  )}-${String(diaSelecionado).padStart(2, "0")}`;
+  const dataKey = `${anoAtual}-${String(mesSelecionado).padStart(2, "0")}-${String(diaSelecionado).padStart(2, "0")}`;
 
   useEffect(() => {
-    const dias = Array.from(
-      { length: getDiasMes(mesSelecionado, anoAtual) },
-      (_, i) => i + 1
-    );
+    const dias = Array.from({ length: getDiasMes(mesSelecionado, anoAtual) }, (_, i) => i + 1);
     setDiasNoMes(dias);
     if (diaSelecionado > dias.length) setDiaSelecionado(1);
   }, [mesSelecionado]);
@@ -227,11 +195,12 @@ const Agenda = () => {
 
   const handleSelectStatus = async (novoStatus: number) => {
     if (!horarioSelecionadoState || !userId) return;
-    const novoHorarios = horarios.map((h) =>
-      h.value === horarioSelecionadoState.value
-        ? { ...h, status: novoStatus }
-        : h
-    );
+    const novoHorarios = horarios.map((h) => {
+      if (h.value === horarioSelecionadoState.value) {
+        return { ...h, status: novoStatus === 2 ? 1 : novoStatus };
+      }
+      return h;
+    });
     setHorarios(novoHorarios);
     await setDoc(doc(db, "Agenda", userId, "Horarios", dataKey), {
       userId: userId,
@@ -268,22 +237,14 @@ const Agenda = () => {
     <View className="bg-white flex-1">
       <ScrollView className="mt-6">
         <View className="flex-1 bg-white p-4">
-          <TouchableOpacity
-            className="flex-row justify-center mb-4"
-            onPress={bloquearDia}
-          >
+          <TouchableOpacity className="flex-row justify-center mb-4" onPress={bloquearDia}>
             <Ionicons name="lock-closed-outline" size={30} color="#4b5563" />
           </TouchableOpacity>
 
           <View className="flex-row justify-between items-center mb-4 px-4">
             <Text className="text-lg">Selecione o mês:</Text>
             <View className="border border-slate-400 rounded-full w-32">
-              <RNPicker
-                selectedValue={mesSelecionado}
-                onValueChange={(v) => setMesSelecionado(v)}
-                mode="dropdown"
-                dropdownIconColor="#000"
-              >
+              <RNPicker selectedValue={mesSelecionado} onValueChange={(v) => setMesSelecionado(v)} mode="dropdown" dropdownIconColor="#000">
                 {meses.map((m) => (
                   <RNPicker.Item key={m.value} label={m.name} value={m.value} />
                 ))}
@@ -294,20 +255,9 @@ const Agenda = () => {
           <View className="flex-row justify-between items-center mb-6 px-4">
             <Text className="text-lg">Selecione o dia:</Text>
             <View className="border border-slate-400 rounded-full w-32">
-              <RNPicker
-                selectedValue={diaSelecionado}
-                onValueChange={(v) => setDiaSelecionado(v)}
-                mode="dropdown"
-                dropdownIconColor="#000"
-              >
+              <RNPicker selectedValue={diaSelecionado} onValueChange={(v) => setDiaSelecionado(v)} mode="dropdown" dropdownIconColor="#000">
                 {diasNoMes.map((d) => (
-                  <RNPicker.Item
-                    key={d}
-                    label={`${String(d).padStart(2, "0")}/${String(
-                      mesSelecionado
-                    ).padStart(2, "0")}`}
-                    value={d}
-                  />
+                  <RNPicker.Item key={d} label={`${String(d).padStart(2, "0")}/${String(mesSelecionado).padStart(2, "0")}`} value={d} />
                 ))}
               </RNPicker>
             </View>
@@ -318,11 +268,7 @@ const Agenda = () => {
             {horarios.map((h) => {
               const cls = getStatusCor(h.status);
               return (
-                <TouchableOpacity
-                  key={h.value}
-                  className={`p-4 rounded-full border ${cls.border}`}
-                  onPress={() => abrirStatusModal(h)}
-                >
+                <TouchableOpacity key={h.value} className={`p-4 rounded-full border ${cls.border}`} onPress={() => abrirStatusModal(h)}>
                   <Text className={cls.text}>{h.name}</Text>
                 </TouchableOpacity>
               );
@@ -342,7 +288,7 @@ const Agenda = () => {
           >
             <View className="flex flex-wrap flex-row justify-between mt-6">
               <WhiteBtn title="Cancelar" onPress={fecharModal} />
-              <PinkBtn title="Confirmar" onPress={confirmarBloquearDia} />
+              <PinkBtn title="Confirmar" onPress={confirmBloquearDia} />
             </View>
           </ModalBase>
 

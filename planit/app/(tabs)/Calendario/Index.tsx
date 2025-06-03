@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { router } from "expo-router";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, getDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from "../../../firebaseConfig";
 import PinkBtn from "../../../components/button/pinkBtn";
@@ -30,7 +30,7 @@ const formatDate = (date: Date) => {
 
 interface Horario {
   hora: string;
-  status: "disponivel" | "cancelar" | "bloqueado";
+  status: "disponivel" | "cancelar" | "bloqueado" | "agendado";
 }
 
 const Calendario = () => {
@@ -58,24 +58,50 @@ const Calendario = () => {
     setLoading(true);
     setMensagem(null);
 
-    const ref = doc(db, "Agenda", userId, "Horarios", dataSelecionada);
+    const refAgenda = doc(db, "Agenda", userId, "Horarios", dataSelecionada);
+    const refAgendamento = doc(db, "Agendamento", userId, "Dias", dataSelecionada);
 
-    const unsubscribe = onSnapshot(
-      ref,
+    const unsubAgenda = onSnapshot(
+      refAgenda,
       (docSnap) => {
+        let listaAgenda: Horario[] = [];
+
         if (docSnap.exists()) {
           const data = docSnap.data();
-          const horariosLista = (data.horarios || []).map((h: any) => ({
+          listaAgenda = (data.horarios || []).map((h: any) => ({
             hora: h.name,
             status: statusMap[h.status] || "disponivel",
           }));
-          setHorarios(horariosLista);
-          setMensagem(null);
-        } else {
-          setHorarios([]);
-          setMensagem("Nenhum horário cadastrado para essa data.");
         }
-        setLoading(false);
+
+        getDoc(refAgendamento)
+          .then((agendamentoSnap) => {
+            let listaAgendados: Horario[] = [];
+
+            if (agendamentoSnap.exists()) {
+              const data = agendamentoSnap.data();
+              listaAgendados = (data.horarios || []).map((h: any) => ({
+                hora: h.hora || h.name,
+                status: "agendado" as const,
+              }));
+            }
+
+            const horariosFiltrados = listaAgenda.filter(
+              (h) => !listaAgendados.find((a) => a.hora === h.hora)
+            );
+
+            const final = [...horariosFiltrados, ...listaAgendados];
+
+            setHorarios(final);
+            setMensagem(final.length === 0 ? "Nenhum horário cadastrado para essa data." : null);
+            setLoading(false);
+          })
+          .catch((error) => {
+            console.error("Erro ao buscar agendamentos:", error);
+            setMensagem("Erro ao buscar horários.");
+            setHorarios([]);
+            setLoading(false);
+          });
       },
       (error) => {
         console.error("Erro ao escutar documento:", error);
@@ -92,12 +118,15 @@ const Calendario = () => {
       },
     });
 
-    return () => unsubscribe();
+    return () => unsubAgenda();
   }, [dataSelecionada, userId]);
 
   const renderHorarios = (status: Horario["status"], cor: string) => {
     const filtrados = horarios.filter((h) => h.status === status);
     if (filtrados.length === 0) return null;
+
+    const titulo =
+      status === "cancelar" ? "Horários cancelados" : `Horários ${status}`;
 
     return (
       <View
@@ -119,7 +148,7 @@ const Calendario = () => {
             textTransform: "capitalize",
           }}
         >
-          Horários {status}
+          {titulo}
         </Text>
         <View
           style={{
@@ -172,8 +201,10 @@ const Calendario = () => {
           </Text>
         ) : (
           <>
+            {renderHorarios("disponivel", "green")}
             {renderHorarios("cancelar", "#FF69B4")}
             {renderHorarios("bloqueado", "blue")}
+            {renderHorarios("agendado", "gray")}
           </>
         )}
 
