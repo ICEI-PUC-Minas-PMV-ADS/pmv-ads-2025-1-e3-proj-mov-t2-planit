@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Modal } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+} from "react-native";
 import { Picker as RNPicker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
 import ModalBase from "../../../components/modais/modalBase";
 import PinkBtn from "../../../components/button/pinkBtn";
+import WhiteBtn from "@/components/button/whiteBtn";
 
 import { db } from "../../../firebaseConfig";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import WhiteBtn from "@/components/button/whiteBtn";
 
 type Horario = {
   name: string;
@@ -42,7 +48,12 @@ interface StatusModalProps {
   onSelectStatus: (status: number) => void;
 }
 
-function StatusModal({ visible, currentStatus, onClose, onSelectStatus }: StatusModalProps) {
+function StatusModal({
+  visible,
+  currentStatus,
+  onClose,
+  onSelectStatus,
+}: StatusModalProps) {
   const allOptions = [
     { status: 1, label: "Disponibilizar", color: "green", icon: "checkmark-circle-outline" },
     { status: 3, label: "Bloquear", color: "red", icon: "remove-circle-outline" },
@@ -56,32 +67,120 @@ function StatusModal({ visible, currentStatus, onClose, onSelectStatus }: Status
     return false;
   });
 
+
+  const [confirmCancelVisible, setConfirmCancelVisible] = useState(false);
+  
+  const [confirmExitVisible, setConfirmExitVisible] = useState(false);
+
   return (
-    <Modal visible={visible} transparent animationType="fade">
-      <View className="flex-1 bg-black/40 justify-center items-center px-4">
-        <View className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg">
-          <Text className="text-2xl font-semibold text-center mb-4">Alterar status</Text>
-          <View className="h-px bg-gray-200 mb-4" />
-          {options.map(({ status, label, color, icon }) => (
+    <>
+     
+      <Modal visible={visible} transparent animationType="fade">
+        <View className="flex-1 bg-black/40 justify-center items-center px-4">
+          <View className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg">
+           
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-2xl font-semibold text-center flex-1">
+                Alterar status
+              </Text>
+              <TouchableOpacity
+                onPress={() => setConfirmExitVisible(true)}
+                className="p-2"
+              >
+                <Ionicons name="close-outline" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+            <View className="h-px bg-gray-200 mb-4" />
+
+            {options.map(({ status, label, color, icon }) => {
+              const isCancelOption = status === 2;
+              return (
+                <TouchableOpacity
+                  key={status}
+                  className="flex-row items-center p-3 mb-2 rounded-lg"
+                  onPress={() => {
+                    if (isCancelOption) {
+                      setConfirmCancelVisible(true);
+                    } else {
+                      onSelectStatus(status);
+                      onClose();
+                    }
+                  }}
+                >
+                  <Ionicons
+                    name={icon as any}
+                    size={24}
+                    color={color}
+                    style={{ marginRight: 10 }}
+                  />
+                  <Text className="text-lg" style={{ color }}>
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+
+            <View className="h-px bg-gray-200 mt-4 mb-4" />
+
             <TouchableOpacity
-              key={status}
-              onPress={() => {
-                onSelectStatus(status);
-                onClose();
-              }}
-              className="flex-row items-center p-3 mb-2 rounded-lg"
+              className="py-3 bg-gray-100 rounded-lg"
+              onPress={onClose}
             >
-              <Ionicons name={icon as any} size={24} color={color} style={{ marginRight: 10 }} />
-              <Text className="text-lg" style={{ color }}>{label}</Text>
+              <Text className="text-center text-gray-700 text-base">
+                Fechar
+              </Text>
             </TouchableOpacity>
-          ))}
-          <View className="h-px bg-gray-200 mt-4 mb-4" />
-          <TouchableOpacity className="py-3 bg-gray-100 rounded-lg" onPress={onClose}>
-            <Text className="text-center text-gray-700 text-base">Cancelar</Text>
-          </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </Modal>
+      </Modal>
+
+      
+      <ModalBase
+        visible={confirmExitVisible}
+        title="Alterações não salvas"
+        text="Você deseja salvar ou descartar as alterações?"
+        icone="save-outline"
+        onClose={() => setConfirmExitVisible(false)}
+      >
+        <View className="flex-row justify-between mt-4">
+          <WhiteBtn
+            title="Cancelar"
+            onPress={() => setConfirmExitVisible(false)}
+          />
+          <PinkBtn
+            title="Confirmar"
+            onPress={() => {
+              setConfirmExitVisible(false);
+              onClose();
+            }}
+          />
+        </View>
+      </ModalBase>
+
+   
+      <ModalBase
+        visible={confirmCancelVisible}
+        title="Cancelar"
+        text="Deseja realmente cancelar este agendamento?"
+        icone="trash-bin-outline"
+        onClose={() => setConfirmCancelVisible(false)}
+      >
+        <View className="flex-row justify-between mt-4">
+          <WhiteBtn
+            title="Não"
+            onPress={() => setConfirmCancelVisible(false)}
+          />
+          <PinkBtn
+            title="Sim"
+            onPress={() => {
+              onSelectStatus(2);
+              setConfirmCancelVisible(false);
+              onClose();
+            }}
+          />
+        </View>
+      </ModalBase>
+    </>
   );
 }
 
@@ -99,37 +198,24 @@ const getStatusCor = (status: number) => {
 };
 
 const Agenda = () => {
-  const fecharModal = () => setModalVisivel(false);
   const navigation = useNavigation();
-  const [userId, setUserId] = useState<string | null>(null);
-
-  const confirmarBloquearDia = async () => {
-    if (!userId) return;
-    const novoHorarios = horarios.map((h) => ({ ...h, status: 3 }));
-    setHorarios(novoHorarios);
-    setModalVisivel(false);
-    await setDoc(doc(db, "Agenda", userId, "Horarios", dataKey), {
-      userId,
-      data: dataKey,
-      horarios: novoHorarios,
-    });
-  };
-
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) setUserId(user.uid);
-      else setUserId(null);
-    });
-    return () => unsubscribe();
-  }, []);
+  const auth = getAuth();
+  const user = auth.currentUser;
+  const userId = user ? user.uid : null;
 
   const anoAtual = new Date().getFullYear();
   const [mesSelecionado, setMesSelecionado] = useState<number>(new Date().getMonth() + 1);
   const [diaSelecionado, setDiaSelecionado] = useState<number>(new Date().getDate());
   const [diasNoMes, setDiasNoMes] = useState<number[]>([]);
+
+ 
   const [modalVisivel, setModalVisivel] = useState(false);
   const [statusModalVisivel, setStatusModalVisivel] = useState(false);
+
+  
+  const fecharModal = () => setModalVisivel(false);
+  const fecharStatusModal = () => setStatusModalVisivel(false);
+
   const [horarioSelecionadoState, setHorarioSelecionadoState] = useState<Horario | null>(null);
 
   const horariosBase: Horario[] = [
@@ -158,7 +244,9 @@ const Agenda = () => {
 
   const [horarios, setHorarios] = useState<Horario[]>(horariosBase);
 
-  const dataKey = `${anoAtual}-${String(mesSelecionado).padStart(2, "0")}-${String(diaSelecionado).padStart(2, "0")}`;
+  const dataKey = `${anoAtual}-${String(mesSelecionado).padStart(2, "0")}-${String(
+    diaSelecionado
+  ).padStart(2, "0")}`;
 
   useEffect(() => {
     const dias = Array.from({ length: getDiasMes(mesSelecionado, anoAtual) }, (_, i) => i + 1);
@@ -191,19 +279,16 @@ const Agenda = () => {
     setStatusModalVisivel(true);
   };
 
-  const fecharStatusModal = () => setStatusModalVisivel(false);
-
   const handleSelectStatus = async (novoStatus: number) => {
     if (!horarioSelecionadoState || !userId) return;
-    const novoHorarios = horarios.map((h) => {
-      if (h.value === horarioSelecionadoState.value) {
-        return { ...h, status: novoStatus === 2 ? 1 : novoStatus };
-      }
-      return h;
-    });
+    const novoHorarios = horarios.map((h) =>
+      h.value === horarioSelecionadoState.value
+        ? { ...h, status: novoStatus === 2 ? 1 : novoStatus }
+        : h
+    );
     setHorarios(novoHorarios);
     await setDoc(doc(db, "Agenda", userId, "Horarios", dataKey), {
-      userId: userId,
+      userId,
       data: dataKey,
       horarios: novoHorarios,
     });
@@ -217,7 +302,7 @@ const Agenda = () => {
     setHorarios(novoHorarios);
     setModalVisivel(false);
     await setDoc(doc(db, "Agenda", userId, "Horarios", dataKey), {
-      userId: userId,
+      userId,
       data: dataKey,
       horarios: novoHorarios,
     });
@@ -226,9 +311,9 @@ const Agenda = () => {
   const salvarNoFirestore = async () => {
     if (!userId) return;
     await setDoc(doc(db, "Agenda", userId, "Horarios", dataKey), {
-      userId: userId,
+      userId,
       data: dataKey,
-      horarios: horarios,
+      horarios,
     });
     navigation.goBack();
   };
@@ -237,14 +322,25 @@ const Agenda = () => {
     <View className="bg-white flex-1">
       <ScrollView className="mt-6">
         <View className="flex-1 bg-white p-4">
-          <TouchableOpacity className="flex-row justify-center mb-4" onPress={bloquearDia}>
+
+        
+          <TouchableOpacity
+            className="flex-row justify-center mb-4"
+            onPress={bloquearDia}
+          >
             <Ionicons name="lock-closed-outline" size={30} color="#4b5563" />
           </TouchableOpacity>
 
+          
           <View className="flex-row justify-between items-center mb-4 px-4">
             <Text className="text-lg">Selecione o mês:</Text>
             <View className="border border-slate-400 rounded-full w-32">
-              <RNPicker selectedValue={mesSelecionado} onValueChange={(v) => setMesSelecionado(v)} mode="dropdown" dropdownIconColor="#000">
+              <RNPicker
+                selectedValue={mesSelecionado}
+                onValueChange={(v) => setMesSelecionado(v)}
+                mode="dropdown"
+                dropdownIconColor="#000"
+              >
                 {meses.map((m) => (
                   <RNPicker.Item key={m.value} label={m.name} value={m.value} />
                 ))}
@@ -252,33 +348,50 @@ const Agenda = () => {
             </View>
           </View>
 
+         
           <View className="flex-row justify-between items-center mb-6 px-4">
             <Text className="text-lg">Selecione o dia:</Text>
             <View className="border border-slate-400 rounded-full w-32">
-              <RNPicker selectedValue={diaSelecionado} onValueChange={(v) => setDiaSelecionado(v)} mode="dropdown" dropdownIconColor="#000">
+              <RNPicker
+                selectedValue={diaSelecionado}
+                onValueChange={(v) => setDiaSelecionado(v)}
+                mode="dropdown"
+                dropdownIconColor="#000"
+              >
                 {diasNoMes.map((d) => (
-                  <RNPicker.Item key={d} label={`${String(d).padStart(2, "0")}/${String(mesSelecionado).padStart(2, "0")}`} value={d} />
+                  <RNPicker.Item
+                    key={d}
+                    label={`${String(d).padStart(2, "0")}/${String(mesSelecionado).padStart(2, "0")}`}
+                    value={d}
+                  />
                 ))}
               </RNPicker>
             </View>
           </View>
 
+        
           <Text className="text-center text-xl mb-4">Horários</Text>
           <View className="flex-row flex-wrap justify-center gap-4">
             {horarios.map((h) => {
               const cls = getStatusCor(h.status);
               return (
-                <TouchableOpacity key={h.value} className={`p-4 rounded-full border ${cls.border}`} onPress={() => abrirStatusModal(h)}>
+                <TouchableOpacity
+                  key={h.value}
+                  className={`w-20 p-4 rounded-full border ${cls.border} items-center`}
+                  onPress={() => abrirStatusModal(h)}
+                >
                   <Text className={cls.text}>{h.name}</Text>
                 </TouchableOpacity>
               );
             })}
           </View>
 
+          
           <View className="mt-6 items-center">
             <PinkBtn title="Salvar" onPress={salvarNoFirestore} />
           </View>
 
+          
           <ModalBase
             visible={modalVisivel}
             title="Bloquear dia"
@@ -286,12 +399,13 @@ const Agenda = () => {
             icone="lock-closed-outline"
             onClose={fecharModal}
           >
-            <View className="flex flex-wrap flex-row justify-between mt-6">
+            <View className="flex-row justify-between mt-4">
               <WhiteBtn title="Cancelar" onPress={fecharModal} />
               <PinkBtn title="Confirmar" onPress={confirmBloquearDia} />
             </View>
           </ModalBase>
 
+          
           <StatusModal
             visible={statusModalVisivel}
             currentStatus={horarioSelecionadoState?.status || null}
