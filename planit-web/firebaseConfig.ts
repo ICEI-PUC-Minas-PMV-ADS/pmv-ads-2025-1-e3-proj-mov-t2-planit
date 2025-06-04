@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, setLogLevel, /*doc, getDoc,*/ query, collection, getDocs, where, addDoc, updateDoc, /*addDoc, updateDoc, serverTimestamp, QuerySnapshot*/ } from "firebase/firestore";
+import { getFirestore, setLogLevel, /*doc, getDoc,*/ query, collection, getDocs, where, addDoc, updateDoc, doc, getDoc, /*addDoc, updateDoc, serverTimestamp, QuerySnapshot*/ } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { Agendamento, Horario, Profissional, Servico, /*Agendamento*/ } from './types'
 
@@ -139,6 +139,7 @@ function parseDuracao(duracao: string): number {
 }
 
 
+
 const updateHorarios = async (
   data: string,
   horaInicial: string,
@@ -149,8 +150,8 @@ const updateHorarios = async (
     const duracaoMinutos = duracaoEmMilissegundos / 60000;
 
     const horarioBase = new Date(`1970-01-01T${horaInicial}:00`);
-
     const horariosAAtualizar: string[] = [];
+
     for (let i = 0; i < duracaoMinutos; i += 30) {
       const novoHorario = new Date(horarioBase.getTime() + i * 60000);
       const horas = String(novoHorario.getHours()).padStart(2, "0");
@@ -158,25 +159,34 @@ const updateHorarios = async (
       horariosAAtualizar.push(`${horas}:${minutos}`);
     }
 
-    for (const hora of horariosAAtualizar) {
-      const agendaRef = collection(db, "Agenda");
-      const q = query(
-        agendaRef,
-        where("data", "==", data),
-        where("hora", "==", hora),
-        where("uid", "==", uid)
-      );
+    const horarioDocRef = doc(db, "Agenda", uid, "Horarios", data);
+    const horarioDocSnap = await getDoc(horarioDocRef);
 
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach(async (doc) => {
-        await updateDoc(doc.ref, { status: "agendado" });
-        console.log(`Horário ${hora} atualizado com sucesso!`);
-      });
+    if (!horarioDocSnap.exists()) {
+      console.error("Documento de horário não encontrado:", data);
+      return;
     }
+
+    const horarioData = horarioDocSnap.data();
+    const horarios = horarioData.horarios || [];
+
+    const horariosAtualizados = horarios.map((horario: any) => {
+      if (horariosAAtualizar.includes(horario.name)) {
+        return { ...horario, status: 2 }; // 2 = agendado
+      }
+      return horario;
+    });
+
+    await updateDoc(horarioDocRef, { horarios: horariosAtualizados });
+
+    console.log("Horários atualizados com sucesso:", horariosAAtualizar);
+
   } catch (error) {
     console.error("Erro ao atualizar horários:", error);
   }
 };
+
+
 
 // FUNÇÃO QUE CRIA O AGENDAMENTO 
 export async function createAgendamento(dataSelecionada: Date, horaSelecionada: string, servico: Servico, clienteId: string): Promise<string> {
