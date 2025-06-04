@@ -1,5 +1,10 @@
-// app/tabs/Clientes.tsx
-import React, { useState, useRef, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+  useEffect,
+} from "react";
 import {
   View,
   Text,
@@ -16,7 +21,6 @@ import Icon from "react-native-vector-icons/Feather";
 import { debounce } from "lodash";
 import { Colors } from "@/constants/Colors";
 
-// --- tipo Cliente ---
 enum StatusCliente {
   Finalizados = "Finalizados",
   Cancelados = "Cancelados",
@@ -34,7 +38,6 @@ type Cliente = {
   consultas: Consulta[];
 };
 
-// --- dados ---
 const clientes: Cliente[] = [
   {
     id: "1",
@@ -112,60 +115,83 @@ const clientes: Cliente[] = [
   },
 ];
 
-// ——— Componentes extraídos ———
 const CardCliente = React.memo(
   ({
     cliente,
     onPress,
-    scaleAnim,
-    rotateAnim,
+    isSelected,
   }: {
     cliente: Cliente;
-    onPress: () => void;
-    scaleAnim: Animated.Value;
-    rotateAnim: Animated.Value;
-  }) => (
-    <View
-      style={styles.card}
-      accessible
-      accessibilityLabel={`Cliente ${cliente.nome}`}
-    >
-      <View style={styles.cardInfo}>
-        <Image
-          source={cliente.imagem}
-          style={styles.avatar}
-          defaultSource={require("../../assets/images/icon.png")}
-        />
-        <View>
-          <Text style={styles.nome}>{cliente.nome}</Text>
-          <Text style={styles.ultima}>
-            Última visita: {cliente.ultimaVisita}
-          </Text>
-        </View>
-      </View>
-      <TouchableOpacity
-        onPress={onPress}
-        style={styles.iconBtn}
-        accessibilityLabel="Abrir perfil"
+    onPress: (c: Cliente) => void;
+    isSelected: boolean;
+  }) => {
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+    const rotateAnim = useRef(new Animated.Value(0)).current;
+
+    const rotateInterpolate = rotateAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: ["0deg", "90deg"],
+    });
+
+    useEffect(() => {
+      Animated.timing(rotateAnim, {
+        toValue: isSelected ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }, [isSelected, rotateAnim]);
+
+    const handlePress = () => {
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.2,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      onPress(cliente);
+    };
+
+    return (
+      <View
+        style={styles.card}
+        accessible
+        accessibilityLabel={`Cliente ${cliente.nome}`}
       >
-        <Animated.View
-          style={{
-            transform: [
-              { scale: scaleAnim },
-              {
-                rotate: rotateAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ["0deg", "90deg"],
-                }),
-              },
-            ],
-          }}
+        <View style={styles.cardInfo}>
+          <Image
+            source={{ uri: cliente.imagem }}
+            style={styles.avatar}
+            defaultSource={require("../../assets/images/icon.png")}
+          />
+          <View>
+            <Text style={styles.nome}>{cliente.nome}</Text>
+            <Text style={styles.ultima}>
+              Última visita: {cliente.ultimaVisita}
+            </Text>
+          </View>
+        </View>
+        <TouchableOpacity
+          onPress={handlePress}
+          style={styles.iconBtn}
+          accessibilityLabel="Abrir perfil"
         >
-          <Icon name="chevron-right" size={24} color="#757575" />
-        </Animated.View>
-      </TouchableOpacity>
-    </View>
-  )
+          <Animated.View
+            style={{
+              transform: [{ scale: scaleAnim }, { rotate: rotateInterpolate }],
+            }}
+          >
+            <Icon name="chevron-right" size={24} color="#757575" />
+          </Animated.View>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 );
 
 const ModalCliente = ({
@@ -190,7 +216,7 @@ const ModalCliente = ({
       </TouchableOpacity>
       {cliente && (
         <>
-          <Image source={cliente.imagem} style={styles.modalAvatar} />
+          <Image source={{ uri: cliente.imagem }} style={styles.modalAvatar} />
           <Text style={styles.modalNome}>{cliente.nome}</Text>
           {cliente.consultas.map((c, i) => (
             <View key={i} style={styles.consultaCard}>
@@ -204,7 +230,6 @@ const ModalCliente = ({
   </Modal>
 );
 
-// ——— Tela principal ———
 export default function ClienteScreen() {
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState<"Todos" | "Em andamento" | "Concluídos">(
@@ -221,10 +246,6 @@ export default function ClienteScreen() {
     null
   );
 
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-
-  // Debounce na busca
   const [debouncedBusca, setDebouncedBusca] = useState("");
   const debounced = useRef(
     debounce((text: string) => setDebouncedBusca(text), 300)
@@ -262,130 +283,106 @@ export default function ClienteScreen() {
   }, [debouncedBusca, filtro, filtrosSelecionados]);
 
   const abrirPerfil = (c: Cliente) => {
-    Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 1.2,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    Animated.timing(rotateAnim, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
     setClienteSelecionado(c);
     setModalAberto(true);
   };
 
+  const fecharModal = () => {
+    setModalAberto(false);
+    setClienteSelecionado(null);
+  };
+
   return (
     <Provider>
-      <View style={styles.container}>
-        <Text style={styles.titulo}>Histórico de clientes</Text>
-
-        {/* filtro rápido */}
-        <View style={styles.filtroRapido}>
-          {(["Todos", "Em andamento", "Concluídos"] as const).map((item) => (
-            <TouchableOpacity
-              key={item}
-              onPress={() => setFiltro(item)}
-              style={[
-                styles.botaoFiltro,
-                filtro === item && styles.botaoFiltroAtivo,
-              ]}
-            >
-              <Text
-                style={
-                  filtro === item ? styles.txtFiltroAtivo : styles.txtFiltro
-                }
-              >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* busca + avançado */}
-        <View style={styles.buscaRow}>
-          <Menu
-            visible={menuFiltroVisivel}
-            onDismiss={() => setMenuFiltroVisivel(false)}
-            anchor={
+      <View className="bg-white flex-1">
+        <View style={styles.container}>
+          <View style={styles.filtroRapido}>
+            {(["Todos", "Em andamento", "Concluídos"] as const).map((item) => (
               <TouchableOpacity
-                onPress={() => setMenuFiltroVisivel(true)}
-                style={styles.iconBtn}
+                key={item}
+                onPress={() => setFiltro(item)}
+                style={[
+                  styles.botaoFiltro,
+                  filtro === item && styles.botaoFiltroAtivo,
+                ]}
               >
-                <Icon name="sliders" size={24} color="#333" />
-              </TouchableOpacity>
-            }
-            contentStyle={styles.menuContent}
-          >
-            <Text style={styles.menuTitle}>Selecione o filtro</Text>
-            {Object.values(StatusCliente).map((f, i) => (
-              <View key={i} style={styles.menuItem}>
-                <Checkbox
-                  status={
-                    filtrosSelecionados.includes(f) ? "checked" : "unchecked"
+                <Text
+                  style={
+                    filtro === item ? styles.txtFiltroAtivo : styles.txtFiltro
                   }
-                  onPress={() => toggleFiltro(f)}
-                />
-                <Text style={styles.menuTxt}>{f}</Text>
-              </View>
+                >
+                  {item}
+                </Text>
+              </TouchableOpacity>
             ))}
-          </Menu>
+          </View>
 
-          <TextInput
-            placeholder="Buscar cliente..."
-            value={busca}
-            onChangeText={onChangeBusca}
-            style={styles.inputBusca}
-            accessibilityLabel="Campo de busca de cliente"
-          />
+          <View style={styles.buscaRow}>
+            <Menu
+              visible={menuFiltroVisivel}
+              onDismiss={() => setMenuFiltroVisivel(false)}
+              anchor={
+                <TouchableOpacity
+                  onPress={() => setMenuFiltroVisivel(true)}
+                  style={styles.iconBtn}
+                >
+                  <Icon name="sliders" size={24} color="#333" />
+                </TouchableOpacity>
+              }
+              contentStyle={styles.menuContent}
+            >
+              <Text style={styles.menuTitle}>Selecione o filtro</Text>
+              {Object.values(StatusCliente).map((f, i) => (
+                <View key={i} style={styles.menuItem}>
+                  <Checkbox
+                    status={
+                      filtrosSelecionados.includes(f) ? "checked" : "unchecked"
+                    }
+                    onPress={() => toggleFiltro(f)}
+                  />
+                  <Text style={styles.menuTxt}>{f}</Text>
+                </View>
+              ))}
+            </Menu>
+
+            <TextInput
+              placeholder="Buscar cliente..."
+              value={busca}
+              onChangeText={onChangeBusca}
+              style={styles.inputBusca}
+              accessibilityLabel="Campo de busca de cliente"
+            />
+          </View>
+
+          <View style={styles.separador} />
+
+          {clientesFiltrados.length === 0 ? (
+            <View style={styles.vazioContainer}>
+              <Text style={styles.vazioTexto}>Nenhum cliente encontrado</Text>
+            </View>
+          ) : (
+            <FlatList
+              style={styles.lista}
+              data={clientesFiltrados}
+              keyExtractor={(i) => i.id}
+              showsVerticalScrollIndicator={false}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              renderItem={({ item }) => (
+                <CardCliente
+                  cliente={item}
+                  onPress={abrirPerfil}
+                  isSelected={clienteSelecionado?.id === item.id}
+                />
+              )}
+            />
+          )}
         </View>
 
-        <View style={styles.separador} />
-
-        {/* lista ou vazio */}
-        {clientesFiltrados.length === 0 ? (
-          <View style={styles.vazioContainer}>
-            <Text style={styles.vazioTexto}>Nenhum cliente encontrado</Text>
-          </View>
-        ) : (
-          <FlatList
-            style={styles.lista}
-            data={clientesFiltrados}
-            keyExtractor={(i) => i.id}
-            showsVerticalScrollIndicator={false}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            renderItem={({ item }) => (
-              <CardCliente
-                cliente={item}
-                onPress={() => abrirPerfil(item)}
-                scaleAnim={scaleAnim}
-                rotateAnim={rotateAnim}
-              />
-            )}
-          />
-        )}
-
-        {/* Modal de Perfil */}
         <ModalCliente
           cliente={clienteSelecionado}
           isVisible={modalAberto}
-          onClose={() => {
-            setModalAberto(false);
-            Animated.timing(rotateAnim, {
-              toValue: 0,
-              duration: 200,
-              useNativeDriver: true,
-            }).start();
-          }}
+          onClose={fecharModal}
         />
       </View>
     </Provider>
@@ -393,13 +390,7 @@ export default function ClienteScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fafafa", padding: 20 },
-  titulo: {
-    fontSize: 22,
-    fontWeight: "700",
-    textAlign: "center",
-    marginBottom: 20,
-  },
+  container: { flex: 1, padding: 20 },
 
   filtroRapido: {
     flexDirection: "row",
@@ -407,10 +398,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   botaoFiltro: {
-    backgroundColor: "#e0e0e0",
-    paddingHorizontal: 16,
+    backgroundColor: "#f1f5f9",
+    paddingHorizontal: 24,
     paddingVertical: 8,
-    borderRadius: 999,
+    borderRadius: 20,
     marginHorizontal: 6,
   },
   botaoFiltroAtivo: { backgroundColor: Colors.principal },
@@ -433,7 +424,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderColor: "#ddd",
     borderWidth: 1,
-    borderRadius: 999,
+    borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
@@ -457,11 +448,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 12,
     justifyContent: "space-between",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
   },
   cardInfo: { flexDirection: "row", alignItems: "center" },
   avatar: {

@@ -11,7 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useFocusEffect } from "@react-navigation/native";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, setDoc, doc } from "firebase/firestore"; // mudei pra setDoc pq antes tava criando um id proprio ao inves de ser o proprio uid do usuario
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db } from "../firebaseConfig";
 
@@ -63,7 +63,8 @@ export default function CadastroScreen() {
         await updateProfile(user, {
           displayName: nome,
         });
-        await addDoc(collection(db, "Usuario"), {
+        await setDoc(doc(db, "Profissional", user.uid), {
+          // aqui a mudanca do setDoc
           uid: user.uid,
           nome,
           email,
@@ -73,7 +74,7 @@ export default function CadastroScreen() {
         console.log(auth.currentUser?.displayName);
 
         Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
-        router.replace("/(tabs)/Perfil/Conta");
+        router.replace("/(tabs)/Home");
       } catch (error) {
         if (error instanceof Error && "code" in error) {
           const firebaseError = error as { code: string };
@@ -184,7 +185,7 @@ export default function CadastroScreen() {
         </View>
 
         <TouchableOpacity
-          className="bg-pink-500 py-3 rounded-full items-center"
+          className="bg-principal py-3 rounded-full items-center"
           onPress={handleCadastro}
           disabled={isLoading}
         >

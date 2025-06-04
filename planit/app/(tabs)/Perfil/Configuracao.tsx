@@ -1,19 +1,17 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Switch,
-  ScrollView,
-  Modal,
-  Pressable,
-} from "react-native";
-import { ChevronDown, X } from "lucide-react-native";
+import { View, Text, TouchableOpacity, Switch, ScrollView } from "react-native";
+import { ChevronDown } from "lucide-react-native";
 import { Colors } from "@/constants/Colors";
+import useAuth from "@/hooks/useAuth";
+import { useRouter } from "expo-router";
+import ModalExcluirConta from "@/components/modais/deletarConta";
+import Toast from "react-native-toast-message";
 
 export default function ConfigScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
+  const { user, deleteAccount } = useAuth();
+  const router = useRouter();
 
   return (
     <View className="flex-1 bg-white px-4 pt-14 items-center">
@@ -59,69 +57,35 @@ export default function ConfigScreen() {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Modal */}
-      <Modal
-        animationType="fade"
-        transparent
+      <ModalExcluirConta
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View className="flex-1 justify-center items-center bg-black bg-opacity-50 p-4">
-          <View className="w-full max-w-md bg-white rounded-2xl overflow-hidden">
-            {/* Conteúdo do Modal */}
-            <View className="pt-8 pb-6">
-              {/* Barra de atenção */}
-              <View className="bg-pink-50 px-4 py-2 items-center">
-                <Text className="text-pink-600 font-bold uppercase">
-                  Atenção!
-                </Text>
-                <Text className="text-sm text-pink-600 text-center mt-1">
-                  Esta ação é permanente e não pode ser desfeita.
-                </Text>
-              </View>
-
-              {/* Título e mensagem */}
-              <View className="px-6 mt-4 items-center">
-                <Text className="text-base font-semibold mb-2">
-                  Excluir conta
-                </Text>
-                <Text className="text-center text-sm mb-6">
-                  Deseja realmente excluir sua conta?
-                </Text>
-
-                {/* Botão Deletar */}
-                <TouchableOpacity
-                  className="bg-pink-500 rounded-md w-full py-3 mb-3"
-                  onPress={() => {
-                    // lógica de exclusão aqui
-                    setModalVisible(false);
-                  }}
-                >
-                  <Text className="text-center text-white font-bold">
-                    Deletar minha conta
-                  </Text>
-                </TouchableOpacity>
-
-                {/* Botão Cancelar */}
-                <TouchableOpacity
-                  className="border border-gray-300 rounded-md w-full py-3"
-                  onPress={() => setModalVisible(false)}
-                >
-                  <Text className="text-center text-base">Cancelar</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Botão de fechar “X” */}
-            <Pressable
-              onPress={() => setModalVisible(false)}
-              className="absolute top-1 right-3 p-1"
-            >
-              <X size={20} color="#999" />
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setModalVisible(false)}
+        onConfirm={async () => {
+          try {
+            await deleteAccount();
+            Toast.show({
+              type: "success",
+              text1: "Conta excluída!",
+              text2: "Sua conta foi removida com sucesso.",
+              position: "top",
+              visibilityTime: 3000,
+              autoHide: true,
+            });
+            setModalVisible(false);
+            router.replace("/");
+          } catch (error) {
+            Toast.show({
+              type: "error",
+              text1: "Erro ao excluir",
+              text2: "Tente novamente.",
+              position: "top",
+              visibilityTime: 3000,
+              autoHide: true,
+            });
+            setModalVisible(false);
+          }
+        }}
+      />
     </View>
   );
 }

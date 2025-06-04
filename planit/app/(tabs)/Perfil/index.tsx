@@ -1,28 +1,25 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
   ScrollView,
-  Modal,
   Pressable,
   Alert,
-  TextInput,
+  RefreshControl,
 } from "react-native";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
-import { X } from "lucide-react-native";
-import * as Clipboard from "expo-clipboard";
 import { Colors } from "@/constants/Colors";
 import { router } from "expo-router";
 import SairContaModal from "@/components/modais/sairConta";
-import MudarFotoPerfil from "@/components/modais/mudarFotoPerfil";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebaseConfig";
 import useAuth from "@/hooks/useAuth";
 import { updateProfile } from "firebase/auth";
+import MetodoPagamentoModal from "@/components/modais/pagamento";
+import CompartilharAgendaModal from "@/components/modais/compartilharPerfil";
 
-const shareLink = "www.planit.com/id.name=iriana";
 const profileImage =
   "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
 
@@ -30,14 +27,11 @@ export default function Perfil() {
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const [payModalVisible, setPayModalVisible] = useState(false);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
-  const [profileImageModalVisible, setProfileImageModalVisible] =
-    useState(false);
-  const [cardName, setCardName] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cvv, setCvv] = useState("");
+  useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
   const { user } = useAuth();
-  const [newImageUrl, setNewImageUrl] = useState(user?.photoURL || "");
+
   const onConfirmLogout = () => {
     setLogoutModalVisible(false);
     signOut(auth).then(() => {
@@ -45,32 +39,26 @@ export default function Perfil() {
       router.replace("/Login");
     });
   };
-  const onConfirmProfileImage = async () => {
-    try {
-      if (auth.currentUser && newImageUrl) {
-        await updateProfile(auth.currentUser, {
-          photoURL: newImageUrl,
-        });
-        console.log("Foto atualizada!");
-      }
-      setProfileImageModalVisible(false);
-    } catch (error) {
-      console.error("Erro ao atualizar foto:", error);
-      Alert.alert("Erro", "Não foi possível atualizar a foto.");
-    }
-  };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 800);
+  }, []);
 
   return (
     <View className="bg-white flex-1">
-      <ScrollView className="px-4 pt-10">
+      <ScrollView
+        className="px-4 pt-10"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {/* Foto do Perfil */}
         <View className="flex-row items-center my-6 ml-3">
-          <Pressable onPress={() => setProfileImageModalVisible(true)}>
-            <Image
-              source={{ uri: user?.photoURL || profileImage }}
-              className="w-24 h-24 rounded-full"
-            />
-          </Pressable>
+          <Image
+            source={{ uri: user?.photoURL || profileImage }}
+            className="w-24 h-24 rounded-full"
+          />
           <Text className="text-2xl font-semibold ml-6">
             {user?.displayName || "Usuário"}
           </Text>
@@ -120,196 +108,15 @@ export default function Perfil() {
         onConfirm={onConfirmLogout}
       ></SairContaModal>
 
-      <MudarFotoPerfil
-        visible={profileImageModalVisible}
-        title="Envie uma nova foto para atualizar seu perfil."
-        text="Envie e anexe arquivos a esta aba."
-        icone="folder-open-outline"
-        onClose={() => setProfileImageModalVisible(false)}
-        onConfirm={onConfirmProfileImage}
-        setNewImageUrl={setNewImageUrl}
-      ></MudarFotoPerfil>
-
-      {/* Modal Compartilhar Agenda */}
-      <Modal
-        animationType="fade"
-        transparent
+      <CompartilharAgendaModal
         visible={shareModalVisible}
-        onRequestClose={() => setShareModalVisible(false)}
-      >
-        <View className="flex-1 justify-center items-center bg-black bg-opacity-50 p-4">
-          <View className="w-full max-w-md bg-white rounded-2xl overflow-hidden">
-            <Pressable
-              className="absolute top-3 right-3 p-1"
-              onPress={() => setShareModalVisible(false)}
-            >
-              <X size={20} color="#999" />
-            </Pressable>
-
-            <View className="pt-6 px-6">
-              <Text className="text-center text-lg font-semibold">
-                Compartilhe seu perfil!
-              </Text>
-              <Text className="text-center text-sm text-gray-500 mt-2">
-                Compartilhe seu link de agendamento com seus clientes e facilite
-                o agendamento de consultas!
-              </Text>
-            </View>
-            <View className="px-6 mt-4 mb-6">
-              <Text className="text-sm font-semibold mb-2">
-                Compartilhar link
-              </Text>
-              <View className="flex-row items-center border border-gray-200 rounded-lg p-3">
-                <Text className="flex-1">{shareLink}</Text>
-                <Pressable
-                  onPress={async () => {
-                    await Clipboard.setStringAsync(shareLink);
-                    Alert.alert("Link copiado!");
-                  }}
-                >
-                  <Feather name="copy" size={20} color={Colors.preto} />
-                </Pressable>
-              </View>
-            </View>
-            <View className="px-6 pb-6">
-              <TouchableOpacity
-                className="bg-pink-500 rounded-md w-full py-3 mb-3"
-                onPress={() => setShareModalVisible(false)}
-              >
-                <Text className="text-center text-white font-bold">
-                  Confirmar
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="border border-gray-300 rounded-md w-full py-3"
-                onPress={() => setShareModalVisible(false)}
-              >
-                <Text className="text-center text-base">Cancelar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Modal Métodos de Pagamento */}
-      <Modal
-        animationType="fade"
-        transparent
+        onClose={() => setShareModalVisible(false)}
+        displayName={user?.displayName || "Usuário"}
+      />
+      <MetodoPagamentoModal
         visible={payModalVisible}
-        onRequestClose={() => setPayModalVisible(false)}
-      >
-        <View className="flex-1 bg-black bg-opacity-50 justify-center items-center p-4">
-          <View className="w-full max-w-md bg-white rounded-2xl overflow-hidden">
-            {/* Preview do Cartão */}
-            <View className="pt-6 px-6 items-center">
-              <View className="w-full h-44 rounded-xl overflow-hidden mb-4 bg-gradient-to-r from-purple-300 via-yellow-200 to-pink-300">
-                <View className="flex-1 p-4 justify-between">
-                  <Text className="text-white opacity-70">Sem título</Text>
-                  <View className="flex-row justify-between items-center">
-                    <View>
-                      <Text className="text-white text-sm font-semibold">
-                        OLIVIA RIBEIRO
-                      </Text>
-                      <Text className="text-white text-sm">06 / 28</Text>
-                    </View>
-                    <MaterialIcons name="credit-card" size={24} color="white" />
-                  </View>
-                  <Text className="text-white tracking-widest">
-                    1234 1234 1234 1234
-                  </Text>
-                </View>
-              </View>
-
-              {/* Título e descrição */}
-              <Text className="text-lg font-semibold text-black">
-                Método de pagamento
-              </Text>
-              <Text className="text-sm text-gray-500 text-center mt-1">
-                Insira os detalhes do seu cartão para continuar suas compras com
-                segurança.
-              </Text>
-            </View>
-
-            {/* Formulário */}
-            <View className="px-6 mt-6 space-y-4">
-              <View>
-                <Text className="text-sm font-medium mb-1">
-                  Nome do titular do cartão
-                </Text>
-                <TextInput
-                  value={cardName}
-                  onChangeText={setCardName}
-                  placeholder="Olivia Ribeiro"
-                  className="border border-gray-200 rounded-lg h-12 px-3"
-                />
-              </View>
-
-              <View className="flex-row space-x-4">
-                <View className="flex-1">
-                  <Text className="text-sm font-medium mb-1">
-                    Data de validade
-                  </Text>
-                  <TextInput
-                    value={expiry}
-                    onChangeText={setExpiry}
-                    placeholder="MM / AAAA"
-                    className="border border-gray-200 rounded-lg h-12 px-3"
-                  />
-                </View>
-                <View className="w-24">
-                  <Text className="text-sm font-medium mb-1">CVV</Text>
-                  <TextInput
-                    value={cvv}
-                    onChangeText={setCvv}
-                    placeholder="•••"
-                    secureTextEntry
-                    className="border border-gray-200 rounded-lg h-12 px-3"
-                  />
-                </View>
-              </View>
-
-              <View>
-                <Text className="text-sm font-medium mb-1">
-                  Número do cartão
-                </Text>
-                <View className="flex-row items-center border border-gray-200 rounded-lg h-12 px-3">
-                  <Feather
-                    name="credit-card"
-                    size={20}
-                    color={Colors.preto}
-                    className="mr-2"
-                  />
-                  <TextInput
-                    value={cardNumber}
-                    onChangeText={setCardNumber}
-                    placeholder="1234 1234 1234 1234"
-                    keyboardType="numeric"
-                    className="flex-1 h-full"
-                  />
-                </View>
-              </View>
-            </View>
-
-            {/* Botões */}
-            <View className="px-6 pb-6 pt-4 flex-row space-x-3">
-              <TouchableOpacity
-                onPress={() => setPayModalVisible(false)}
-                className="flex-1 border border-gray-300 rounded-full h-12 justify-center items-center"
-              >
-                <Text className="text-base text-black">Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setPayModalVisible(false)}
-                className="flex-1 bg-pink-500 rounded-full h-12 justify-center items-center"
-              >
-                <Text className="text-base text-white font-bold">
-                  Confirmar
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setPayModalVisible(false)}
+      />
     </View>
   );
 }

@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
-import { Calendar } from 'react-native-calendars';
-import { router } from 'expo-router';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { db } from '../../../firebaseConfig';
-import PinkBtn from '../../../components/button/pinkBtn';
+import React, { useEffect, useState } from "react";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import { Calendar } from "react-native-calendars";
+import { router } from "expo-router";
+import { doc, onSnapshot, getDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { db } from "../../../firebaseConfig";
+import PinkBtn from "../../../components/button/pinkBtn";
 
 interface CalendarDay {
   dateString: string;
@@ -15,26 +15,28 @@ interface CalendarDay {
   timestamp: number;
 }
 
-const statusMap: Record<number, 'disponivel' | 'cancelar' | 'bloqueado'> = {
-  1: 'disponivel',
-  2: 'cancelar',
-  3: 'bloqueado',
+const statusMap: Record<number, "disponivel" | "cancelar" | "bloqueado"> = {
+  1: "disponivel",
+  2: "cancelar",
+  3: "bloqueado",
 };
 
 const formatDate = (date: Date) => {
   const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 };
 
 interface Horario {
   hora: string;
-  status: 'disponivel' | 'cancelar' | 'bloqueado';
+  status: "disponivel" | "cancelar" | "bloqueado" | "agendado";
 }
 
 const Calendario = () => {
-  const [dataSelecionada, setDataSelecionada] = useState(formatDate(new Date()));
+  const [dataSelecionada, setDataSelecionada] = useState(
+    formatDate(new Date())
+  );
   const [horarios, setHorarios] = useState<Horario[]>([]);
   const [loading, setLoading] = useState(true);
   const [mensagem, setMensagem] = useState<string | null>(null);
@@ -56,28 +58,54 @@ const Calendario = () => {
     setLoading(true);
     setMensagem(null);
 
-    const ref = doc(db, 'Agenda', userId, 'Horarios', dataSelecionada);
+    const refAgenda = doc(db, "Agenda", userId, "Horarios", dataSelecionada);
+    const refAgendamento = doc(db, "Agendamento", userId, "Dias", dataSelecionada);
 
-    const unsubscribe = onSnapshot(
-      ref,
+    const unsubAgenda = onSnapshot(
+      refAgenda,
       (docSnap) => {
+        let listaAgenda: Horario[] = [];
+
         if (docSnap.exists()) {
           const data = docSnap.data();
-          const horariosLista = (data.horarios || []).map((h: any) => ({
+          listaAgenda = (data.horarios || []).map((h: any) => ({
             hora: h.name,
-            status: statusMap[h.status] || 'disponivel',
+            status: statusMap[h.status] || "disponivel",
           }));
-          setHorarios(horariosLista);
-          setMensagem(null);
-        } else {
-          setHorarios([]);
-          setMensagem('Nenhum horário cadastrado para essa data.');
         }
-        setLoading(false);
+
+        getDoc(refAgendamento)
+          .then((agendamentoSnap) => {
+            let listaAgendados: Horario[] = [];
+
+            if (agendamentoSnap.exists()) {
+              const data = agendamentoSnap.data();
+              listaAgendados = (data.horarios || []).map((h: any) => ({
+                hora: h.hora || h.name,
+                status: "agendado" as const,
+              }));
+            }
+
+            const horariosFiltrados = listaAgenda.filter(
+              (h) => !listaAgendados.find((a) => a.hora === h.hora)
+            );
+
+            const final = [...horariosFiltrados, ...listaAgendados];
+
+            setHorarios(final);
+            setMensagem(final.length === 0 ? "Nenhum horário cadastrado para essa data." : null);
+            setLoading(false);
+          })
+          .catch((error) => {
+            console.error("Erro ao buscar agendamentos:", error);
+            setMensagem("Erro ao buscar horários.");
+            setHorarios([]);
+            setLoading(false);
+          });
       },
       (error) => {
-        console.error('Erro ao escutar documento:', error);
-        setMensagem('Erro ao buscar horários.');
+        console.error("Erro ao escutar documento:", error);
+        setMensagem("Erro ao buscar horários.");
         setHorarios([]);
         setLoading(false);
       }
@@ -86,16 +114,19 @@ const Calendario = () => {
     setMarkedDates({
       [dataSelecionada]: {
         selected: true,
-        selectedColor: '#FF69B4',
+        selectedColor: "#FF69B4",
       },
     });
 
-    return () => unsubscribe();
+    return () => unsubAgenda();
   }, [dataSelecionada, userId]);
 
-  const renderHorarios = (status: Horario['status'], cor: string) => {
+  const renderHorarios = (status: Horario["status"], cor: string) => {
     const filtrados = horarios.filter((h) => h.status === status);
     if (filtrados.length === 0) return null;
+
+    const titulo =
+      status === "cancelar" ? "Horários cancelados" : `Horários ${status}`;
 
     return (
       <View
@@ -104,26 +135,26 @@ const Calendario = () => {
           margin: 12,
           padding: 12,
           borderWidth: 1,
-          borderColor: '#ccc',
+          borderColor: "#ccc",
           borderRadius: 16,
-          backgroundColor: '#fff',
+          backgroundColor: "#fff",
         }}
       >
         <Text
           style={{
-            textAlign: 'center',
+            textAlign: "center",
             fontSize: 20,
             marginBottom: 16,
-            textTransform: 'capitalize',
+            textTransform: "capitalize",
           }}
         >
-          Horários {status}
+          {titulo}
         </Text>
         <View
           style={{
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
+            flexDirection: "row",
+            flexWrap: "wrap",
+            justifyContent: "center",
           }}
         >
           {filtrados.map((h, i) => (
@@ -146,26 +177,34 @@ const Calendario = () => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <ScrollView>
         <View style={{ marginTop: 24, marginBottom: 20 }}>
           <Calendar
-            onDayPress={(day: CalendarDay) => setDataSelecionada(day.dateString)}
+            onDayPress={(day: CalendarDay) =>
+              setDataSelecionada(day.dateString)
+            }
             markedDates={markedDates}
           />
         </View>
 
         {loading ? (
-          <View style={{ marginTop: 40, alignItems: 'center' }}>
+          <View style={{ marginTop: 40, alignItems: "center" }}>
             <ActivityIndicator size="large" color="#FF69B4" />
-            <Text style={{ marginTop: 12, color: '#888' }}>Carregando horários...</Text>
+            <Text style={{ marginTop: 12, color: "#888" }}>
+              Carregando horários...
+            </Text>
           </View>
         ) : mensagem ? (
-          <Text style={{ textAlign: 'center', color: '#888', marginTop: 24 }}>{mensagem}</Text>
+          <Text style={{ textAlign: "center", color: "#888", marginTop: 24 }}>
+            {mensagem}
+          </Text>
         ) : (
           <>
-            {renderHorarios('cancelar', '#FF69B4')}
-            {renderHorarios('bloqueado', 'blue')}
+            {renderHorarios("disponivel", "green")}
+            {renderHorarios("cancelar", "#FF69B4")}
+            {renderHorarios("bloqueado", "blue")}
+            {renderHorarios("agendado", "gray")}
           </>
         )}
 
@@ -173,13 +212,13 @@ const Calendario = () => {
           style={{
             marginTop: 24,
             marginBottom: 32,
-            flexDirection: 'row',
-            justifyContent: 'space-evenly',
+            flexDirection: "row",
+            justifyContent: "space-evenly",
           }}
         >
           <PinkBtn
             title="Editar Agenda"
-            onPress={() => router.push('/(tabs)/Calendario/Agenda')}
+            onPress={() => router.push("/(tabs)/Calendario/Agenda")}
           />
         </View>
       </ScrollView>
