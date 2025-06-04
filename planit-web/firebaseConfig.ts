@@ -75,27 +75,37 @@ export async function getServicos(profId: string): Promise<Servico[]> {
 
 //FUNÇÃO QUE RESGATA OS HORARIOS
 export async function getHorarios(profissionalId: string, dataSelecionada: string): Promise<Horario[]> {
-  const q = query(
-    collection(db, "Agenda"),
-    where("uid", "==", profissionalId),
-    where("data", "==", dataSelecionada),
-    where("status", "==", 'disponivel')
-  );
+  try {
+    const docRef = collection(db, "Agenda", profissionalId, "Horarios");
+    const snapshot = await getDocs(query(docRef));
 
-  const querySnapshot = await getDocs(q);
+    let horariosDisponiveis: Horario[] = [];
 
-  return querySnapshot.docs.map(doc => {
-    const data = doc.data();
+    snapshot.forEach((doc) => {
+      if (doc.id === dataSelecionada) {
+        const data = doc.data();
+        if (Array.isArray(data.horarios)) {
+          horariosDisponiveis = data.horarios
+            .filter((h: any) => h.status === 1) // apenas status 1: disponível
+            .map((h: any, index: number) => ({
+              id: `${doc.id}_${index}`, // id fictício
+              data: data.data,
+              hora: h.name,
+              status: h.status,
+              uid: profissionalId,
+              value: h.value
+            }));
+        }
+      }
+    });
 
-    return {
-      id: doc.id,
-      data: data.data,
-      hora: data.hora,
-      status: data.status,
-      uid: data.uid
-    } as Horario;
-  });
+    return horariosDisponiveis;
+  } catch (error) {
+    console.error("Erro ao buscar horários disponíveis:", error);
+    return [];
+  }
 }
+
 
 // FUNÇÕES QUE COMPOEM O AGENDAMENTO 
 function formatarData(date: Date): string {
