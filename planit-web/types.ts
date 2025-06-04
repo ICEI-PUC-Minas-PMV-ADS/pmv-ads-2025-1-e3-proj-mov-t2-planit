@@ -16,11 +16,12 @@ export interface Servico {
 }
 
 export interface Horario {
-    id?: string
-    data: string
-    hora: string 
-    status: 'disponivel' | 'bloqueado' | 'cancelado'
-    uid: string 
+  id: string;
+  data: string;
+  hora: string;
+  status: number;
+  uid: string;
+  value?: number;
 }
 
 export interface Agendamento {
@@ -33,6 +34,7 @@ export interface Agendamento {
   clienteId: string
   status: 'agendado' | 'confirmado' | 'cancelado'
   duracao: number
+  criadoEm?: string
 }
 
 export interface AgendamentoCompleto extends Agendamento {
