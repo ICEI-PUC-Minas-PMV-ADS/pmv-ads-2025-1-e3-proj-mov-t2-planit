@@ -28,10 +28,13 @@ export default function CompartilharAgendaModal({
   displayName,
   photoURL,
 }: Props) {
-  const shareLink = `www.planit.com/id.name=${encodeURIComponent(displayName)}`;
-
   const [pressed, setPressed] = useState(false);
   const { user } = useAuth();
+  const shareLink = user
+    ? `https://planit-bfa38.web.app/?profId=${encodeURIComponent(user.uid)}`
+    : "";
+
+  // https://planit-bfa38.web.app/?profId=OWPqpsRk0EMRIQ4ClZQRXVsmz0X2
 
   const handleCopy = async () => {
     await Clipboard.setStringAsync(shareLink);
