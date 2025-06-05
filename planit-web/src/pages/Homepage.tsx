@@ -3,7 +3,7 @@ import { IonIcon } from '@ionic/react';
 import { heartCircleOutline, calendarClearOutline, timeOutline, pricetagOutline, trashOutline, pencilOutline, logOutOutline } from 'ionicons/icons';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db, getProfissional } from '../../firebaseConfig';
+import { auth, cancelarAgendamentoEHorarios, db, getProfissional } from '../../firebaseConfig';
 import { signOut } from 'firebase/auth';
 import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
 import { Servico, Agendamento, AgendamentoCompleto } from '../../types';
@@ -15,6 +15,8 @@ import perfilPadrao from '../../src/assets/perfilPadrao.jpg';
 function Homepage() {
     const [modalVisivel, setModalVisivel] = useState(false);
     const [agendamentos, setAgendamentos] = useState<AgendamentoCompleto[]>([]);
+    const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<AgendamentoCompleto | null>(null);
+
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -47,7 +49,7 @@ function Homepage() {
                 const agendamentosCompletos = await Promise.all(
                     querySnapshot.docs.map(async (doc) => {
                         const agendamento = doc.data() as Agendamento;
-                        
+
                         const [profissional, servico] = await Promise.all([
                             getProfissional(agendamento.profissionalId),
                             getServicoById(agendamento.servicoId)
@@ -62,7 +64,7 @@ function Homepage() {
                     })
                 );
 
-                agendamentosCompletos.sort((a, b) => 
+                agendamentosCompletos.sort((a, b) =>
                     new Date(b.dataInicio).getTime() - new Date(a.dataInicio).getTime()
                 );
 
@@ -78,16 +80,16 @@ function Homepage() {
             try {
                 const docRef = doc(db, 'Servicos', servicoId);
                 const docSnap = await getDoc(docRef);
-                
+
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     return {
                         id: docSnap.id,
                         nome: data.nome || 'Serviço',
                         descricao: data.descricao || 'Descrição não disponível',
-                        duracao: typeof data.duracao === 'string' ? 
-                                parseInt(data.duracao) || 30 : 
-                                data.duracao || 30,
+                        duracao: typeof data.duracao === 'string' ?
+                            parseInt(data.duracao) || 30 :
+                            data.duracao || 30,
                         valor: data.valor || 0,
                         uid: data.uid || ''
                     };
@@ -108,11 +110,37 @@ function Homepage() {
     };
 
     const formatarValor = (valor?: number) => {
-        return valor ? valor.toLocaleString('pt-BR', { 
-            style: 'currency', 
-            currency: 'BRL' 
+        return valor ? valor.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
         }) : 'R$ --,--';
     };
+
+    async function cancelar() {
+        if (!agendamentoSelecionado) return;
+
+        try {
+            setLoading(true);
+            await cancelarAgendamentoEHorarios(
+                agendamentoSelecionado.id,
+                agendamentoSelecionado.profissionalId,
+                agendamentoSelecionado.dataInicio,
+                agendamentoSelecionado.horaInicio,
+                agendamentoSelecionado.duracao
+            );
+            alert("Agendamento cancelado e horários liberados com sucesso!");
+
+            // Atualiza a lista removendo o agendamento cancelado
+            setAgendamentos(prev => prev.filter(a => a.id !== agendamentoSelecionado.id));
+
+            setModalVisivel(false);
+            setAgendamentoSelecionado(null);
+        } catch (error) {
+            alert("Erro ao cancelar o agendamento.");
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <div className='m-2'>
@@ -184,13 +212,17 @@ function Homepage() {
                                 </div>
 
                                 <div className='flex gap-5 justify-end m-3'>
-                                    <button 
+                                    <button
                                         className='bg-pink-700 w-8 h-8 rounded-full flex items-center justify-center'
-                                        onClick={() => setModalVisivel(true)}
+                                        onClick={() => {
+                                            setAgendamentoSelecionado(agendamento);
+                                            setModalVisivel(true);
+                                        }}
                                     >
                                         <IonIcon className='text-white' icon={trashOutline} style={{ fontSize: "16px" }} />
                                     </button>
-                                    <button 
+
+                                    <button
                                         className='bg-white border border-gray-200 w-8 h-8 rounded-full flex items-center justify-center'
                                         onClick={() => navigate(`/editar/${agendamento.id}`)}
                                     >
@@ -214,16 +246,22 @@ function Homepage() {
 
             <ModalBase
                 icon={trashOutline}
-                title='Cancelar Agendamento'
-                text='Deseja cancelar o agendamento? O profissional será notificado.'
+                title="Cancelar Agendamento"
+                text="Deseja cancelar o agendamento? O profissional será notificado."
                 onClose={() => setModalVisivel(false)}
                 visible={modalVisivel}
             >
-                <div className='flex justify-between mt-6 mb-5'>
-                    <PinkBtn title='Sim' onClick={() => setModalVisivel(false)} />
-                    <WhiteBtn title='Não' onClick={() => setModalVisivel(false)} />
+                <div className="flex justify-between mt-6 mb-5">
+                    <PinkBtn
+                        title={loading ? "Cancelando..." : "Sim"}
+                        onClick={cancelar}
+                        disabled={loading}
+                    />
+
+                    <WhiteBtn title="Não" onClick={() => setModalVisivel(false)} />
                 </div>
             </ModalBase>
+
         </div>
     );
 }
