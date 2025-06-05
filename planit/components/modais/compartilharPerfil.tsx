@@ -12,7 +12,6 @@ import * as Clipboard from "expo-clipboard";
 import ModalBase from "./modalBase";
 import { Feather } from "@expo/vector-icons";
 import useAuth from "@/hooks/useAuth";
-import { auth } from "@/firebaseConfig";
 
 const profileImage = "https://example.com/default-profile.png";
 
