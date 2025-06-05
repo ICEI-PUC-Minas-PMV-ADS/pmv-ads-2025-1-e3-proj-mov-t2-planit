@@ -1,13 +1,20 @@
-import { View, Text, FlatList, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
 import { Colors } from "@/constants/Colors";
 import useAgendamento from "@/hooks/useAgendamento";
+import { useUserData } from "@/hooks/useUserData";
 
 const Notificacao = () => {
   const { agendamentos, loading } = useAgendamento();
+  const { userData } = useUserData();
 
   return (
-    <View className="flex-1 p-4">
-      {/* Loading */}
+    <View className="flex-1 bg-white">
       {loading ? (
         <ActivityIndicator
           size="large"
@@ -15,7 +22,7 @@ const Notificacao = () => {
           className="mt-10"
         />
       ) : agendamentos.length === 0 ? (
-        <Text className="text-center mt-5 text-base">
+        <Text className="text-center mt-5 text-base text-neutral-500">
           Nenhuma notificação encontrada.
         </Text>
       ) : (
@@ -23,16 +30,34 @@ const Notificacao = () => {
           data={agendamentos}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <View className="p-4 mb-3 rounded-xl bg-neutral-100">
-              <Text className="text-base font-semibold">Novo agendamento</Text>
-              <Text className="text-sm text-neutral-500">
-                Cliente: {item.clienteId}
+            <TouchableOpacity
+              className={`flex-row justify-between items-center py-4 border-b border-neutral-100 ${
+                item.lida ? "bg-white" : "bg-blue-50"
+              }`}
+            >
+              <View className="flex-1 pr-2">
+                <Text className="text-base font-semibold text-black mb-1 mx-4">
+                  {item.titulo || "Atividade agendada com sucesso!"}
+                </Text>
+                <Text
+                  className="text-sm text-neutral-500 mx-4"
+                  numberOfLines={2}
+                >
+                  {item.descricao ||
+                    `Olá ${
+                      userData?.nome || "Usuário"
+                    }, seu novo compromisso é no dia ${item.dataInicio} às ${
+                      item.horaInicio
+                    }`}
+                </Text>
+              </View>
+
+              <Text className="text-xs text-neutral-400 mr-2">
+                {item.horaInicio || "Indefinido"}
               </Text>
-              <Text className="text-sm text-neutral-500">
-                Data: {item.data}
-              </Text>
-            </View>
+            </TouchableOpacity>
           )}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </View>

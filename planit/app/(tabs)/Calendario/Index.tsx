@@ -59,7 +59,13 @@ const Calendario = () => {
     setMensagem(null);
 
     const refAgenda = doc(db, "Agenda", userId, "Horarios", dataSelecionada);
-    const refAgendamento = doc(db, "Agendamento", userId, "Dias", dataSelecionada);
+    const refAgendamento = doc(
+      db,
+      "Agendamento",
+      userId,
+      "Dias",
+      dataSelecionada
+    );
 
     const unsubAgenda = onSnapshot(
       refAgenda,
@@ -93,7 +99,11 @@ const Calendario = () => {
             const final = [...horariosFiltrados, ...listaAgendados];
 
             setHorarios(final);
-            setMensagem(final.length === 0 ? "Nenhum horário cadastrado para essa data." : null);
+            setMensagem(
+              final.length === 0
+                ? "Nenhum horário cadastrado para essa data."
+                : null
+            );
             setLoading(false);
           })
           .catch((error) => {

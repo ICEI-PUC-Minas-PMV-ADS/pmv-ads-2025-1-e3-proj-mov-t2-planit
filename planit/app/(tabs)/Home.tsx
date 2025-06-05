@@ -46,12 +46,12 @@ const Home = () => {
     try {
       const profId = user?.uid; // Assumindo que o usuário é o profissional
       if (!profId) return;
-      
+
       const [hoje, semana] = await Promise.all([
         countConsultasHoje(profId),
-        countConsultasSemana(profId)
+        countConsultasSemana(profId),
       ]);
-      
+
       setConsultasHoje(hoje);
       setConsultasSemana(semana);
     } catch (error) {
@@ -281,9 +281,9 @@ const Home = () => {
           </TouchableOpacity>
 
           <View className="flex items-end flex-row">
-            <View className="flex-col items-start mr-2">
+            <View className="flex-col mr-3">
               <Text className="text-sm text-gray-300">{saudacao}</Text>
-              <Text className="text-lg font-bold text-gray-600">
+              <Text className="text-lg text-right font-bold text-gray-600">
                 {user?.displayName || "Usuário"}
               </Text>
             </View>

@@ -10,7 +10,7 @@ import Toast from "react-native-toast-message";
 export default function ConfigScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
-  const { user, deleteAccount } = useAuth();
+  const { deleteAccount } = useAuth();
   const router = useRouter();
 
   return (
