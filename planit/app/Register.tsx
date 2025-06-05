@@ -11,7 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useFocusEffect } from "@react-navigation/native";
-import { collection, addDoc, setDoc, doc } from "firebase/firestore"; // mudei pra setDoc pq antes tava criando um id proprio ao inves de ser o proprio uid do usuario
+import { collection, addDoc, setDoc, doc } from "firebase/firestore"; // Obrigado pela correção
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db } from "../firebaseConfig";
 
@@ -39,12 +39,12 @@ export default function CadastroScreen() {
       Alert.alert("Erro", "Por favor, insira um email válido.");
       return;
     }
-
+    /*
     if (senha.length < 6) {
       Alert.alert("Erro", "A senha deve ter pelo menos 8 caracteres.");
       return;
     }
-
+    */
     if (senha !== confirmarSenha) {
       Alert.alert("Erro", "As senhas não coincidem.");
       return;
