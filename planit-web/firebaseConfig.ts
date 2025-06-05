@@ -3,6 +3,7 @@ import { getFirestore, setLogLevel, /*doc, getDoc,*/ query, collection, getDocs,
 import { getAuth } from "firebase/auth";
 import { Agendamento, Horario, Profissional, Servico, /*Agendamento*/ } from './types'
 
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -19,7 +20,7 @@ const db = getFirestore(app);
 
 const auth = getAuth(app);
 
-export { app, db, auth };
+export { app, db, auth, cancelarAgendamentoEHorarios };
 
 // FUNÇÃO QUE RESGATA O ID DO PROFISSIONAL
 export async function getProfissional(profId: string): Promise<Profissional> {
@@ -244,3 +245,78 @@ export async function createAgendamento(dataSelecionada: Date, horaSelecionada: 
     throw new Error("Falha ao criar agendamento");
   }
 }
+
+async function cancelarAgendamentoEHorarios(
+  agendamentoId: string,
+  profissionalId: string,
+  data: string,
+  horaInicio: string,
+  duracao: number | string 
+) {
+  try {
+    console.log("Iniciando cancelamento do agendamento:", agendamentoId);
+    console.log("Duração recebida (antes de parse):", duracao);
+
+    let duracaoEmMilissegundos: number;
+    if (typeof duracao === "string") {
+      duracaoEmMilissegundos = parseDuracao(duracao);
+      if (isNaN(duracaoEmMilissegundos)) {
+        throw new Error("Duração inválida: " + duracao);
+      }
+    } else {
+      duracaoEmMilissegundos = duracao;
+    }
+
+    console.log("Duração em milissegundos convertida:", duracaoEmMilissegundos);
+
+    await updateDoc(doc(db, "Agendamento", agendamentoId), {
+      status: "cancelado"
+    });
+    console.log("Status do agendamento atualizado para 'cancelado'");
+
+    const docRef = doc(db, "Agenda", profissionalId, "Horarios", data);
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) {
+      console.error("Documento de horários não encontrado");
+      return;
+    }
+
+    const horariosData = docSnap.data();
+    console.log("Documento de horários encontrado.");
+    console.log("Horários carregados:", horariosData.horarios || horariosData);
+
+    const horarios = horariosData.horarios || [];
+
+    const duracaoMinutos = duracaoEmMilissegundos / 60000;
+    console.log("Duração em minutos:", duracaoMinutos);
+
+    const horaInicioObj = horarios.find((h: any) => h.name === horaInicio);
+    if (!horaInicioObj) {
+      console.error("Horário inicial não encontrado:", horaInicio);
+      return;
+    }
+    const horaInicioValor = horaInicioObj.value;
+    console.log("Valor do horário inicial:", horaInicioValor);
+
+    const horariosLiberar = horarios
+      .filter((h: any) => h.value >= horaInicioValor && h.value < horaInicioValor + duracaoMinutos)
+      .map((h: any) => h.name);
+
+    console.log("Horários a liberar:", horariosLiberar);
+
+    const horariosAtualizados = horarios.map((h: any) => {
+      if (horariosLiberar.includes(h.name)) {
+        return { ...h, status: 1 }; 
+      }
+      return h;
+    });
+
+    await updateDoc(docRef, { horarios: horariosAtualizados });
+    console.log("Horários atualizados no Firestore com sucesso.");
+
+  } catch (error) {
+    console.error("Erro ao cancelar agendamento e liberar horários:", error);
+  }
+}
+
