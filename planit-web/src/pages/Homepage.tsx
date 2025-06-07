@@ -1,6 +1,6 @@
 import '../App.css';
 import { IonIcon } from '@ionic/react';
-import { heartCircleOutline, calendarClearOutline, timeOutline, pricetagOutline, trashOutline, pencilOutline, logOutOutline } from 'ionicons/icons';
+import { heartCircleOutline, calendarClearOutline, timeOutline, pricetagOutline, trashOutline, logOutOutline } from 'ionicons/icons';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, cancelarAgendamentoEHorarios, db, getProfissional } from '../../firebaseConfig';
@@ -233,21 +233,7 @@ function Homepage() {
                                             className={`${agendamento.status === 'cancelado' ? 'text-black' : 'text-white'}`}
                                         />
                                     </button>
-
-                                    {/* Botão Editar */}
-                                    <button
-                                        className={`w-8 h-8 rounded-full flex items-center justify-center transition ${agendamento.status === 'cancelado' ? 'bg-red-100 border border-red-400 cursor-not-allowed' : 'bg-white border border-gray-200 hover:bg-gray-100'}`}
-                                        onClick={() => navigate(`/editar/${agendamento.id}`)}
-                                        disabled={agendamento.status === 'cancelado'}
-                                    >
-                                        <IonIcon
-                                            icon={pencilOutline}
-                                            style={{ fontSize: "16px" }}
-                                            className={`${agendamento.status === 'cancelado' ? 'text-black' : 'text-pink-700'}`}
-                                        />
-                                    </button>
                                 </div>
-
                             </div>
                         ))}
                     </div>
