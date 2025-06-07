@@ -35,7 +35,7 @@ function Homepage() {
                 setLoading(true);
                 const user = auth.currentUser;
                 if (!user) {
-                    navigate('/login');
+                    navigate('/');
                     return;
                 }
 
@@ -130,8 +130,13 @@ function Homepage() {
             );
             alert("Agendamento cancelado e horários liberados com sucesso!");
 
-            // Atualiza a lista removendo o agendamento cancelado
-            setAgendamentos(prev => prev.filter(a => a.id !== agendamentoSelecionado.id));
+            setAgendamentos(prev =>
+                prev.map(a =>
+                    a.id === agendamentoSelecionado.id
+                        ? { ...a, status: 'cancelado' }
+                        : a
+                )
+            );
 
             setModalVisivel(false);
             setAgendamentoSelecionado(null);
@@ -160,7 +165,8 @@ function Homepage() {
                 <div className='flex justify-center'>
                     <div className='flex flex-col gap-6 mt-10 w-full items-center'>
                         {agendamentos.map((agendamento) => (
-                            <div key={agendamento.id} className='flex flex-col gap-4 w-80 p-3 rounded-3xl shadow-xl'>
+
+                            <div key={agendamento.id} className={`flex flex-col gap-4 w-80 p-3 rounded-3xl shadow-xl relative ${agendamento.status === 'cancelado' ? 'border border-red-400 bg-red-50 opacity-80' : ''}`}>
                                 <div className='flex flex-wrap gap-6 mt-3 items-center'>
                                     <div>
                                         <img
@@ -212,23 +218,36 @@ function Homepage() {
                                 </div>
 
                                 <div className='flex gap-5 justify-end m-3'>
+                                    {/* Botão Cancelar */}
                                     <button
-                                        className='bg-pink-700 w-8 h-8 rounded-full flex items-center justify-center'
+                                        className={`w-8 h-8 rounded-full flex items-center justify-center transition ${agendamento.status === 'cancelado' ? 'bg-red-100 border border-red-400 cursor-not-allowed' : 'bg-pink-700 hover:bg-pink-800'}`}
                                         onClick={() => {
                                             setAgendamentoSelecionado(agendamento);
                                             setModalVisivel(true);
                                         }}
+                                        disabled={agendamento.status === 'cancelado'}
                                     >
-                                        <IonIcon className='text-white' icon={trashOutline} style={{ fontSize: "16px" }} />
+                                        <IonIcon
+                                            icon={trashOutline}
+                                            style={{ fontSize: "16px" }}
+                                            className={`${agendamento.status === 'cancelado' ? 'text-black' : 'text-white'}`}
+                                        />
                                     </button>
 
+                                    {/* Botão Editar */}
                                     <button
-                                        className='bg-white border border-gray-200 w-8 h-8 rounded-full flex items-center justify-center'
+                                        className={`w-8 h-8 rounded-full flex items-center justify-center transition ${agendamento.status === 'cancelado' ? 'bg-red-100 border border-red-400 cursor-not-allowed' : 'bg-white border border-gray-200 hover:bg-gray-100'}`}
                                         onClick={() => navigate(`/editar/${agendamento.id}`)}
+                                        disabled={agendamento.status === 'cancelado'}
                                     >
-                                        <IonIcon className='text-pink-700' icon={pencilOutline} style={{ fontSize: "16px" }} />
+                                        <IonIcon
+                                            icon={pencilOutline}
+                                            style={{ fontSize: "16px" }}
+                                            className={`${agendamento.status === 'cancelado' ? 'text-black' : 'text-pink-700'}`}
+                                        />
                                     </button>
                                 </div>
+
                             </div>
                         ))}
                     </div>
