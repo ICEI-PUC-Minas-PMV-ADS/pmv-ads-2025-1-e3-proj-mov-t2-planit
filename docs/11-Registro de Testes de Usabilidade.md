@@ -102,3 +102,45 @@ Data: 31/05/2025
 | Satisfação (1-5)         | 5               |
 
 ---
+
+## Fluxo Visualização das Notificações 
+
+Aplicativo: Planit
+
+Data: 10/06/2025
+
+## Vídeo Demonstrativo
+
+https://github.com/user-attachments/assets/6735d359-dda3-4cf0-b787-565a604e868f
+
+## Métricas de Usabilidade
+
+| Métrica                 | Resultado Médio |
+| ----------------------- | --------------- |
+| Taxa de Sucesso %       | 100%            |
+| Tempo médio para login  | 13 segundos     |
+| Número de erros         | 0               |
+| Satisfação (escala 1-5) | 5               |
+
+---
+
+## Fluxo Visualização do Histórico dos clientes 
+
+Aplicativo: Planit
+
+Data: 10/06/2025
+
+## Vídeo Demonstrativo
+
+https://github.com/user-attachments/assets/0b391fee-f372-43cc-82d1-46c1fef8165a
+
+## Métricas de Usabilidade
+
+| Métrica                 | Resultado Médio |
+| ----------------------- | --------------- |
+| Taxa de Sucesso %       | 100%            |
+| Tempo médio para login  | 15 segundos     |
+| Número de erros         | 0               |
+| Satisfação (escala 1-5) | 5               |
+
+---
