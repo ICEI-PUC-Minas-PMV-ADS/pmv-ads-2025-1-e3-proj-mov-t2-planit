@@ -3,12 +3,12 @@
 ## Relatório de Testes de Software
 Aplicação: PlanIt
 
-Data: 01/06/2025
+Data: 10/06/2025
 
 ## Resumo Executivo
-Total de casos de teste executados: 4
+Total de casos de teste executados: 7
 
-Taxa de sucesso: 100%
+Taxa de sucesso: 90%
 
 
 ## Evidências dos Testes - Resultados por Requisito
