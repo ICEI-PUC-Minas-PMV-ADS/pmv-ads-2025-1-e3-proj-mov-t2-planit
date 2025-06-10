@@ -12,10 +12,42 @@ import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
 import useAuth from "@/hooks/useAuth";
 import { countConsultasHoje, countConsultasSemana } from "@/firebaseConfig";
+import { db } from "@/firebaseConfig";
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 
 interface HeaderProps {
   consultasHoje?: number;
   consultasSemana?: number;
+}
+
+interface Agendamento {
+  id: string;
+  clienteId: string;
+  dataInicio: string;
+  horaInicio: string;
+  duracao: string;
+  profissionalId: string;
+  servicoId: string;
+  status: string;
+  // Dados expandidos
+  clienteNome?: string;
+  servicoNome?: string;
+  servicoPreco?: number;
+}
+
+interface Cliente {
+  id: string;
+  nome: string;
+  email?: string;
+  telefone?: string;
+  photoURL?: string;
+}
+
+interface Servico {
+  id: string;
+  nome: string;
+  preco: number;
+  duracao: string;
 }
 
 const diasDaSemanaCompleto = [
@@ -35,16 +67,117 @@ const Home = () => {
   const [consultasHoje, setConsultasHoje] = useState(0);
   const [consultasSemana, setConsultasSemana] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
+  const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
 
   const profileImage =
     "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
 
+  // Função para buscar dados do cliente
+  const buscarCliente = async (clienteId: string): Promise<Cliente | null> => {
+    try {
+      const clienteRef = doc(db, 'Cliente', clienteId); // ou 'Clientes', dependendo do nome da sua coleção
+      const clienteSnap = await getDoc(clienteRef);
+
+      if (clienteSnap.exists()) {
+        return {
+          id: clienteSnap.id,
+          ...clienteSnap.data()
+        } as Cliente;
+      }
+      return null;
+    } catch (error) {
+      console.error("Erro ao buscar cliente:", error);
+      return null;
+    }
+  };
+
+  // Função para buscar dados do serviço
+  const buscarServico = async (servicoId: string): Promise<Servico | null> => {
+    try {
+      const servicoRef = doc(db, 'Servico', servicoId); // ou 'Servicos', dependendo do nome da sua coleção
+      const servicoSnap = await getDoc(servicoRef);
+
+      if (servicoSnap.exists()) {
+        return {
+          id: servicoSnap.id,
+          ...servicoSnap.data()
+        } as Servico;
+      }
+      return null;
+    } catch (error) {
+      console.error("Erro ao buscar serviço:", error);
+      return null;
+    }
+  };
+
+  // Função para buscar agendamentos do Firebase com dados expandidos
+  const buscarAgendamentos = useCallback(async () => {
+    setLoading(true);
+    try {
+      const profId = user?.uid;
+      if (!profId) return;
+
+      // Busca os agendamentos para o profissional logado
+      const agendamentosRef = collection(db, 'Agendamento');
+      const q = query(
+        agendamentosRef,
+        where('profissionalId', '==', profId),
+        where('dataInicio', '==', formatDate(diaSelecionado))
+      );
+
+      const querySnapshot = await getDocs(q);
+      const agendamentosData: Agendamento[] = [];
+
+      // Busca os dados básicos dos agendamentos
+      querySnapshot.forEach((doc) => {
+        agendamentosData.push({
+          id: doc.id,
+          ...doc.data()
+        } as Agendamento);
+      });
+
+      // Busca os dados expandidos (cliente e serviço) para cada agendamento
+      const agendamentosComDados = await Promise.all(
+        agendamentosData.map(async (agendamento) => {
+          const [cliente, servico] = await Promise.all([
+            buscarCliente(agendamento.clienteId),
+            buscarServico(agendamento.servicoId)
+          ]);
+
+          return {
+            ...agendamento,
+            clienteNome: cliente?.nome || 'Cliente não encontrado',
+            servicoNome: servico?.nome || 'Serviço não encontrado',
+            servicoPreco: servico?.preco || 0,
+          };
+        })
+      );
+
+      setAgendamentos(agendamentosComDados);
+    } catch (error) {
+      console.error("Erro ao buscar agendamentos:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.uid, diaSelecionado]);
+
+  // Atualiza sempre que muda o dia selecionado ou o usuário
+  useEffect(() => {
+    buscarAgendamentos();
+  }, [buscarAgendamentos]);
+
+  // Função auxiliar para formatar a data
+  const formatDate = (date: Date) => {
+    return date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+  };
+
   // Carrega as consultas ao montar o componente e ao atualizar
   const carregarConsultas = useCallback(async () => {
     try {
-      const profId = user?.uid; // Assumindo que o usuário é o profissional
+      const profId = user?.uid;
       if (!profId) return;
 
       const [hoje, semana] = await Promise.all([
@@ -84,8 +217,9 @@ const Home = () => {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    carregarConsultas().finally(() => setRefreshing(false));
-  }, [carregarConsultas]);
+    Promise.all([carregarConsultas(), buscarAgendamentos()])
+      .finally(() => setRefreshing(false));
+  }, [carregarConsultas, buscarAgendamentos]);
 
   const renderCalendarioSemana = () => {
     const hoje = new Date();
@@ -129,34 +263,31 @@ const Home = () => {
             onPress={() => setDiaSelecionado(dia.date)}
           >
             <View
-              className={`w-14 h-12 rounded-full justify-center items-center mb-2 ${
-                dia.isSelected
-                  ? "bg-principal"
-                  : dia.isToday
+              className={`w-14 h-12 rounded-full justify-center items-center mb-2 ${dia.isSelected
+                ? "bg-principal"
+                : dia.isToday
                   ? "bg-secundaria"
                   : "bg-secundaria"
-              }`}
+                }`}
             >
               <Text
-                className={`text-lg font-bold ${
-                  dia.isSelected
-                    ? "text-white"
-                    : dia.isToday
+                className={`text-lg font-bold ${dia.isSelected
+                  ? "text-white"
+                  : dia.isToday
                     ? "text-principal"
                     : "text-gray-600"
-                }`}
+                  }`}
               >
                 {dia.letter}
               </Text>
             </View>
             <Text
-              className={`text-lg ${
-                dia.isSelected
-                  ? "font-bold text-principal"
-                  : dia.isToday
+              className={`text-lg ${dia.isSelected
+                ? "font-bold text-principal"
+                : dia.isToday
                   ? "text-gray-500"
                   : "text-gray-300"
-              }`}
+                }`}
             >
               {dia.number}
             </Text>
@@ -189,39 +320,13 @@ const Home = () => {
   };
 
   const renderAgenda = () => {
-    const consultas = [
-      {
-        nome: "Ana Paula",
-        horario: "09:30",
-        tipo: "Consulta de rotina",
-        valor: "150,00",
-        foto: "https://randomuser.me/api/portraits/women/44.jpg",
-      },
-      {
-        nome: "Sérgio",
-        horario: "10:20",
-        tipo: "Primeira Consulta",
-        valor: "95,00",
-        foto: "https://randomuser.me/api/portraits/men/32.jpg",
-      },
-      {
-        nome: "Mauricio",
-        horario: "11:00",
-        tipo: "Retorno",
-        valor: "100,00",
-        foto: "https://randomuser.me/api/portraits/men/75.jpg",
-      },
-      {
-        nome: "Marcela",
-        horario: "18:00",
-        tipo: "Retorno",
-        valor: "100,00",
-        foto: "https://randomuser.me/api/portraits/women/75.jpg",
-      },
-    ];
-
     const diaDaSemana = diasDaSemanaCompleto[diaSelecionado.getDay()];
     const diaNumero = diaSelecionado.getDate();
+
+    // Ordena os agendamentos por horário
+    const agendamentosOrdenados = [...agendamentos].sort((a, b) =>
+      a.horaInicio.localeCompare(b.horaInicio)
+    );
 
     return (
       <View className="bg-white rounded-xl mx-4 my-3 p-4">
@@ -229,42 +334,67 @@ const Home = () => {
           Agenda de {diaDaSemana}, {diaNumero}
         </Text>
 
-        {consultas.map((consulta, index) => (
-          <View key={index} className="mb-10">
-            <View className="flex-row items-center">
-              <Image
-                source={{ uri: consulta.foto }}
-                className="w-14 h-14 rounded-full mr-2"
-              />
+        {loading ? (
+          <Text className="text-gray-500 text-center py-4">
+            Carregando agendamentos...
+          </Text>
+        ) : agendamentosOrdenados.length > 0 ? (
+          agendamentosOrdenados.map((agendamento, index) => (
+            <View key={agendamento.id} className="mb-10">
+              <View className="flex-row items-center">
+                <Image
+                  source={{ uri: profileImage }}
+                  className="w-14 h-14 rounded-full mr-2"
+                />
 
-              <View className="flex-1">
-                <View className="flex-row justify-between">
-                  <Text className="text-xl font-semibold text-gray-700">
-                    {consulta.nome}
-                  </Text>
-                  <Text className="text-base text-gray-500">
-                    {consulta.horario}
-                  </Text>
-                </View>
+                <View className="flex-1">
+                  <View className="flex-row justify-between">
+                    <Text className="text-xl font-semibold text-gray-700">
+                      {agendamento.clienteNome}
+                    </Text>
+                    <Text className="text-base text-gray-500">
+                      {formatarHora(agendamento.horaInicio)}
+                    </Text>
+                  </View>
 
-                <View className="flex-row justify-between mt-1">
-                  <Text className="text-base text-gray-600">
-                    {consulta.tipo}
-                  </Text>
-                  <Text className="text-base font-bold text-principal">
-                    R$ {consulta.valor}
-                  </Text>
+                  <View className="flex-row justify-between mt-1">
+                    <Text className="text-base text-gray-600">
+                      {agendamento.duracao} • {agendamento.status}
+                    </Text>
+                    <View className="items-end">
+                      <Text className="text-base font-bold text-principal">
+                        {agendamento.servicoNome}
+                      </Text>
+                      {/* {agendamento.servicoPreco > 0 && (
+                        <Text className="text-sm text-gray-500">
+                          R$ {agendamento.servicoPreco.toFixed(2)}
+                        </Text>
+                      )} */}
+                    </View>
+                  </View>
                 </View>
               </View>
-            </View>
 
-            {index < consultas.length - 1 && (
-              <View className="border-b border-gray-100 my-3" />
-            )}
-          </View>
-        ))}
+              {index < agendamentosOrdenados.length - 1 && (
+                <View className="border-b border-gray-100 my-3" />
+              )}
+            </View>
+          ))
+        ) : (
+          <Text className="text-gray-500 text-center py-4">
+            Nenhum agendamento para este dia
+          </Text>
+        )}
       </View>
     );
+  };
+
+  // Função auxiliar para formatar hora
+  const formatarHora = (hora: string) => {
+    if (hora.length === 4) {
+      return `${hora.substring(0, 2)}:${hora.substring(2)}`;
+    }
+    return hora;
   };
 
   return (
