@@ -42,3 +42,15 @@ export interface AgendamentoCompleto extends Agendamento {
   profissional: Profissional | null;
   servico: Servico | null;
 }
+
+export interface Notificacao {
+  titulo: string;
+  descricao: string;
+  criadoEm: Date;
+  status: 1 | 2;
+  profissionalId: string;
+  clienteId: string;
+  dataInicio?: string;
+  horaInicio?: string;
+}
+

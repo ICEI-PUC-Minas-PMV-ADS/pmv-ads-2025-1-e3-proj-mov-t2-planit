@@ -119,6 +119,12 @@ function Homepage() {
     async function cancelar() {
         if (!agendamentoSelecionado) return;
 
+        const clienteId = agendamentoSelecionado?.clienteId;
+        if (!clienteId) {
+          alert("Não foi possível identificar o cliente");
+          return;
+        }
+
         try {
             setLoading(true);
             await cancelarAgendamentoEHorarios(
@@ -126,7 +132,9 @@ function Homepage() {
                 agendamentoSelecionado.profissionalId,
                 agendamentoSelecionado.dataInicio,
                 agendamentoSelecionado.horaInicio,
-                agendamentoSelecionado.duracao
+                agendamentoSelecionado.duracao,
+                clienteId, // Passando o clienteId validado
+                agendamentoSelecionado.servico?.nome
             );
             alert("Agendamento cancelado e horários liberados com sucesso!");
 
