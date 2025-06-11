@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, setLogLevel, /*doc, getDoc,*/ query, collection, getDocs, where, addDoc, updateDoc, doc, getDoc, /*addDoc, updateDoc, serverTimestamp, QuerySnapshot*/ } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { Agendamento, Horario, Profissional, Servico, /*Agendamento*/ } from './types'
+import { Agendamento, Horario, Profissional, Servico, Notificacao } from './types'
 
 
 const firebaseConfig = {
@@ -139,8 +139,6 @@ function parseDuracao(duracao: string): number {
   return NaN;
 }
 
-
-
 const updateHorarios = async (
   data: string,
   horaInicial: string,
@@ -186,6 +184,40 @@ const updateHorarios = async (
     console.error("Erro ao atualizar horários:", error);
   }
 };
+
+
+
+// FUNÇÃO QUE CRIA A NOTIFICAÇÃO
+async function criarNotificacaoProfissional(notificacaoData: Omit<Notificacao, 'criadoEm' | 'status'>): Promise<void> {
+  try {
+    // Validação rigorosa dos campos
+    if (!notificacaoData.profissionalId || !notificacaoData.clienteId) {
+      throw new Error("IDs de profissional e cliente são obrigatórios");
+    }
+
+    const notificacao: Notificacao = {
+      ...notificacaoData,
+      criadoEm: new Date(),
+      status: 2
+    };
+
+    // Verificação adicional dos campos
+    if (!notificacao.clienteId || typeof notificacao.clienteId !== 'string') {
+      throw new Error("ID do cliente inválido");
+    }
+
+    await addDoc(collection(db, "Notificacao"), notificacao);
+    console.log("Notificação criada com sucesso:", notificacao);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("Erro detalhado ao criar notificação:", {
+      message: err.message,
+      stack: err.stack,
+      data: notificacaoData
+    });
+    throw new Error("Falha ao criar notificação: " + err.message);
+  }
+}
 
 
 
@@ -237,6 +269,15 @@ export async function createAgendamento(dataSelecionada: Date, horaSelecionada: 
       servico.uid
     );
 
+    await criarNotificacaoProfissional({
+      titulo: "Novo agendamento",
+      descricao: `Novo agendamento para ${servico.nome} em ${formatarData(inicio)} às ${horaSelecionada}`,
+      profissionalId: servico.uid,
+      clienteId,
+      dataInicio: formatarData(inicio),
+      horaInicio: horaSelecionada
+    });
+
     return docRef.id;
 
   } catch (error) {
@@ -251,9 +292,15 @@ async function cancelarAgendamentoEHorarios(
   profissionalId: string,
   data: string,
   horaInicio: string,
-  duracao: number | string 
+  duracao: number | string,
+  clienteId: string,
+  servicoNome?: string
 ) {
   try {
+    if (!clienteId || typeof clienteId !== 'string') {
+      throw new Error("ID do cliente inválido ou faltando");
+    }
+
     console.log("Iniciando cancelamento do agendamento:", agendamentoId);
     console.log("Duração recebida (antes de parse):", duracao);
 
@@ -315,6 +362,14 @@ async function cancelarAgendamentoEHorarios(
     await updateDoc(docRef, { horarios: horariosAtualizados });
     console.log("Horários atualizados no Firestore com sucesso.");
 
+await criarNotificacaoProfissional({
+      titulo: "Agendamento cancelado",
+      descricao: `Agendamento de ${servicoNome || 'serviço'} para ${data} às ${horaInicio} foi cancelado`,
+      profissionalId: profissionalId,
+      clienteId: clienteId, // Garantindo que está correto
+      dataInicio: data,
+      horaInicio: horaInicio
+    });
   } catch (error) {
     console.error("Erro ao cancelar agendamento e liberar horários:", error);
   }
