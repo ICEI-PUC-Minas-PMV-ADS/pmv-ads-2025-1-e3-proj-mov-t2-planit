@@ -15,9 +15,9 @@ interface CalendarDay {
   timestamp: number;
 }
 
-const statusMap: Record<number, "disponivel" | "cancelar" | "bloqueado"> = {
+const statusMap: Record<number, "disponivel" | "agendado" | "bloqueado"> = {
   1: "disponivel",
-  2: "cancelar",
+  2: "agendado",
   3: "bloqueado",
 };
 
@@ -30,13 +30,11 @@ const formatDate = (date: Date) => {
 
 interface Horario {
   hora: string;
-  status: "disponivel" | "cancelar" | "bloqueado" | "agendado";
+  status: "disponivel" | "agendado" | "bloqueado";
 }
 
 const Calendario = () => {
-  const [dataSelecionada, setDataSelecionada] = useState(
-    formatDate(new Date())
-  );
+  const [dataSelecionada, setDataSelecionada] = useState(formatDate(new Date()));
   const [horarios, setHorarios] = useState<Horario[]>([]);
   const [loading, setLoading] = useState(true);
   const [mensagem, setMensagem] = useState<string | null>(null);
@@ -59,13 +57,7 @@ const Calendario = () => {
     setMensagem(null);
 
     const refAgenda = doc(db, "Agenda", userId, "Horarios", dataSelecionada);
-    const refAgendamento = doc(
-      db,
-      "Agendamento",
-      userId,
-      "Dias",
-      dataSelecionada
-    );
+    const refAgendamento = doc(db, "Agendamento", userId, "Dias", dataSelecionada);
 
     const unsubAgenda = onSnapshot(
       refAgenda,
@@ -135,8 +127,7 @@ const Calendario = () => {
     const filtrados = horarios.filter((h) => h.status === status);
     if (filtrados.length === 0) return null;
 
-    const titulo =
-      status === "cancelar" ? "Horários cancelados" : `Horários ${status}`;
+    const titulo = `Horários ${status}`;
 
     return (
       <View
@@ -191,9 +182,7 @@ const Calendario = () => {
       <ScrollView>
         <View style={{ marginTop: 24, marginBottom: 20 }}>
           <Calendar
-            onDayPress={(day: CalendarDay) =>
-              setDataSelecionada(day.dateString)
-            }
+            onDayPress={(day: CalendarDay) => setDataSelecionada(day.dateString)}
             markedDates={markedDates}
           />
         </View>
@@ -201,9 +190,7 @@ const Calendario = () => {
         {loading ? (
           <View style={{ marginTop: 40, alignItems: "center" }}>
             <ActivityIndicator size="large" color="#FF69B4" />
-            <Text style={{ marginTop: 12, color: "#888" }}>
-              Carregando horários...
-            </Text>
+            <Text style={{ marginTop: 12, color: "#888" }}>Carregando horários...</Text>
           </View>
         ) : mensagem ? (
           <Text style={{ textAlign: "center", color: "#888", marginTop: 24 }}>
@@ -212,9 +199,8 @@ const Calendario = () => {
         ) : (
           <>
             {renderHorarios("disponivel", "green")}
-            {renderHorarios("cancelar", "#FF69B4")}
-            {renderHorarios("bloqueado", "blue")}
-            {renderHorarios("agendado", "gray")}
+            {renderHorarios("bloqueado", "gray")}
+            {renderHorarios("agendado", "#FF69B4")}
           </>
         )}
 

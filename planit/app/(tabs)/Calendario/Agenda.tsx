@@ -67,18 +67,14 @@ function StatusModal({
     return false;
   });
 
-
   const [confirmCancelVisible, setConfirmCancelVisible] = useState(false);
-  
   const [confirmExitVisible, setConfirmExitVisible] = useState(false);
 
   return (
     <>
-     
       <Modal visible={visible} transparent animationType="fade">
         <View className="flex-1 bg-black/40 justify-center items-center px-4">
           <View className="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg">
-           
             <View className="flex-row justify-between items-center mb-4">
               <Text className="text-2xl font-semibold text-center flex-1">
                 Alterar status
@@ -126,15 +122,12 @@ function StatusModal({
               className="py-3 bg-gray-100 rounded-lg"
               onPress={onClose}
             >
-              <Text className="text-center text-gray-700 text-base">
-                Fechar
-              </Text>
+              <Text className="text-center text-gray-700 text-base">Fechar</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-      
       <ModalBase
         visible={confirmExitVisible}
         title="Alterações não salvas"
@@ -143,10 +136,7 @@ function StatusModal({
         onClose={() => setConfirmExitVisible(false)}
       >
         <View className="flex-row justify-between mt-4">
-          <WhiteBtn
-            title="Cancelar"
-            onPress={() => setConfirmExitVisible(false)}
-          />
+          <WhiteBtn title="Cancelar" onPress={() => setConfirmExitVisible(false)} />
           <PinkBtn
             title="Confirmar"
             onPress={() => {
@@ -157,7 +147,6 @@ function StatusModal({
         </View>
       </ModalBase>
 
-   
       <ModalBase
         visible={confirmCancelVisible}
         title="Cancelar"
@@ -166,10 +155,7 @@ function StatusModal({
         onClose={() => setConfirmCancelVisible(false)}
       >
         <View className="flex-row justify-between mt-4">
-          <WhiteBtn
-            title="Não"
-            onPress={() => setConfirmCancelVisible(false)}
-          />
+          <WhiteBtn title="Não" onPress={() => setConfirmCancelVisible(false)} />
           <PinkBtn
             title="Sim"
             onPress={() => {
@@ -189,11 +175,11 @@ const getStatusCor = (status: number) => {
     case 1:
       return { text: "text-green-600", border: "border-green-600" };
     case 2:
-      return { text: "text-pink-700", border: "border-pink-700" };
+      return { text: "text-pink-700", border: "border-green-700" };
     case 3:
-      return { text: "text-slate-500", border: "border-slate-500" };
+      return { text: "text-red-500", border: "border-red-500" };
     default:
-      return { text: "text-black", border: "border-black" };
+      return { text: "text-gray-400", border: "border-gray-400" };
   }
 };
 
@@ -208,11 +194,9 @@ const Agenda = () => {
   const [diaSelecionado, setDiaSelecionado] = useState<number>(new Date().getDate());
   const [diasNoMes, setDiasNoMes] = useState<number[]>([]);
 
- 
   const [modalVisivel, setModalVisivel] = useState(false);
   const [statusModalVisivel, setStatusModalVisivel] = useState(false);
 
-  
   const fecharModal = () => setModalVisivel(false);
   const fecharStatusModal = () => setStatusModalVisivel(false);
 
@@ -281,17 +265,39 @@ const Agenda = () => {
 
   const handleSelectStatus = async (novoStatus: number) => {
     if (!horarioSelecionadoState || !userId) return;
+
     const novoHorarios = horarios.map((h) =>
       h.value === horarioSelecionadoState.value
         ? { ...h, status: novoStatus === 2 ? 1 : novoStatus }
         : h
     );
+
     setHorarios(novoHorarios);
+
     await setDoc(doc(db, "Agenda", userId, "Horarios", dataKey), {
       userId,
       data: dataKey,
       horarios: novoHorarios,
     });
+
+    // ⬇️ Se for cancelado, remove da coleção Agendamento
+    if (novoStatus === 2) {
+      const agendamentoRef = doc(db, "Agendamento", userId, "Dias", dataKey);
+      const agendamentoSnap = await getDoc(agendamentoRef);
+
+      if (agendamentoSnap.exists()) {
+        const agendamentoData = agendamentoSnap.data();
+        const novosHorariosAgendados = (agendamentoData.horarios || []).filter(
+          (h: any) => h.hora !== horarioSelecionadoState.name
+        );
+
+        await setDoc(agendamentoRef, {
+          userId,
+          data: dataKey,
+          horarios: novosHorariosAgendados,
+        });
+      }
+    }
   };
 
   const bloquearDia = () => setModalVisivel(true);
@@ -322,16 +328,10 @@ const Agenda = () => {
     <View className="bg-white flex-1">
       <ScrollView className="mt-6">
         <View className="flex-1 bg-white p-4">
-
-        
-          <TouchableOpacity
-            className="flex-row justify-center mb-4"
-            onPress={bloquearDia}
-          >
+          <TouchableOpacity className="flex-row justify-center mb-4" onPress={bloquearDia}>
             <Ionicons name="lock-closed-outline" size={30} color="#4b5563" />
           </TouchableOpacity>
 
-          
           <View className="flex-row justify-between items-center mb-4 px-4">
             <Text className="text-lg">Selecione o mês:</Text>
             <View className="border border-slate-400 rounded-full w-32">
@@ -348,7 +348,6 @@ const Agenda = () => {
             </View>
           </View>
 
-         
           <View className="flex-row justify-between items-center mb-6 px-4">
             <Text className="text-lg">Selecione o dia:</Text>
             <View className="border border-slate-400 rounded-full w-32">
@@ -369,7 +368,6 @@ const Agenda = () => {
             </View>
           </View>
 
-        
           <Text className="text-center text-xl mb-4">Horários</Text>
           <View className="flex-row flex-wrap justify-center gap-4">
             {horarios.map((h) => {
@@ -386,12 +384,10 @@ const Agenda = () => {
             })}
           </View>
 
-          
           <View className="mt-6 items-center">
             <PinkBtn title="Salvar" onPress={salvarNoFirestore} />
           </View>
 
-          
           <ModalBase
             visible={modalVisivel}
             title="Bloquear dia"
@@ -405,7 +401,6 @@ const Agenda = () => {
             </View>
           </ModalBase>
 
-          
           <StatusModal
             visible={statusModalVisivel}
             currentStatus={horarioSelecionadoState?.status || null}
