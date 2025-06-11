@@ -27,36 +27,45 @@ const Notificacao = () => {
         </Text>
       ) : (
         <FlatList
-          data={agendamentos}
+          data={[...agendamentos].reverse()}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              className={`flex-row justify-between items-center py-4 border-b border-neutral-100 ${
-                item.lida ? "bg-white" : "bg-blue-50"
-              }`}
-            >
-              <View className="flex-1 pr-2">
-                <Text className="text-base font-semibold text-black mb-1 mx-4">
-                  {item.titulo || "Atividade agendada com sucesso!"}
-                </Text>
-                <Text
-                  className="text-sm text-neutral-500 mx-4"
-                  numberOfLines={2}
-                >
-                  {item.descricao ||
-                    `Olá ${
-                      userData?.nome || "Usuário"
-                    }, seu novo compromisso é no dia ${item.dataInicio} às ${
-                      item.horaInicio
-                    }`}
-                </Text>
-              </View>
+          renderItem={({ item }) => {
+            const isCancelado = item.status === "cancelado";
+            const nomeUsuario = userData?.nome || "Usuário";
 
-              <Text className="text-xs text-neutral-400 mr-2">
-                {item.horaInicio || "Indefinido"}
-              </Text>
-            </TouchableOpacity>
-          )}
+            const titulo = isCancelado
+              ? "Agendamento cancelado"
+              : item.titulo || "Atividade agendada com sucesso!";
+
+            const descricao = isCancelado
+              ? `Olá ${nomeUsuario}, o agendamento do dia ${item.dataInicio} às ${item.horaInicio} foi cancelado.`
+              : item.descricao ||
+                `Olá ${nomeUsuario}, seu novo compromisso é no dia ${item.dataInicio} às ${item.horaInicio}`;
+
+            return (
+              <TouchableOpacity
+                className={`flex-row justify-between items-center py-4 border-b border-neutral-100 ${
+                  item.lida ? "bg-white" : "bg-blue-50"
+                }`}
+              >
+                <View className="flex-1 pr-2">
+                  <Text className="text-base font-semibold text-black mb-1 mx-4">
+                    {titulo}
+                  </Text>
+                  <Text
+                    className="text-sm text-neutral-500 mx-4"
+                    numberOfLines={2}
+                  >
+                    {descricao}
+                  </Text>
+                </View>
+
+                <Text className="text-xs text-neutral-400 mr-2">
+                  {item.horaInicio || "Indefinido"}
+                </Text>
+              </TouchableOpacity>
+            );
+          }}
           showsVerticalScrollIndicator={false}
         />
       )}
