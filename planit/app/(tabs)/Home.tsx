@@ -76,28 +76,34 @@ const Home = () => {
     "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
 
   // Função para buscar dados do cliente
-  const buscarCliente = async (clienteId: string): Promise<Cliente | null> => {
-    try {
-      const clienteRef = doc(db, 'Cliente', clienteId); // ou 'Clientes', dependendo do nome da sua coleção
-      const clienteSnap = await getDoc(clienteRef);
+ const buscarCliente = async (clienteUid: string): Promise<Cliente | null> => {
+  try {
+    const clientesRef = collection(db, 'Cliente'); 
+    const q = query(clientesRef, where('uid', '==', clienteUid));
+    const querySnapshot = await getDocs(q);
 
-      if (clienteSnap.exists()) {
-        return {
-          id: clienteSnap.id,
-          ...clienteSnap.data()
-        } as Cliente;
-      }
-      return null;
-    } catch (error) {
-      console.error("Erro ao buscar cliente:", error);
+    if (!querySnapshot.empty) {
+      const docSnap = querySnapshot.docs[0];
+      console.log("Cliente encontrado pelo UID:", clienteUid);
+      return {
+        id: docSnap.id,
+        ...docSnap.data(),
+      } as Cliente;
+    } else {
+      console.warn(" Nenhum cliente encontrado com UID:", clienteUid);
       return null;
     }
-  };
+  } catch (error) {
+    console.error(" Erro ao buscar cliente por UID:", error);
+    return null;
+  }
+};
+
 
   // Função para buscar dados do serviço
   const buscarServico = async (servicoId: string): Promise<Servico | null> => {
     try {
-      const servicoRef = doc(db, 'Servico', servicoId); // ou 'Servicos', dependendo do nome da sua coleção
+      const servicoRef = doc(db, 'Servicos', servicoId); 
       const servicoSnap = await getDoc(servicoRef);
 
       if (servicoSnap.exists()) {
@@ -140,21 +146,32 @@ const Home = () => {
       });
 
       // Busca os dados expandidos (cliente e serviço) para cada agendamento
-      const agendamentosComDados = await Promise.all(
-        agendamentosData.map(async (agendamento) => {
-          const [cliente, servico] = await Promise.all([
-            buscarCliente(agendamento.clienteId),
-            buscarServico(agendamento.servicoId)
-          ]);
+const agendamentosComDados = await Promise.all(
+  agendamentosData.map(async (agendamento) => {
+    try {
+      const [cliente, servico] = await Promise.all([
+        buscarCliente(agendamento.clienteId), // ← agora busca pelo UID
+        buscarServico(agendamento.servicoId),
+      ]);
 
-          return {
-            ...agendamento,
-            clienteNome: cliente?.nome || 'Cliente não encontrado',
-            servicoNome: servico?.nome || 'Serviço não encontrado',
-            servicoPreco: servico?.preco || 0,
-          };
-        })
-      );
+      return {
+        ...agendamento,
+        clienteNome: cliente?.nome || 'Cliente não encontrado',
+        servicoNome: servico?.nome || 'Serviço não encontrado',
+        servicoPreco: servico?.preco || 0,
+      };
+    } catch (err) {
+      console.error("❌ Erro ao processar agendamento:", agendamento.id, err);
+      return {
+        ...agendamento,
+        clienteNome: 'Erro ao buscar cliente',
+        servicoNome: 'Erro ao buscar serviço',
+        servicoPreco: 0,
+      };
+    }
+  })
+);
+
 
       setAgendamentos(agendamentosComDados);
     } catch (error) {

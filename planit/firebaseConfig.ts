@@ -32,21 +32,23 @@ const auth = getAuth(app);
 
 // Funções para contar consultas
 export const countConsultasHoje = async (profissionalId: string): Promise<number> => {
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  
-  const amanha = new Date(hoje);
-  amanha.setDate(amanha.getDate() + 1);
-  
-  const q = query(
-    collection(db, "Agendamento"),
-    where("profissionalId", "==", profissionalId),
-    where("dataInicio", ">=", hoje), // Usa o objeto Date completo
-    where("dataInicio", "<", amanha) // Usa o objeto Date completo
-  );
-  
-  const snapshot = await getCountFromServer(q);
-  return snapshot.data().count;
+  try {
+    const hoje = new Date();
+    const dataHoje = hoje.toISOString().split("T")[0]; // '2025-06-12'
+
+    const q = query(
+      collection(db, "Agendamento"),
+      where("profissionalId", "==", profissionalId),
+      where("dataInicio", "==", dataHoje),
+      where("status", "in", ["agendado", "confirmado"]) // status considerados válidos
+    );
+
+    const snapshot = await getDocs(q);
+    return snapshot.size;
+  } catch (error) {
+    console.error("Erro ao contar consultas de hoje:", error);
+    return 0;
+  }
 };
 
 export const countConsultasSemana = async (profissionalId: string): Promise<number> => {
