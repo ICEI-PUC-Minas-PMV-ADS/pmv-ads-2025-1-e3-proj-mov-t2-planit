@@ -143,7 +143,7 @@ function Agendar() {
       <div className='m-5 flex flex-col gap-10'>
         <div className='flex flex-wrap gap-6 items-center'>
           <div>
-            <img className='rounded-full w-20' src={profissional.fotoPerfil || perfilPlanit} alt="Perfil Profissional" />
+            <img className='rounded-full w-20 h-20' src={profissional.fotoPerfil || perfilPlanit} alt="Perfil Profissional" />
           </div>
 
           <div>
