@@ -21,6 +21,27 @@ Data: 10/05/2025
 
 ---
 
+## Fluxo de Home
+
+Aplicativo: Planit
+
+Data: 16/06/2025
+
+## Vídeo Demonstrativo
+
+<video controls src=https://github.com/user-attachments/assets/c76d45e7-b296-4617-8731-fc56a9b0caed></video>
+
+## Métricas de Usabilidade
+
+| Métrica                 | Resultado Médio |
+| ----------------------- | --------------- |
+| Taxa de Sucesso %       | 100%            |
+| Tempo médio para login  | 25 segundos     |
+| Número de erros         | 0               |
+| Satisfação (escala 1-5) | 5               |
+
+---
+
 ## Fluxo de Agendamento
 
 WebSite: Planit-Web

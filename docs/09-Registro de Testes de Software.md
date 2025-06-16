@@ -16,6 +16,7 @@ Taxa de sucesso: 90%
 | Requisito | Cenário Testado | Status | Evidência|
 |-----------|-----------------| ------ |----------|
 | RF-001 | Cadastro e Login | ✅Aprovado | Vídeo (documentação "Registro de Testes de Usabilidade") |
+| RF-xxx | Home | ✅Aprovado | Vídeo (documentação "Registro de Testes de Usabilidade") |
 | RF-003 | Atualização de dados | ✅Aprovado | Vídeo (documentação "Registro de Testes de Usabilidade") |
 | RF-005 | Histórico de Clientes | ✅Aprovado | Vídeo (documentação "Registro de Testes de Usabilidade") |
 | RF-006 | Gerenciamento de Horarios | ✅Aprovado | Vídeo (documentação "Registro de Testes de Usabilidade") |
@@ -28,6 +29,16 @@ Taxa de sucesso: 90%
 * ✅ Intuitividade do fluxo de cadastro (RF-001):
 
     -100% dos usuários concluíram o cadastro sem ajuda;
+    
+    -Feedback visual claro (ícones de validação em tempo real).
+
+
+
+
+
+* ✅ Intuitividade do fluxo de Home(xxx):
+
+    -100% dos usuários satisfeitos;
     
     -Feedback visual claro (ícones de validação em tempo real).
 
