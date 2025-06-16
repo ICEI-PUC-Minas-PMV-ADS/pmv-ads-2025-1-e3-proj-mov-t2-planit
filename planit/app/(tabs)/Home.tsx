@@ -11,7 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
 import useAuth from "@/hooks/useAuth";
-import { countConsultasHoje, countConsultasSemana } from "@/firebaseConfig";
+import { countConsultasSemana } from "@/firebaseConfig";
 import { db } from "@/firebaseConfig";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 
@@ -64,7 +64,7 @@ const diasDaSemanaCurto = ["D", "S", "T", "Q", "Q", "S", "S"];
 const Home = () => {
   const [saudacao, setGreeting] = useState("Bom dia");
   const [diaSelecionado, setDiaSelecionado] = useState(new Date());
-  const [consultasHoje, setConsultasHoje] = useState(0);
+  const [consultasDiaSelecionado, setConsultasDiaSelecionado] = useState(0); // ← Renomeado
   const [consultasSemana, setConsultasSemana] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -75,30 +75,47 @@ const Home = () => {
   const profileImage =
     "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
 
-  // Função para buscar dados do cliente
- const buscarCliente = async (clienteUid: string): Promise<Cliente | null> => {
-  try {
-    const clientesRef = collection(db, 'Cliente'); 
-    const q = query(clientesRef, where('uid', '==', clienteUid));
-    const querySnapshot = await getDocs(q);
+  // Função para contar consultas de uma data específica
+  const countConsultasData = async (profId: string, data: string): Promise<number> => {
+    try {
+      const agendamentosRef = collection(db, 'Agendamento');
+      const q = query(
+        agendamentosRef,
+        where('profissionalId', '==', profId),
+        where('dataInicio', '==', data)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.size;
+    } catch (error) {
+      console.error("Erro ao contar consultas da data:", error);
+      return 0;
+    }
+  };
 
-    if (!querySnapshot.empty) {
-      const docSnap = querySnapshot.docs[0];
-      console.log("Cliente encontrado pelo UID:", clienteUid);
-      return {
-        id: docSnap.id,
-        ...docSnap.data(),
-      } as Cliente;
-    } else {
-      console.warn(" Nenhum cliente encontrado com UID:", clienteUid);
+  // Função para buscar dados do cliente
+  const buscarCliente = async (clienteUid: string): Promise<Cliente | null> => {
+    try {
+      const clientesRef = collection(db, 'Cliente'); 
+      const q = query(clientesRef, where('uid', '==', clienteUid));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const docSnap = querySnapshot.docs[0];
+        console.log("Cliente encontrado pelo UID:", clienteUid);
+        return {
+          id: docSnap.id,
+          ...docSnap.data(),
+        } as Cliente;
+      } else {
+        console.warn(" Nenhum cliente encontrado com UID:", clienteUid);
+        return null;
+      }
+    } catch (error) {
+      console.error(" Erro ao buscar cliente por UID:", error);
       return null;
     }
-  } catch (error) {
-    console.error(" Erro ao buscar cliente por UID:", error);
-    return null;
-  }
-};
-
+  };
 
   // Função para buscar dados do serviço
   const buscarServico = async (servicoId: string): Promise<Servico | null> => {
@@ -126,12 +143,14 @@ const Home = () => {
       const profId = user?.uid;
       if (!profId) return;
 
-      // Busca os agendamentos para o profissional logado
+      const dataFormatada = formatDate(diaSelecionado);
+
+      // Busca os agendamentos para o profissional logado na data selecionada
       const agendamentosRef = collection(db, 'Agendamento');
       const q = query(
         agendamentosRef,
         where('profissionalId', '==', profId),
-        where('dataInicio', '==', formatDate(diaSelecionado))
+        where('dataInicio', '==', dataFormatada)
       );
 
       const querySnapshot = await getDocs(q);
@@ -146,34 +165,38 @@ const Home = () => {
       });
 
       // Busca os dados expandidos (cliente e serviço) para cada agendamento
-const agendamentosComDados = await Promise.all(
-  agendamentosData.map(async (agendamento) => {
-    try {
-      const [cliente, servico] = await Promise.all([
-        buscarCliente(agendamento.clienteId), // ← agora busca pelo UID
-        buscarServico(agendamento.servicoId),
-      ]);
+      const agendamentosComDados = await Promise.all(
+        agendamentosData.map(async (agendamento) => {
+          try {
+            const [cliente, servico] = await Promise.all([
+              buscarCliente(agendamento.clienteId),
+              buscarServico(agendamento.servicoId),
+            ]);
 
-      return {
-        ...agendamento,
-        clienteNome: cliente?.nome || 'Cliente não encontrado',
-        servicoNome: servico?.nome || 'Serviço não encontrado',
-        servicoPreco: servico?.preco || 0,
-      };
-    } catch (err) {
-      console.error("❌ Erro ao processar agendamento:", agendamento.id, err);
-      return {
-        ...agendamento,
-        clienteNome: 'Erro ao buscar cliente',
-        servicoNome: 'Erro ao buscar serviço',
-        servicoPreco: 0,
-      };
-    }
-  })
-);
-
+            return {
+              ...agendamento,
+              clienteNome: cliente?.nome || 'Cliente não encontrado',
+              servicoNome: servico?.nome || 'Serviço não encontrado',
+              servicoPreco: servico?.preco || 0,
+            };
+          } catch (err) {
+            console.error("❌ Erro ao processar agendamento:", agendamento.id, err);
+            return {
+              ...agendamento,
+              clienteNome: 'Erro ao buscar cliente',
+              servicoNome: 'Erro ao buscar serviço',
+              servicoPreco: 0,
+            };
+          }
+        })
+      );
 
       setAgendamentos(agendamentosComDados);
+      
+      // ← CORREÇÃO: Atualiza o contador com base no dia selecionado
+      const consultasCount = await countConsultasData(profId, dataFormatada);
+      setConsultasDiaSelecionado(consultasCount);
+
     } catch (error) {
       console.error("Erro ao buscar agendamentos:", error);
     } finally {
@@ -191,27 +214,22 @@ const agendamentosComDados = await Promise.all(
     return date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
   };
 
-  // Carrega as consultas ao montar o componente e ao atualizar
-  const carregarConsultas = useCallback(async () => {
+  // Carrega as consultas da semana (mantém a lógica original)
+  const carregarConsultasSemana = useCallback(async () => {
     try {
       const profId = user?.uid;
       if (!profId) return;
 
-      const [hoje, semana] = await Promise.all([
-        countConsultasHoje(profId),
-        countConsultasSemana(profId),
-      ]);
-
-      setConsultasHoje(hoje);
+      const semana = await countConsultasSemana(profId);
       setConsultasSemana(semana);
     } catch (error) {
-      console.error("Erro ao carregar consultas:", error);
+      console.error("Erro ao carregar consultas da semana:", error);
     }
   }, [user?.uid]);
 
   useEffect(() => {
-    carregarConsultas();
-  }, [carregarConsultas]);
+    carregarConsultasSemana();
+  }, [carregarConsultasSemana]);
 
   useEffect(() => {
     const updateGreeting = () => {
@@ -234,9 +252,9 @@ const agendamentosComDados = await Promise.all(
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    Promise.all([carregarConsultas(), buscarAgendamentos()])
+    Promise.all([carregarConsultasSemana(), buscarAgendamentos()])
       .finally(() => setRefreshing(false));
-  }, [carregarConsultas, buscarAgendamentos]);
+  }, [carregarConsultasSemana, buscarAgendamentos]);
 
   const renderCalendarioSemana = () => {
     const hoje = new Date();
@@ -315,12 +333,20 @@ const agendamentosComDados = await Promise.all(
   };
 
   const renderResumoConsultas = () => {
+    // ← CORREÇÃO: Verifica se o dia selecionado é hoje para mostrar o texto correto
+    const hoje = new Date();
+    const isHoje = diaSelecionado.getDate() === hoje.getDate() &&
+                   diaSelecionado.getMonth() === hoje.getMonth() &&
+                   diaSelecionado.getFullYear() === hoje.getFullYear();
+
     return (
       <View className="flex-row mx-4 my-3 rounded-lg shadow-s py-4">
         <View className="flex-1 bg-secundaria p-5 rounded-xl mr-2 ">
-          <Text className="text-1xl text-principal mb-1">Hoje</Text>
+          <Text className="text-1xl text-principal mb-1">
+            {isHoje ? "Hoje" : "Dia Selecionado"}
+          </Text>
           <Text className="text-4xl font-bold text-principal mb-1 p-1">
-            {consultasHoje}
+            {consultasDiaSelecionado}
           </Text>
           <Text className="text-1xl text-principal">Consultas</Text>
         </View>
