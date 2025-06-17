@@ -1,102 +1,12 @@
-import React, {useState,useRef,useCallback,useMemo,useEffect,} from "react";
+import React, { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import {View,Text,TextInput,TouchableOpacity,Image,FlatList,Animated,StyleSheet,ActivityIndicator,} from "react-native";
 import Modal from "react-native-modal";
 import { Menu, Provider, Checkbox } from "react-native-paper";
 import Icon from "react-native-vector-icons/Feather";
 import { debounce } from "lodash";
 import { Colors } from "@/constants/Colors";
-import { db, auth } from "../../firebaseConfig"; 
-import {collection,query,where,onSnapshot,doc, getDoc,getDocs, QuerySnapshot,DocumentData,limit, } from "firebase/firestore";
-
-enum StatusCliente {
-  Finalizados = "Finalizados",
-  Cancelados = "Cancelados",
-  Antigos = "Antigos",
-  Rejeitados = "Rejeitados",
-  EmAndamento = "Em andamento",
-}
-type Consulta = { 
-  titulo: string; 
-  data: string 
-};
-type Cliente = {
-  id: string; 
-  nome: string;
-  ultimaVisita: string;
-  imagem: string | null;
-  status: StatusCliente;
-  consultas: Consulta[];
-};
-
-interface AgendamentoDoc {
-  firestoreId: string;
-  clienteId: string; 
-  dataInicio: string;
-  horaInicio: string;
-  profissionalId: string;
-  servicoId: string;
-  status: string;
-  dataFim?: string;
-  horaFim?: string;
-  duracao?: string;
-}
-
-interface ClienteDoc {
-  id: string; 
-  nome: string;
-  uid?: string; 
-  fotoPerfil?: string | null; // Depois que as fotos estiverem sido salvas, pode ser usado para exibir a foto do cliente, por enquanto é null mesmo
-}
-
-interface ServicoDoc {
-  id: string;
-  nome: string;
-}
-
-
-const parseAgendamentoDateTime = (dataStr: string, horaStr: string): Date => {
-  return new Date(`${dataStr}T${horaStr}:00`);
-};
-
-const formatDateString = (dateStr: string | undefined): string => {
-  if (!dateStr) return "Data desconhecida";
-  try {
-    const [year, month, day] = dateStr.split("-").map(Number);
-    const date = new Date(year, month - 1, day);
-    const dayFormatted = date.getDate();
-    const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-    const monthFormatted = monthNames[date.getMonth()];
-    return `${dayFormatted} ${monthFormatted} ${year}`;
-  } catch (e) {
-    console.error("Error formatting date string:", dateStr, e);
-    return dateStr;
-  }
-};
-
-const mapFirestoreStatusToClienteStatus = (firestoreStatus: string | undefined): StatusCliente => {
-  if (!firestoreStatus) return StatusCliente.EmAndamento;
-  switch (firestoreStatus.toLowerCase()) {
-    case "agendado":
-    case "confirmado":
-      return StatusCliente.EmAndamento;
-    case "concluído":
-    case "concluido":
-    case "finalizado":
-      return StatusCliente.Finalizados;
-    case "cancelado pelo cliente":
-    case "cancelado pelo profissional":
-    case "cancelado":
-      return StatusCliente.Cancelados;
-    case "rejeitado":
-      return StatusCliente.Rejeitados;
-    default:
-      if (Object.values(StatusCliente).includes(firestoreStatus as StatusCliente)) {
-        return firestoreStatus as StatusCliente;
-      }
-      console.warn(`Status do Firestore não mapeado: "${firestoreStatus}", usando "Em Andamento".`);
-      return StatusCliente.EmAndamento;
-  }
-};
+import { useClientes } from "@/hooks/useClientes";    
+import { Cliente, StatusCliente, Consulta } from "../../src/cliente.types"; 
 
 const CardCliente = React.memo(
   ({
@@ -148,9 +58,9 @@ const CardCliente = React.memo(
       >
         <View style={styles.cardInfo}>
           <Image
-            source={cliente.imagem ? { uri: cliente.imagem } : require("../../assets/images/perfilPadrao.jpg")} // Depois que foto estiver pegando, mudar aqui e o debaixo
+            source={cliente.imagem ? { uri: cliente.imagem } : require("../../assets/images/perfilPadrao.jpg")}
             style={styles.avatar}
-            defaultSource={require("../../assets/images/perfilPadrao.jpg")} //aqui é o padrão que vai aparecer enquanto a foto não carrega, visto que nao esta salvando
+            defaultSource={require("../../assets/images/perfilPadrao.jpg")}
           />
           <View>
             <Text style={styles.nome}>{cliente.nome}</Text>
@@ -200,10 +110,10 @@ const ModalCliente = ({
       {cliente && (
         <>
           <Image
-            source={cliente.imagem ? { uri: cliente.imagem } : require("../../assets/images/perfilPadrao.jpg")} //depois que foto estiver pegando , mudar aqui e o debaixo
+            source={cliente.imagem ? { uri: cliente.imagem } : require("../../assets/images/perfilPadrao.jpg")}
             style={styles.modalAvatar}
-            defaultSource={require("../../assets/images/perfilPadrao.jpg")} // aqui é o padrão que vai aparecer enquanto a foto não carrega, visto que nao esta salvando
-            />  
+            defaultSource={require("../../assets/images/perfilPadrao.jpg")}
+          />
           <Text style={styles.modalNome}>{cliente.nome}</Text>
           {cliente.consultas.map((c, i) => (
             <View key={i} style={styles.consultaCard}>
@@ -217,12 +127,11 @@ const ModalCliente = ({
   </Modal>
 );
 
-
 export default function ClienteScreen() {
+  const { clientes: allClientesData, loading, error, refetch } = useClientes();
+
   const [busca, setBusca] = useState("");
-  const [filtro, setFiltro] = useState<"Todos" | "Em andamento" | "Concluídos">(
-    "Todos"
-  );
+  const [filtro, setFiltro] = useState<"Todos" | "Em andamento" | "Concluídos">("Todos");
   const [menuFiltroVisivel, setMenuFiltroVisivel] = useState(false);
   const [filtrosSelecionados, setFiltrosSelecionados] = useState<StatusCliente[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -231,156 +140,11 @@ export default function ClienteScreen() {
   const [debouncedBusca, setDebouncedBusca] = useState("");
   const debounced = useRef(debounce((text: string) => setDebouncedBusca(text), 300)).current;
 
-  const [allClientesData, setAllClientesData] = useState<Cliente[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [currentProfissionalId, setCurrentProfissionalId] = useState<string | null>(null);
-
   useEffect(() => {
-    const user = auth.currentUser;
-    if (user) {
-      setCurrentProfissionalId(user.uid);
-    } else {
-      const unsubscribeAuth = auth.onAuthStateChanged(authUser => {
-        if (authUser) {
-          setCurrentProfissionalId(authUser.uid);
-        } else {
-          setCurrentProfissionalId(null);
-          setAllClientesData([]);
-          setLoading(false); 
-          setError("Profissional não autenticado.");
-        }
-      });
-      return () => {
-        unsubscribeAuth();
-      }
+    if (!loading) {
+      setRefreshing(false);
     }
-  }, []);
-
-
-  useEffect(() => {
-
-    if (!currentProfissionalId) {
-      if(loading && !auth.currentUser) setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    const agendamentosRef = collection(db, "Agendamento");
-    const q = query(agendamentosRef, where("profissionalId", "==", currentProfissionalId));
-
-
-    const unsubscribeSnapshots = onSnapshot(q, async (agendamentosSnapshot: QuerySnapshot<DocumentData>) => {
-
-      if (agendamentosSnapshot.empty) {
-        setAllClientesData([]);
-        setLoading(false);
-        return;
-      }
-
-      const fetchedAgendamentos: AgendamentoDoc[] = agendamentosSnapshot.docs.map(d => ({
-        firestoreId: d.id,
-        ...(d.data() as Omit<AgendamentoDoc, 'firestoreId'>),
-      }));
-
-      const uniqueClienteUidsFromAgendamento = Array.from(new Set(fetchedAgendamentos.map(ag => ag.clienteId).filter(id => !!id)));
-      const uniqueServicoIds = Array.from(new Set(fetchedAgendamentos.map(ag => ag.servicoId).filter(id => !!id)));
-
-      if (uniqueClienteUidsFromAgendamento.length === 0) {
-          setAllClientesData([]);
-          setLoading(false);
-          return;
-      }
-
-
-      const clienteDetailsPromises = uniqueClienteUidsFromAgendamento.map(async (uidParaBuscar) => {
-        const clienteQuery = query(collection(db, "Cliente"), where("uid", "==", uidParaBuscar), limit(1));
-        const clienteQuerySnapshot = await getDocs(clienteQuery);
-        if (!clienteQuerySnapshot.empty) {
-          return clienteQuerySnapshot.docs[0]; 
-        }
-        return null; 
-      });
-
-      const servicoDetailsPromises = uniqueServicoIds.map(id => getDoc(doc(db, "Servicos", id)));
-
-      try {
-        const [clienteDocSnapshots, servicoDocsSnap] = await Promise.all([ // Renomeado para clienteDocSnapshots
-          Promise.all(clienteDetailsPromises),
-          Promise.all(servicoDetailsPromises),
-        ]);
-
-        const clientesMap = new Map<string, ClienteDoc>();
-        clienteDocSnapshots.forEach(snap => { 
-          if (snap && snap.exists()) { 
-            const data = snap.data();
-            clientesMap.set(data.uid, { id: snap.id, nome: data.nome || "Nome não informado no DB", uid: data.uid }); // Armazenando por data.uid
-          } else {
-          }
-        });
-
-        const servicosMap = new Map<string, ServicoDoc>();
-        servicoDocsSnap.forEach(snap => {
-          if (snap.exists()) {
-            servicosMap.set(snap.id, { id: snap.id, ...snap.data() } as ServicoDoc);
-          }
-        });
-
-        const agendamentosPorClienteUid: Record<string, AgendamentoDoc[]> = {};
-        fetchedAgendamentos.forEach(ag => {
-          if (!ag.clienteId) return; 
-          if (!agendamentosPorClienteUid[ag.clienteId]) {
-            agendamentosPorClienteUid[ag.clienteId] = [];
-          }
-          agendamentosPorClienteUid[ag.clienteId].push(ag);
-        });
-
-        const finalClientesArray: Cliente[] = Object.keys(agendamentosPorClienteUid)
-          .map(clienteUidNoAgendamento => { 
-            const clienteInfo = clientesMap.get(clienteUidNoAgendamento); 
-
-            const seusAgendamentos = agendamentosPorClienteUid[clienteUidNoAgendamento]
-              .filter(ag => ag.dataInicio && ag.horaInicio && ag.servicoId)
-              .sort((a, b) => parseAgendamentoDateTime(b.dataInicio, b.horaInicio).getTime() - parseAgendamentoDateTime(a.dataInicio, a.horaInicio).getTime());
-
-            if (seusAgendamentos.length === 0) return null;
-            const ultimoAgendamento = seusAgendamentos[0];
-
-            return {
-              id: clienteInfo?.id || clienteUidNoAgendamento, 
-              nome: clienteInfo?.nome || "Cliente Desconhecido",
-              ultimaVisita: formatDateString(ultimoAgendamento.dataInicio),
-              imagem: null,
-              status: mapFirestoreStatusToClienteStatus(ultimoAgendamento.status),
-              consultas: seusAgendamentos.map(ag => {
-                const servicoInfo = servicosMap.get(ag.servicoId);
-                return {
-                  titulo: servicoInfo?.nome || "Serviço Removido",
-                  data: formatDateString(ag.dataInicio),
-                };
-              }),
-            };
-          })
-          .filter(cliente => cliente !== null) as Cliente[];
-
-        setAllClientesData(finalClientesArray);
-
-      } catch (fetchError) {
-        setError("Falha ao carregar detalhes dos clientes/serviços.");
-      } finally {
-        setLoading(false);
-      }
-    }, (err) => {
-      setError("Falha ao carregar agendamentos.");
-      setLoading(false);
-    });
-
-    return () => {
-      unsubscribeSnapshots();
-    }
-  }, [currentProfissionalId]);
+  }, [loading]);
 
   const onChangeBusca = (text: string) => {
     setBusca(text);
@@ -395,8 +159,8 @@ export default function ClienteScreen() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 800);
-  }, []);
+    refetch(); 
+  }, [refetch]);
 
   const clientesFiltrados = useMemo(() => {
     return allClientesData.filter((c) => {
@@ -421,7 +185,7 @@ export default function ClienteScreen() {
     setClienteSelecionado(null);
   };
 
-  if (loading) {
+  if (loading && !refreshing && allClientesData.length === 0) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color={Colors.principal} />
@@ -433,19 +197,12 @@ export default function ClienteScreen() {
   if (error && !loading) {
     return (
       <View style={styles.centered}>
-        <Text style={{ color: "red" }}>{error}</Text>
-        <TouchableOpacity onPress={() => {
-            setError(null);
-            setLoading(true);
-            const uid = auth.currentUser?.uid;
-            if (uid) {
-                setCurrentProfissionalId(uid + "_retry" + Math.random().toString(36).substring(7)); 
-                setTimeout(() => setCurrentProfissionalId(uid), 50); 
-            } else {
-                setCurrentProfissionalId(null); 
-            }
-        }} style={{marginTop: 10, padding: 10, backgroundColor: Colors.principal}}>
-            <Text style={{color: Colors.branco}}>Tentar Novamente</Text>
+        <Text style={{ color: "red", textAlign: "center" }}>{error}</Text>
+        <TouchableOpacity 
+          onPress={refetch} 
+          style={{ marginTop: 20, paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8, backgroundColor: Colors.principal}}
+        >
+          <Text style={{ color: "white" }}>Tentar Novamente</Text>
         </TouchableOpacity>
       </View>
     );
@@ -453,7 +210,7 @@ export default function ClienteScreen() {
 
   return (
     <Provider>
-      <View className="bg-white flex-1">
+      <View style={styles.root}>
         <View style={styles.container}>
           <View style={styles.filtroRapido}>
             {(["Todos", "Em andamento", "Concluídos"] as const).map((item) => (
@@ -549,14 +306,17 @@ export default function ClienteScreen() {
   );
 }
 
-
-// fiz algumas mudanças no estilo para arrumar alguns erros de layout e melhorar a responsividade, se quiser pode voltar ao normal depois , ja fiz os ajustes.
 const styles = StyleSheet.create({
+  root: {
+    backgroundColor: 'white',
+    flex: 1,
+  },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+    backgroundColor: 'white',
   },
   container: { flex: 1, padding: 20 },
 
@@ -671,4 +431,3 @@ const styles = StyleSheet.create({
   consultaTitulo: { fontWeight: "600", fontSize: 16, color: "#444" },
   consultaData: { color: "#757575", fontSize: 12, marginTop: 4 },
 });
-
