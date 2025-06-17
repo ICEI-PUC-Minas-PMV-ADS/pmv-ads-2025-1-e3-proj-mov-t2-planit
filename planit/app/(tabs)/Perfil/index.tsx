@@ -17,7 +17,6 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/firebaseConfig";
 import useAuth from "@/hooks/useAuth";
 import { updateProfile } from "firebase/auth";
-import MetodoPagamentoModal from "@/components/modais/pagamento";
 import CompartilharAgendaModal from "@/components/modais/compartilharPerfil";
 
 const profileImage =
@@ -83,13 +82,6 @@ export default function Perfil() {
           />
           <Item
             icon={
-              <MaterialIcons name="payment" size={15} color={Colors.preto} />
-            }
-            label="Métodos de Pagamento"
-            onPress={() => setPayModalVisible(true)}
-          />
-          <Item
-            icon={
               <MaterialIcons name="logout" size={15} color={Colors.preto} />
             }
             label="Logout"
@@ -112,10 +104,6 @@ export default function Perfil() {
         visible={shareModalVisible}
         onClose={() => setShareModalVisible(false)}
         displayName={user?.displayName || "Usuário"}
-      />
-      <MetodoPagamentoModal
-        visible={payModalVisible}
-        onClose={() => setPayModalVisible(false)}
       />
     </View>
   );
