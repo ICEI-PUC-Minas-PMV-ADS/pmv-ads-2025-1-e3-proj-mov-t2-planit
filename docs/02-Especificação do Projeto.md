@@ -126,6 +126,7 @@ As tabelas que se seguem apresentam os requisitos funcionais e não funcionais q
 |RF-006| A aplicação deve permitir um sistema de notificações de compromissos agendados  | ALTA |
 |RF-007| A aplicação deve permitir que os clientes marquem compromissos com os profissionais   | ALTA |
 |RF-008| Que um cliente cancele o compromisso agendado   | ALTA |
+|RF-009| A aplicação deve permitir que o usuário cadastre e edite serviços | ALTA |
 
 ### Requisitos não Funcionais
 
