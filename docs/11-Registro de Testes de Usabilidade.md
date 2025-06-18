@@ -165,3 +165,24 @@ https://github.com/user-attachments/assets/0b391fee-f372-43cc-82d1-46c1fef8165a
 | Satisfação (escala 1-5) | 5               |
 
 ---
+
+## Fluxo de Cancelamento de Agendamento 
+
+WebSite: Planit-Web
+
+Data: 18/06/2025
+
+## Vídeo Demonstrativo
+
+https://github.com/user-attachments/assets/6f488a05-64a1-4f65-b8c4-e40d9addcd32
+
+## Métricas de Usabilidade
+
+| Métrica                 | Resultado Médio |
+| ----------------------- | --------------- |
+| Taxa de Sucesso %       | 100%            |
+| Tempo médio para login  | 50 segundos     |
+| Número de erros         | 0               |
+| Satisfação (escala 1-5) | 5               |
+
+---
