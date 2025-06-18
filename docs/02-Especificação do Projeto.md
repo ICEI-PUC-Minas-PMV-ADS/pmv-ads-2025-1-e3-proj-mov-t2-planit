@@ -121,15 +121,11 @@ As tabelas que se seguem apresentam os requisitos funcionais e não funcionais q
 |RF-001| A aplicação deve permitir criar uma conta | ALTA | 
 |RF-002| A aplicação deve permitir a exclusão da conta  | MÉDIA |
 |RF-003| A aplicação deve permitir editar o perfil do usuário | MÉDIA | 
-|RF-004| A aplicação deve permitir integração com outras agendas digitais | ALTA |
-|RF-005| A aplicação deve permitir consultar históricos de agendamentos  | ALTA |
-|RF-006| A aplicação deve permitir que o usuário gerencie horários disponíveis  | ALTA |
-|RF-007| A aplicação deve permitir gerar um relatório financeiro  | ALTA |
-|RF-008| A aplicação deve permitir realizar pagamentos   | MÉDIA |
-|RF-009| A aplicação deve permitir um sistema de notificações quando houver conflitos com outras  agendas digitais   | ALTA |
-|RF-010| A aplicação deve permitir um sistema de notificações de compromissos agendados  | ALTA |
-|RF-011| A aplicação deve permitir que profissionais registre informações dos clientes   | ALTA |
-|RF-012| A aplicação deve permitir editar e excluir informações dos clientes   | MÉDIA |
+|RF-004| A aplicação deve permitir consultar históricos de agendamentos  | ALTA |
+|RF-004| A aplicação deve permitir que o usuário gerencie horários disponíveis  | ALTA |
+|RF-006| A aplicação deve permitir um sistema de notificações de compromissos agendados  | ALTA |
+|RF-007| A aplicação deve permitir que os clientes marquem compromissos com os profissionais   | ALTA |
+|RF-008| Que um cliente cancele o compromisso agendado   | ALTA |
 
 ### Requisitos não Funcionais
 
