@@ -122,7 +122,7 @@ As tabelas que se seguem apresentam os requisitos funcionais e não funcionais q
 |RF-002| A aplicação deve permitir a exclusão da conta  | MÉDIA |
 |RF-003| A aplicação deve permitir editar o perfil do usuário | MÉDIA | 
 |RF-004| A aplicação deve permitir consultar históricos de agendamentos  | ALTA |
-|RF-004| A aplicação deve permitir que o usuário gerencie horários disponíveis  | ALTA |
+|RF-005| A aplicação deve permitir que o usuário gerencie horários disponíveis  | ALTA |
 |RF-006| A aplicação deve permitir um sistema de notificações de compromissos agendados  | ALTA |
 |RF-007| A aplicação deve permitir que os clientes marquem compromissos com os profissionais   | ALTA |
 |RF-008| Que um cliente cancele o compromisso agendado   | ALTA |
